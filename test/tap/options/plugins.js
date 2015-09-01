@@ -1,16 +1,11 @@
 'use strict';
 
-var Rx       = require('rx');
-var sinon    = require('sinon');
-
 var bs       = require('../../../');
 var test     = require('../../tap').test;
-var utils    = require('../../utils');
 var sinon    = require('sinon');
-var isOnline = require('../../../lib/online');
 
-test('init with plugin option', function (t) {
-    t.plan(1);
+test('init with plugin option as object', function (t) {
+    t.plan(3);
     var spy = sinon.spy();
     bs.create({
         plugins: [
@@ -28,7 +23,42 @@ test('init with plugin option', function (t) {
             }
         ]
     }, function (err, bs) {
-        t.equal(bs.options.get('plugins').size, 1);
-        //t.equal(spy.calledOnce, true);
+        var plugins = bs.options.get('plugins').toJS();
+        t.equal(plugins.length, 1);
+        t.equal(plugins[0].options.name, 'shane');
+        t.equal(plugins[0].via, 'inline');
+    });
+});
+
+test('init with plugin option as string', function (t) {
+    t.plan(3);
+    bs.create({
+        plugins: [
+            './test/fixtures/plugin1.js'
+        ]
+    }, function (err, bs) {
+        var plugins = bs.options.get('plugins').toJS();
+        t.equal(plugins.length, 1);
+        t.equal(plugins[0].module['plugin:name'], 'Plugin1');
+        t.ok(plugins[0].via.match(/test\/fixtures\/plugin1\.js$/));
+    });
+});
+
+test('init with plugin option as string + options', function (t) {
+    t.plan(3);
+    bs.create({
+        plugins: [
+            {
+                module: './test/fixtures/plugin1.js',
+                options: {
+                    name: 'shane'
+                }
+            }
+        ]
+    }, function (err, bs) {
+        var plugins = bs.options.get('plugins').toJS();
+        t.equal(plugins.length, 1);
+        t.equal(plugins[0].options.name, 'shane');
+        t.ok(plugins[0].via.match(/test\/fixtures\/plugin1\.js$/));
     });
 });
