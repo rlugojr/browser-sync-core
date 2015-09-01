@@ -1,5 +1,6 @@
 var bs = require('./')
     .create({
+        version: "2.8.2",
         port: 4000,
         plugins: [
             "./test/fixtures/plugin1",
@@ -26,5 +27,7 @@ var bs = require('./')
             }
         ]
     }, function (err, out) {
-        console.log(out.options.get('plugins').get(0));
+        console.log(out.options.get('urls').toJS());
+        console.log(out.options.get('snippet'));
+        console.log(out.options.get('scriptPaths'));
     });
