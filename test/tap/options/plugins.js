@@ -15,15 +15,15 @@ test('init with plugin option as object', function (t) {
                         spy();
                         done();
                     },
-                    "plugin:name": "My Awesome Plugin"
+                    'plugin:name': 'My Awesome Plugin'
                 },
                 options: {
-                    name: "shane"
+                    name: 'shane'
                 }
             }
         ]
     }, function (err, bs) {
-        var plugin = bs.options.getIn(['plugins', "My Awesome Plugin"]).toJS();
+        var plugin = bs.options.getIn(['plugins', 'My Awesome Plugin']).toJS();
         t.equal(plugin.options.name, 'shane');
         t.equal(plugin.via, 'inline');
     });
@@ -35,7 +35,7 @@ test('init with plugin option as string', function (t) {
             './test/fixtures/plugin1.js'
         ]
     }, function (err, bs) {
-        var plugin = bs.options.getIn(['plugins', "Plugin1"]).toJS();
+        var plugin = bs.options.getIn(['plugins', 'Plugin1']).toJS();
         t.equal(plugin.module['plugin:name'], 'Plugin1');
         t.ok(plugin.via.match(/test\/fixtures\/plugin1\.js$/));
         t.end();
@@ -53,7 +53,7 @@ test('init with plugin option as string + options', function (t) {
             }
         ]
     }, function (err, bs) {
-        var plugin = bs.options.getIn(['plugins', "Plugin1"]).toJS();
+        var plugin = bs.options.getIn(['plugins', 'Plugin1']).toJS();
         t.equal(plugin.options.name, 'shane');
         t.ok(plugin.via.match(/test\/fixtures\/plugin1\.js$/));
         t.end();

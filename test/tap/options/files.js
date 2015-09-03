@@ -10,7 +10,7 @@ test('init with core files option', function (t) {
         files: '*.css'
     }, function (err, bs) {
         var files = bs.options.get('files').toJS();
-        t.deepEqual(files.core.globs, ["*.css"]);
+        t.deepEqual(files.core.globs, ['*.css']);
         t.end();
     });
 });
@@ -38,7 +38,7 @@ test('init with plugins files option', function (t) {
         ]
     }, function (err, bs) {
         var files = bs.options.get('files').toJS();
-        t.deepEqual(files.core.globs, ["*.css"]);
+        t.deepEqual(files.core.globs, ['*.css']);
         t.deepEqual(files['Plugin1'].globs, ['*.html', '*.jade']);
         t.deepEqual(files['Plugin1'].objs[0].match, '*.txt');
         t.end();
