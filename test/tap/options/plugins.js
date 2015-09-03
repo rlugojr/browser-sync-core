@@ -5,7 +5,7 @@ var test     = require('../../tap').test;
 var sinon    = require('sinon');
 
 test('init with plugin option as object', function (t) {
-    t.plan(3);
+    t.plan(2);
     var spy = sinon.spy();
     bs.create({
         plugins: [
@@ -23,29 +23,26 @@ test('init with plugin option as object', function (t) {
             }
         ]
     }, function (err, bs) {
-        var plugins = bs.options.get('plugins').toJS();
-        t.equal(plugins.length, 1);
-        t.equal(plugins[0].options.name, 'shane');
-        t.equal(plugins[0].via, 'inline');
+        var plugin = bs.options.getIn(['plugins', "My Awesome Plugin"]).toJS();
+        t.equal(plugin.options.name, 'shane');
+        t.equal(plugin.via, 'inline');
     });
 });
 
 test('init with plugin option as string', function (t) {
-    t.plan(3);
     bs.create({
         plugins: [
             './test/fixtures/plugin1.js'
         ]
     }, function (err, bs) {
-        var plugins = bs.options.get('plugins').toJS();
-        t.equal(plugins.length, 1);
-        t.equal(plugins[0].module['plugin:name'], 'Plugin1');
-        t.ok(plugins[0].via.match(/test\/fixtures\/plugin1\.js$/));
+        var plugin = bs.options.getIn(['plugins', "Plugin1"]).toJS();
+        t.equal(plugin.module['plugin:name'], 'Plugin1');
+        t.ok(plugin.via.match(/test\/fixtures\/plugin1\.js$/));
+        t.end();
     });
 });
 
 test('init with plugin option as string + options', function (t) {
-    t.plan(3);
     bs.create({
         plugins: [
             {
@@ -56,9 +53,9 @@ test('init with plugin option as string + options', function (t) {
             }
         ]
     }, function (err, bs) {
-        var plugins = bs.options.get('plugins').toJS();
-        t.equal(plugins.length, 1);
-        t.equal(plugins[0].options.name, 'shane');
-        t.ok(plugins[0].via.match(/test\/fixtures\/plugin1\.js$/));
+        var plugin = bs.options.getIn(['plugins', "Plugin1"]).toJS();
+        t.equal(plugin.options.name, 'shane');
+        t.ok(plugin.via.match(/test\/fixtures\/plugin1\.js$/));
+        t.end();
     });
 });
