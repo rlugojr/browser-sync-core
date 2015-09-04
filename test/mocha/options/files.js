@@ -33,6 +33,11 @@ describe('init with core files option', function () {
                             }
                         ]
                     }
+                },
+                {
+                    module: {init: function () {
+
+                    }},
                 }
             ]
         }, function (err, bs) {
