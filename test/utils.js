@@ -1,3 +1,5 @@
+var Rx = require('rx');
+var sinon  = require('sinon');
 var request = require('supertest');
 var utils = exports;
 
@@ -21,4 +23,9 @@ utils.getFromPath = function (bs, path, cb) {
             if (err) return cb(err);
             cb(null, res.text);
         });
+};
+
+utils.stubOnline = function (status) {
+    var isOnline = require('../lib/online');
+    return sinon.stub(isOnline, 'fn').returns(Rx.Observable.just(status));
 };
