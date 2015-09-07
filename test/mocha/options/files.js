@@ -3,59 +3,40 @@
 var bs     = require('../../../');
 var assert = require('chai').assert;
 
-describe('init with core files option', function () {
-    it('has core files option', function (done) {
+describe('init with files option', function () {
+    it('has core files option as string', function (done) {
         bs.create({
             server: './test/fixtures',
-            files: '*.css'
-        }, function (err, bs) {
-            var files = bs.options.get('files').toJS();
-            assert.deepEqual(files.core.globs, ['*.css']);
-            done();
-        });
-    });
-    it('has plugin files option', function (done) {
-        bs.create({
-            server: './test/fixtures',
-            files: '*.css',
+            files: [
+                '*.css',
+                {
+                    match: '*.htmll',
+                    fn: function () {}
+                }
+            ],
             plugins: [
                 {
-                    module: './test/fixtures/plugin1.js',
+                    module: {},
                     options: {
-                        files: [
-                            '*.html',
-                            '*.jade',
-                            {
-                                match: '*.txt',
-                                fn: function (event, file) {
-
-                                }
-                            }
-                        ]
+                        files: ['*.jade']
                     }
                 },
                 {
-                    module: {
-                        init: function () {
-
-                        }
-                    },
+                    module: {},
                     options: {
-                        files: ["*.html"]
+                        files: ['*.txt', '*.otherp']
                     }
                 }
             ]
         }, function (err, bs) {
-
             var files = bs.options.get('files').toJS();
-            var last  = files[Object.keys(files).slice(-1)];
-
-            assert.deepEqual(files.core.globs, ['*.css']);
-            assert.deepEqual(files['Plugin1'].globs, ['*.html', '*.jade']);
-            assert.deepEqual(files['Plugin1'].objs[0].match, '*.txt');
-
-            assert.deepEqual(last.globs[0], '*.html');
-            assert.deepEqual(last.objs.length, 0);
+            var plugins = Object.keys(bs.options.get('plugins').toJS());
+            assert.deepEqual(files.length, 5);
+            assert.deepEqual(files[0].namespace, 'core');
+            assert.deepEqual(files[1].namespace, 'core');
+            assert.deepEqual(files[2].namespace, plugins[0]);
+            assert.deepEqual(files[3].namespace, plugins[1]);
+            assert.deepEqual(files[4].namespace, plugins[1]);
             done();
         });
     });
