@@ -4,7 +4,7 @@ var bs       = require('../../../');
 var sinon    = require('sinon');
 var assert   = require('chai').assert;
 
-describe('plugins as options', function (t) {
+describe('plugins as options', function () {
     it('accepts a plugin as inline obj', function (done) {
         var spy = sinon.spy();
         bs.create({
