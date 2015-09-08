@@ -4,7 +4,7 @@ var bs       = require('../../../');
 var sinon    = require('sinon');
 var assert   = require('chai').assert;
 
-describe.only('middlewares as options', function () {
+describe('middlewares as options', function () {
     it('accepts top-level middleware', function (done) {
         var fn1 = function fn1() {};
         var fn2 = function fn2() {};
