@@ -7,11 +7,12 @@ var bs = require('./')
         },
         files: [
             "test/fixtures/*.html",
-            "*.css",
             {
-                match: "*.txt",
-                fn: function () {
-
+                match: "*.js",
+                fn: function (event, file) {
+                    //console.log('JS files changed');
+                    //console.log('JS files changed event', event);
+                    //console.log('JS files changed file ', file);
                 }
             }
         ],
@@ -19,11 +20,12 @@ var bs = require('./')
             {
                 module: {},
                 options: {
-                    files: ["*.jade", {match: "*.css", options: {name: "shane"}}]
+                    files: ["test/fixtures/css/*.css"]
                 }
             }
         ]
     }, function (err, out) {
+        //console.log(out.options.get('files').toJS());
         //console.log(out.options.toJS());
         //console.log(out.options.getIn(['files']).get('My Awesome Plugin').toJS());
         //console.log(out.options.get('urls').toJS());

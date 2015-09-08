@@ -4,7 +4,7 @@ var bs     = require('../../../');
 var opts   = require('../../../lib/default-options');
 var assert = require('chai').assert;
 
-describe.only('init with files option', function () {
+describe('init with files option', function () {
     it('has core files option as string', function (done) {
         bs.create({
             server: './test/fixtures',
@@ -28,7 +28,7 @@ describe.only('init with files option', function () {
                         files: [
                             '*.jade',
                             {
-                                match: ["*.html", "*.kittie"],
+                                match: ['*.html', '*.kittie'],
                                 options: {
                                     large: 'horse'
                                 }

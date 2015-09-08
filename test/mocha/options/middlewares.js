@@ -18,14 +18,14 @@ describe('middlewares as options', function () {
                 {
                     module: {
                         hooks: {
-                            "server:middleware": [fn3, fn4]
+                            'server:middleware': [fn3, fn4]
                         }
                     }
                 },
                 {
                     module: {
                         hooks: {
-                            "server:middleware": [fn5, fn6]
+                            'server:middleware': [fn5, fn6]
                         }
                     }
                 }
