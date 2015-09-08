@@ -58,4 +58,10 @@ describe('plugins as options', function () {
             done();
         });
     });
+    it('accepts no plugins ', function (done) {
+        bs.create({}, function (err, bs) {
+            assert.equal(Object.keys(bs.options.get('plugins').toJS()).length, 0);
+            done();
+        });
+    });
 });
