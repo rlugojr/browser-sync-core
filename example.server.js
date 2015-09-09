@@ -1,7 +1,7 @@
 var bs = require('./')
     .create({
         version: "2.8.2",
-        server: 'test/fixtures',
+        server: ['test/fixtures/', '.tmp'],
         middleware: [
             function kill(req, res, next) {
                 console.log(req.url);
