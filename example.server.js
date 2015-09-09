@@ -2,6 +2,19 @@ var bs = require('./')
     .create({
         version: "2.8.2",
         server: 'test/fixtures',
+        middleware: [
+            function kill(req, res, next) {
+                console.log(req.url);
+                next();
+            },
+            {
+                path: "wew",
+                id: 'shane',
+                fn: function (req, res, next) {
+                    next();
+                }
+            }
+        ],
         watchOptions: {
             delay: 'oh yeah'
         },
