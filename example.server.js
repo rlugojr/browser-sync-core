@@ -12,7 +12,7 @@ var bs = require('./')
         ],
         middleware: [
             function kill(req, res, next) {
-                console.log(req.url);
+                //console.log(req.url);
                 next();
             },
             {
