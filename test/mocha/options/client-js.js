@@ -9,6 +9,12 @@ describe('client js as options', function () {
         var client1 = 'var name = "shane1"';
         var client2 = 'var name = "shane2"';
         bs.create({
+            server: {
+                baseDir: ['./temp'],
+                serveStaticOptions: {
+                    shane: 'aweseome'
+                }
+            },
             clientJs: [
                 {
                     content: client1

@@ -1,7 +1,14 @@
 var bs = require('./')
     .create({
         version: "2.8.2",
-        server: ['test/fixtures/', '.tmp'],
+        serveStatic: [
+            {
+                root: ['lib', 'test'],
+                options: {
+                    extensions: ['js']
+                }
+            }
+        ],
         middleware: [
             function kill(req, res, next) {
                 console.log(req.url);
