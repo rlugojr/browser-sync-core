@@ -1,6 +1,7 @@
 var bs = require('./')
     .create({
         version: "2.8.2",
+        server: ['test/fixtures'],
         serveStatic: [
             {
                 root: ['lib', 'test'],
