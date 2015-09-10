@@ -23,7 +23,7 @@ describe('client js as options', function () {
                 {
                     module: {
                         hooks: {
-                            "client:js": client2
+                            'client:js': client2
                         }
                     },
 
