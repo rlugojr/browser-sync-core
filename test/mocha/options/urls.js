@@ -14,6 +14,7 @@ describe('urls option', function () {
             if (bs.options.get('online')) {
                 assert.ok(urls.external.match(new RegExp(port + '$')));
             }
+            bs.cleanup();
             done();
         });
     })

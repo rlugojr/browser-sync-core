@@ -9,11 +9,13 @@ describe('init with online option', function () {
     it('can be offline', function () {
         bs.create({online: false}, function (err, bs) {
             assert.equal(bs.options.get('online'), false);
+            bs.cleanup();
         });
     });
     it('can be online', function () {
         bs.create({online: true}, function (err, bs) {
             assert.equal(bs.options.get('online'), true);
+            bs.cleanup();
         });
     });
     it('can resolve online', function (done) {
@@ -21,6 +23,8 @@ describe('init with online option', function () {
         bs.create({}, function (err, bs) {
             assert.equal(bs.options.get('online'), false);
             stub.restore();
+
+            bs.cleanup();
             done();
         });
     });
@@ -29,6 +33,8 @@ describe('init with online option', function () {
         bs.create({}, function (err, bs) {
             assert.equal(bs.options.get('online'), true);
             stub.restore();
+
+            bs.cleanup();
             done();
         });
     });

@@ -72,6 +72,7 @@ describe('init with files option', function () {
             assert.equal(files[0].options.ignored.source, opts.watchOptions.ignored.source);
             assert.equal(files[1].options.ignored.source, opts.watchOptions.ignored.source);
 
+            bs.cleanup();
             done();
         });
     });

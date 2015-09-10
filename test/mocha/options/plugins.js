@@ -26,6 +26,8 @@ describe('plugins as options', function () {
             var plugin = bs.options.getIn(['plugins', 'My Awesome Plugin']).toJS();
             assert.equal(plugin.options.name, 'shane');
             assert.equal(plugin.via, 'inline');
+
+            bs.cleanup();
             done();
         });
     });
@@ -38,6 +40,8 @@ describe('plugins as options', function () {
             var plugin = bs.options.getIn(['plugins', 'Plugin1']).toJS();
             assert.equal(plugin.module['plugin:name'], 'Plugin1');
             assert.ok(plugin.via.match(/test\/fixtures\/plugin1\.js$/));
+
+            bs.cleanup();
             done();
         });
     });
@@ -55,12 +59,16 @@ describe('plugins as options', function () {
             var plugin = bs.options.getIn(['plugins', 'Plugin1']).toJS();
             assert.equal(plugin.options.name, 'shane');
             assert.ok(plugin.via.match(/test\/fixtures\/plugin1\.js$/));
+
+            bs.cleanup();
             done();
         });
     });
     it('accepts no plugins ', function (done) {
         bs.create({}, function (err, bs) {
             assert.equal(Object.keys(bs.options.get('plugins').toJS()).length, 0);
+
+            bs.cleanup();
             done();
         });
     });
