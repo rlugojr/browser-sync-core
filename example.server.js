@@ -28,9 +28,11 @@ var bs = require('./')
         },
         files: [
             "test/fixtures/*.html",
+            "test/fixtures/css/*.css",
             {
-                match: "*.js",
+                match: "*.yml",
                 fn: function (event, file) {
+                    console.log(event, file);
                     //console.log('JS files changed');
                     //console.log('JS files changed event', event);
                     //console.log('JS files changed file ', file);
@@ -41,7 +43,13 @@ var bs = require('./')
             {
                 module: {},
                 options: {
-                    files: ["test/fixtures/css/*.css"]
+                    files: [{
+                        match: ['*.js', '*.json'],
+                        options: {
+                            ignoreInitial: true
+                        }
+                    }]
+
                 }
             }
         ]
