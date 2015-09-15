@@ -10,6 +10,14 @@ var bs = require('./')
                 }
             }
         ],
+        clientJs: [
+            {
+                content: 'console.log("Aww yis")'
+            },
+            {
+                content: 'console.log("Aww No!")'
+            }
+        ],
         middleware: [
             function kill(req, res, next) {
                 //console.log(req.url);
@@ -41,7 +49,17 @@ var bs = require('./')
         ],
         plugins: [
             {
-                module: {},
+                module: {
+                    initAsync: function (bs, opts, done) {
+                        //bs.plugin('client:js', function (clientJs, options) {
+                        //    return clientJs.concat({content: 'var shane="Amaze"'});
+                        //});
+                        done();
+                    },
+                    hooks: {
+                        'client:js': 'var name = "kittie"'
+                    }
+                },
                 options: {
                     files: [{
                         match: ['*.js', '*.json'],
@@ -51,6 +69,19 @@ var bs = require('./')
                     }]
 
                 }
+            },
+            {
+                module: {
+                    initAsync: function (bs, opts, done) {
+                        bs.plugin('client:js', function (clientJs, options) {
+                            return clientJs.concat({content: 'here'});
+                        });
+                        done();
+                    },
+                    hooks: {
+                        'client:js': 'var name = "kittie from second plugin"'
+                    }
+                },
             }
         ]
     }, function (err, out) {

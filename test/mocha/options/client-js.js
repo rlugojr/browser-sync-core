@@ -2,9 +2,15 @@
 
 var bs       = require('../../../');
 var sinon    = require('sinon');
+var Rx       = require('rx');
 var assert   = require('chai').assert;
+var merge    = require('../utils').optmerge;
+var clientJs  = require('../../../lib/client-js');
 
 describe('client js as options', function () {
+    it.only('Adds builtins to the options', function (done) {
+
+    });
     it('can accept client js objects in options', function (done) {
         var client1 = 'var name = "shane1"';
         var client2 = 'var name = "shane2"';
