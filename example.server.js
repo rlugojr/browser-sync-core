@@ -74,13 +74,10 @@ var bs = require('./')
                             });
                         });
                         setTimeout(() => {
-                            bs.plugin('files:watcher', 'core', function (stream) {
-                                console.log('getting a core stream');
-                                stream
-                                    .filter(x => x.event !== 'add')
-                                    .subscribe(x => console.log('CORE but from plugin', x));
+                            bs.plugin('files:watcher', 'Shane\'s plugin', function (stream) {
+                                stream.subscribe(x => console.log('CORE but from plugin', x.file));
                             });
-                        }, 2000)
+                        }, 2000);
 
                         done();
                     },
