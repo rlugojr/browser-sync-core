@@ -73,12 +73,21 @@ var bs = require('./')
                                 }
                             });
                         });
+                        setTimeout(() => {
+                            bs.plugin('files:watcher', 'core', function (stream) {
+                                console.log('getting a core stream');
+                                stream
+                                    .filter(x => x.event !== 'add')
+                                    .subscribe(x => console.log('CORE but from plugin', x));
+                            });
+                        }, 2000)
 
                         done();
                     },
                     hooks: {
                         'client:js': 'var name = "kittie"'
-                    }
+                    },
+                    "plugin:name": "Shane's plugin"
                 },
                 options: {
                     files: [{
