@@ -75,7 +75,7 @@ var bs = require('./')
                     initAsync: function (bs, opts, done) {
                         setTimeout(x => {
                             bs.plugin('client:js', function (clientJs, options) {
-                                return clientJs.concat({content: 'here', id: 'shane'});
+                                return clientJs.concat({content: 'console.log("HERE DUDE I\'M RUNNING");', id: 'shane'});
                             });
                         }, 3000);
                         done();
