@@ -24,9 +24,9 @@ var bs = require('./')
                 next();
             },
             {
-                path: "wew",
+                route: "wew",
                 id: 'shane',
-                fn: function (req, res, next) {
+                handle: function (req, res, next) {
                     next();
                 }
             }
@@ -73,9 +73,11 @@ var bs = require('./')
             {
                 module: {
                     initAsync: function (bs, opts, done) {
-                        bs.plugin('client:js', function (clientJs, options) {
-                            return clientJs.concat({content: 'here'});
-                        });
+                        setTimeout(x => {
+                            bs.plugin('client:js', function (clientJs, options) {
+                                return clientJs.concat({content: 'here', id: 'shane'});
+                            });
+                        }, 3000);
                         done();
                     },
                     hooks: {
