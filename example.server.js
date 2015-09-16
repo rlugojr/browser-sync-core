@@ -26,14 +26,14 @@ var bs = require('./')
         ],
         middleware: [
             function kill(req, res, next) {
-                //console.log(req.url);
                 next();
             },
             {
-                route: "wew",
+                route: "/wew",
                 id: 'shane',
-                handle: function (req, res, next) {
-                    next();
+                handle: function handlePath (req, res, next) {
+                    res.end('you wish');
+                    //next();
                 }
             }
         ],
@@ -57,12 +57,20 @@ var bs = require('./')
             {
                 module: {
                     initAsync: function (bs, opts, done) {
-
                         bs.plugin('option:rewriteRules', function (rules, options) {
                             return rules.concat({
                                 id: 'pluginrr-01',
                                 match: '<body>',
                                 replace: '<body class="here">'
+                            });
+                        });
+                        bs.plugin('option:middleware', function (mw, options) {
+                            return mw.concat({
+                                id: 'pl-mwq1',
+                                route: '',
+                                handle: function (req, res, next) {
+                                    res.end(req.url);
+                                }
                             });
                         });
 
