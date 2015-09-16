@@ -1,29 +1,8 @@
 var Rx = require('rx');
+var Imm = require('immutable');
 
-var fn1 = (obs) => {
-    console.log('running 1');
-    setTimeout(() => {
-        console.log('first');
-        obs.onNext(true);
-        obs.onCompleted();
-    }, 1000);
-};
+var start = Imm.fromJS({content: 'shane', id: 'aww yeah'});
 
-var fn2 = (obs) => {
-    console.log('running 2');
-    setTimeout(() => {
-        console.log('second');
-        obs.onNext(true);
-        obs.onCompleted();
-    }, 1000);
-};
+var rec = Imm.Record({content: '', id: ''});
 
-Rx.Observable.from([fn1, fn2].map(x => {
-    return Rx.Observable.create(obs => {
-        x(obs);
-    });
-}))
-    .concatAll()
-    .forEach(x => {
-        //console.log(x);
-    });
+console.log(new rec({content: '', another: 'hey there'}));
