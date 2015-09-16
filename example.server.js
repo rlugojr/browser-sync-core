@@ -64,15 +64,18 @@ var bs = require('./')
                                 replace: '<body class="here">'
                             });
                         });
-                        bs.plugin('option:middleware', function (mw, options) {
-                            return mw.concat({
-                                id: 'pl-mwq1',
-                                route: '',
-                                handle: function (req, res, next) {
-                                    res.end(req.url);
-                                }
-                            });
+                        bs.plugin('option:ghostMode.forms', function (opt) {
+                            return false;
                         });
+                        //bs.plugin('option:middleware', function (mw, options) {
+                        //    return mw.concat({
+                        //        id: 'pl-mwq1',
+                        //        route: '',
+                        //        handle: function (req, res, next) {
+                        //            res.end(req.url);
+                        //        }
+                        //    });
+                        //});
                         setTimeout(() => {
                             bs.plugin('files:watcher', 'Shane\'s plugin', function (stream) {
                                 stream.subscribe(x => console.log('CORE but from plugin', x.file));
