@@ -50,6 +50,7 @@ var bs = require('./')
                     //console.log('JS files changed');
                     //console.log('JS files changed event', event);
                     //console.log('JS files changed file ', file);
+
                 }
             }
         ],
@@ -64,9 +65,9 @@ var bs = require('./')
                                 replace: '<body class="here">'
                             });
                         });
-                        bs.plugin('option:ghostMode.forms', function (opt) {
-                            return false;
-                        });
+                        //bs.plugin('option:ghostMode.forms', function (opt) {
+                        //    return false;
+                        //});
                         //bs.plugin('option:middleware', function (mw, options) {
                         //    return mw.concat({
                         //        id: 'pl-mwq1',
