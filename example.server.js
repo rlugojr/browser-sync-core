@@ -2,6 +2,12 @@ var bs = require('./')
     .create({
         version: "2.8.2",
         server: ['test/fixtures'],
+        rewriteRules: [
+            {
+                match: '<head>',
+                replace: '<head id="yep yep">',
+            }
+        ],
         serveStatic: [
             {
                 root: ['lib', 'test'],
@@ -51,9 +57,15 @@ var bs = require('./')
             {
                 module: {
                     initAsync: function (bs, opts, done) {
-                        //bs.plugin('client:js', function (clientJs, options) {
-                        //    return clientJs.concat({content: 'var shane="Amaze"'});
-                        //});
+
+                        bs.plugin('option:rewriteRules', function (rules, options) {
+                            return rules.concat({
+                                id: 'pluginrr-01',
+                                match: '<body>',
+                                replace: '<body class="here">'
+                            });
+                        });
+
                         done();
                     },
                     hooks: {
@@ -73,11 +85,7 @@ var bs = require('./')
             {
                 module: {
                     initAsync: function (bs, opts, done) {
-                        setTimeout(x => {
-                            bs.plugin('client:js', function (clientJs, options) {
-                                return clientJs.concat('console.log("HERE DUDE I\'M RUNNING");');
-                            });
-                        }, 3000);
+                        bs.options.get('rewriteRules');
                         done();
                     },
                     hooks: {
