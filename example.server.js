@@ -59,13 +59,15 @@ var bs = require('./')
             {
                 module: './test/fixtures/plugin1.js'
             },
-            //{
-            //    module: {
-            //        initAsync: function (bs, opts, cb) {
-            //            cb();
-            //        }
-            //    }
-            //}
+            {
+                module: {
+                    initAsync: function (bs, opts, cb) {
+                        cb();
+                    },
+                    "plugin:name": "Shane",
+                    "browser-sync:ui": true
+                }
+            }
             //{
             //    module: {
             //        initAsync: function (bs, opts, done) {
