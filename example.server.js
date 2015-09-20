@@ -2,7 +2,6 @@ var bs = require('./')
     .create({
         version: "2.8.2",
         server: ['test/fixtures'],
-        https: true,
         rewriteRules: [
             {
                 match: '<head>',
@@ -26,9 +25,9 @@ var bs = require('./')
             }
         ],
         middleware: [
-            function kill(req, res, next) {
-                next();
-            },
+            //function kill(req, res, next) {
+            //    next();
+            //},
             {
                 route: "/wew",
                 id: 'shane',
@@ -56,17 +55,17 @@ var bs = require('./')
             }
         ],
         plugins: [
-            '/Users/shakyshane/sites/oss/UI',
+            '/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp',
             {
                 module: './test/fixtures/plugin1.js'
             },
-            {
-                module: {
-                    initAsync: function (bs, opts, cb) {
-                        cb();
-                    }
-                }
-            }
+            //{
+            //    module: {
+            //        initAsync: function (bs, opts, cb) {
+            //            cb();
+            //        }
+            //    }
+            //}
             //{
             //    module: {
             //        initAsync: function (bs, opts, done) {
@@ -128,7 +127,7 @@ var bs = require('./')
             //}
         ]
     }, function (err, out) {
-        var plu = out.options.get('plugins').toJS();
+        //var plu = out.options.get('plugins').toJS();
         //console.log(plu);
         //console.log(plu);
         //var mpath = plu['module']['browser-sync:ui']['hooks']['markup'];
