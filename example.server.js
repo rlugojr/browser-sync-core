@@ -16,6 +16,7 @@ var bs = require('./')
                 }
             }
         ],
+        minify: false,
         port: 3000,
         online: true,
         clientJs: [
@@ -54,16 +55,16 @@ var bs = require('./')
                 module: {
                     initAsync: function (bs, opts, cb) {
 
-                        bs.setOption('middleware', function (mw) {
-                            return mw.concat({
-                                path: '',
-                                handle: function (req, res, next) {
-                                    console.log(req.url);
-                                    next();
-                                },
-                                id: 'my-undiq'
-                            });
-                        }).subscribe();
+                        //bs.setOption('middleware', function (mw) {
+                        //    return mw.concat({
+                        //        path: '',
+                        //        handle: function (req, res, next) {
+                        //            console.log(req.url);
+                        //            next();
+                        //        },
+                        //        id: 'my-undiq'
+                        //    });
+                        //}).subscribe();
 
                         bs.setOption('rewriteRules', function (rr) {
                             return rr.concat({
@@ -72,10 +73,10 @@ var bs = require('./')
                             });
                         }).subscribe();
 
-                        bs.getWatcher('My New Plugin')
-                            .filter(x => x.event !== 'add' && x.event !== 'addDir')
-                            .do(x => console.log(x))
-                            .subscribe();
+                        //bs.getWatcher('My New Plugin')
+                        //    .filter(x => x.event !== 'add' && x.event !== 'addDir')
+                        //    .do(x => console.log(x))
+                        //    .subscribe();
 
                         cb();
                     },
@@ -87,7 +88,7 @@ var bs = require('./')
                 },
                 options: {
                     files: [
-                        '.*.yml',
+                        '*.yml',
                     ]
                 }
             }
