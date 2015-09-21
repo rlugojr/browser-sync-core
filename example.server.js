@@ -65,7 +65,10 @@ var bs = require('./')
                         cb();
                     },
                     "plugin:name": "Shane",
-                    "browser-sync:ui": true
+                    "browser-sync:ui": true,
+                    hooks: {
+                        "option:clientJs": "console.log('From plugin!')"
+                    }
                 }
             }
             //{
