@@ -2,12 +2,12 @@ var bs = require('./')
     .create({
         version: "2.8.2",
         server: ['test/fixtures'],
-        rewriteRules: [
-            {
-                match: '<head>',
-                replace: '<head id="yep yep">',
-            }
-        ],
+        //rewriteRules: [
+        //    {
+        //        match: '<head>',
+        //        replace: '<head id="yep yep">',
+        //    }
+        //],
         serveStatic: [
             {
                 root: ['lib', 'test'],
@@ -55,17 +55,37 @@ var bs = require('./')
             }
         ],
         plugins: [
-            '/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp',
+            //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp',
+            '/Users/shaneobsourne/code/UI',
             {
                 module: './test/fixtures/plugin1.js'
             },
             {
                 module: {
                     initAsync: function (bs, opts, cb) {
+
+                        bs.setOption('middleware', function (mw) {
+                            return mw.concat({
+                                path: '',
+                                handle: function (req, res, next) {
+                                    console.log(req.url);
+                                    next();
+                                },
+                                id: 'my-undiq'
+                            });
+                        }).subscribe();
+
+                        bs.setOption('rewriteRules', function (rr) {
+                            return rr.concat({
+                                match: '<head>',
+                                replace: "<head><meta />"
+                            });
+                        }).subscribe();
+
                         cb();
                     },
-                    "plugin:name": "Shane",
                     "browser-sync:ui": true,
+                    "plugin:name": 'My New Plugin',
                     hooks: {
                         "option:clientJs": "console.log('From plugin!')"
                     }
@@ -132,6 +152,7 @@ var bs = require('./')
             //}
         ]
     }, function (err, out) {
+        console.log(out.options.get('middleware').toJS());
         //var plu = out.options.get('plugins').toJS();
         //console.log(plu);
         //console.log(plu);
