@@ -16,10 +16,9 @@ var bs = require('./')
                 }
             }
         ],
+        port: 3000,
+        online: true,
         clientJs: [
-            {
-                content: 'console.log("Aww yis")'
-            },
             {
                 content: 'console.log("Aww No!")'
             }
@@ -43,19 +42,10 @@ var bs = require('./')
         files: [
             "test/fixtures/*.html",
             "test/fixtures/css/*.css",
-            {
-                match: "*.yml",
-                fn: function (event, file) {
-                    console.log(event, file);
-                    //console.log('JS files changed');
-                    //console.log('JS files changed event', event);
-                    //console.log('JS files changed file ', file);
-
-                }
-            }
         ],
         plugins: [
             //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp',
+            //'/Users/shaneobsourne/code/browser-sync-core/node_modules/browser-sync-client',
             '/Users/shaneobsourne/code/UI',
             {
                 module: './test/fixtures/plugin1.js'
@@ -82,6 +72,11 @@ var bs = require('./')
                             });
                         }).subscribe();
 
+                        bs.getWatcher('My New Plugin')
+                            .filter(x => x.event !== 'add' && x.event !== 'addDir')
+                            .do(x => console.log(x))
+                            .subscribe();
+
                         cb();
                     },
                     "browser-sync:ui": true,
@@ -89,6 +84,11 @@ var bs = require('./')
                     hooks: {
                         "option:clientJs": "console.log('From plugin!')"
                     }
+                },
+                options: {
+                    files: [
+                        '.*.yml',
+                    ]
                 }
             }
             //{
@@ -152,7 +152,6 @@ var bs = require('./')
             //}
         ]
     }, function (err, out) {
-        console.log(out.options.get('middleware').toJS());
         //var plu = out.options.get('plugins').toJS();
         //console.log(plu);
         //console.log(plu);
