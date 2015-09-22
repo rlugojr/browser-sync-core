@@ -1,3 +1,4 @@
+var fs = require('fs');
 var bs = require('./')
     .create({
         version: "2.8.2",
@@ -8,20 +9,12 @@ var bs = require('./')
         //        replace: '<head id="yep yep">',
         //    }
         //],
-        serveStatic: [
-            {
-                root: ['lib', 'test'],
-                options: {
-                    extensions: ['js']
-                }
-            }
-        ],
         minify: false,
         port: 3000,
         online: true,
         clientJs: [
             {
-                content: 'console.log("Aww No!")'
+                content: fs.readFileSync('./client.js', 'utf8')
             }
         ],
         middleware: [
@@ -42,12 +35,15 @@ var bs = require('./')
         },
         files: [
             "test/fixtures/*.html",
-            "test/fixtures/css/*.css",
+            {
+                match: 'test/fixtures/**/*.css',
+                locator: /styles(.+?)?\.css$/
+            }
         ],
         plugins: [
             //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp',
             //'/Users/shaneobsourne/code/browser-sync-core/node_modules/browser-sync-client',
-            '/Users/shaneobsourne/code/UI',
+            //'/Users/shaneobsourne/code/UI',
             {
                 module: './test/fixtures/plugin1.js'
             },
