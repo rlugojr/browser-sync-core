@@ -27,9 +27,9 @@
                         { "name": "item", "type": "object", "properties": [
                                 { "name": "locator", "type": "object", "optional": true, "description": "Serialized Regex", "properties": [
                                         { "name": "source", "type": "string", "description": "Regex Source" },
-                                        { "name": "global", "type": "string", "description": "`global` Regex Flag" },
-                                        { "name": "ignoreCase", "type": "string", "description": "`ignoreCase` Regex Flag" },
-                                        { "name": "multiline", "type": "string", "description": "`multiline` Regex Flag" }
+                                        { "name": "global", "type": "boolean", "description": "`global` Regex Flag" },
+                                        { "name": "ignoreCase", "type": "boolean", "description": "`ignoreCase` Regex Flag" },
+                                        { "name": "multiline", "type": "boolean", "description": "`multiline` Regex Flag" }
                                     ]
                                 }
                             ]
