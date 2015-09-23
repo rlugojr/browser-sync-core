@@ -23,6 +23,7 @@
                 "parameters": [
                     { "name": "file", "type": "object", "description": "File info for injecting", "properties": [
                         { "name": "basename", "type": "string", "description": "Basename of file" },
+                        { "name": "path",     "type": "string", "description": "Path from CWD" },
                         { "name": "ext",      "type": "string", "description": "File extension without the dot" },
                         { "name": "item", "type": "object", "properties": [
                                 { "name": "locator", "type": "object", "optional": true, "description": "Serialized Regex", "properties": [

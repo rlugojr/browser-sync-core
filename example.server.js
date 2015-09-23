@@ -2,7 +2,7 @@ var fs = require('fs');
 var bs = require('./')
     .create({
         version: "2.8.2",
-        server: ['test/fixtures'],
+        serveStatic: [],
         //rewriteRules: [
         //    {
         //        match: '<head>',
@@ -41,9 +41,9 @@ var bs = require('./')
             }
         ],
         plugins: [
-            //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp',
+            '/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp',
             //'/Users/shaneobsourne/code/browser-sync-core/node_modules/browser-sync-client',
-            '/Users/shaneobsourne/code/UI',
+            //'/Users/shaneobsourne/code/UI',
             {
                 module: './test/fixtures/plugin1.js'
             },
@@ -149,8 +149,8 @@ var bs = require('./')
             //}
         ]
     }, function (err, out) {
-        //var plu = out.options.get('plugins').toJS();
-        //console.log(plu);
+        var plu = out.options.get('serveStatic').toJS();
+        console.log(plu);
         //console.log(plu);
         //var mpath = plu['module']['browser-sync:ui']['hooks']['markup'];
         //var path = require('path');
