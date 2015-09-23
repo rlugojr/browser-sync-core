@@ -1,56 +1,53 @@
 'use strict';
 
 var bs       = require('../../../');
-var sinon    = require('sinon');
 var Rx       = require('rx');
 var assert   = require('chai').assert;
+var clientJs = require('../../../lib/client-js');
+var plugins  = require('../../../lib/plugins');
 var merge    = require('../utils').optmerge;
-var clientJs  = require('../../../lib/client-js');
+
+function process(conf) {
+    return [merge(conf)]
+        .map(plugins.resolve)
+        .map(plugins.namePlugins)
+        .map(clientJs.merge)
+        .map(clientJs.decorate)
+        .map(clientJs.addBuiltIns)[0];
+}
 
 describe('client js as options', function () {
-    it.only('Adds builtins to the options', function (done) {
-
-    });
-    it('can accept client js objects in options', function (done) {
+    it('can add plugin JS before any user-provided', function () {
         var client1 = 'var name = "shane1"';
         var client2 = 'var name = "shane2"';
-        bs.create({
-            server: {
-                baseDir: ['./temp'],
-                serveStaticOptions: {
-                    shane: 'aweseome'
-                }
-            },
+        var client3 = 'var name = "shane3"';
+        var input = process({
             clientJs: [
                 {
                     content: client1
                 },
                 {
                     content: client2,
-                    id: 'my thing',
-                    active: true
+                    id: 'my thing'
                 }
             ],
             plugins: [
                 {
                     module: {
                         hooks: {
-                            'client:js': client2
+                            'option:clientJs': client3
                         }
-                    },
-
+                    }
                 }
             ]
-        }, function (err, bs) {
-            var client = bs.options.get('clientJs').toJS();
-            assert.equal(client[0].content, client1);
-            assert.equal(client[1].content, client2);
-            assert.equal(client[1].id, 'my thing');
-            assert.equal(client[1].active, true);
-            assert.equal(client[2].content, client2);
+        })
+            .get('clientJs')
+            .toJS()
+            .filter(x => x.via !== 'Browsersync core');
 
-            bs.cleanup();
-            done();
-        });
+        // Plugin JS goes before any user-provided!
+        assert.equal(input[0].content, client3);
+        assert.equal(input[1].content, client1);
+        assert.equal(input[2].content, client2);
     });
 });
