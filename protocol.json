@@ -1,0 +1,43 @@
+{
+    "version": { "major": "1", "minor": "0" },
+    "domains": [{
+        "domain": "Global",
+        "description": "",
+        "types": [
+            {
+                "id": "NodeId",
+                "type": "integer",
+                "description": "Unique DOM node identifier."
+            }
+        ],
+        "commands": [
+            {
+                "name": "reload",
+                "parameters": [
+                    { "name": "hard",  "type": "boolean", "optional": false, "description": "Instruct the browser to re-fetch data" }
+                ],
+                "description": "Inform all browsers to perform a reload."
+            },
+            {
+                "name": "inject",
+                "parameters": [
+                    { "name": "file", "type": "object", "description": "File info for injecting", "properties": [
+                        { "name": "basename", "type": "string", "description": "Basename of file" },
+                        { "name": "ext",      "type": "string", "description": "File extension without the dot" },
+                        { "name": "item", "type": "object", "properties": [
+                                { "name": "locator", "type": "object", "optional": true, "description": "Serialized Regex", "properties": [
+                                        { "name": "source", "type": "string", "description": "Regex Source" },
+                                        { "name": "global", "type": "string", "description": "`global` Regex Flag" },
+                                        { "name": "ignoreCase", "type": "string", "description": "`ignoreCase` Regex Flag" },
+                                        { "name": "multiline", "type": "string", "description": "`multiline` Regex Flag" }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]}
+                ],
+                "description": "Inform all browsers to the replace the url of an asset to force a reload"
+            }
+        ]
+    }]
+}
