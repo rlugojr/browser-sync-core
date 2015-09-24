@@ -14,7 +14,7 @@
             {
                 "name": "reload",
                 "parameters": [
-                    { "name": "hard",  "type": "boolean", "optional": false, "description": "Instruct the browser to re-fetch data" }
+                    { "name": "hard",  "type": "boolean", "description": "Instruct the browser to re-fetch data" }
                 ],
                 "description": "Inform all browsers to perform a reload."
             },

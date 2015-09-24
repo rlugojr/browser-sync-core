@@ -2,10 +2,10 @@ var assert = require('chai').assert;
 var proto  = require('../../../lib/protocol');
 
 function runOne (arg) {
-    return proto.send('Global.inject', arg);
+    return proto.validate('Global.inject', arg);
 }
 
-describe('Protocol: Global', function () {
+describe('Protocol: Global.inject', function () {
     it('can collect inject errors', function () {
         assert.equal(runOne({}).errors.length, 4);
     });

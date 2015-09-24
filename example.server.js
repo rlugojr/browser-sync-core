@@ -2,7 +2,7 @@ var fs = require('fs');
 var bs = require('./')
     .create({
         version: "2.8.2",
-        serveStatic: [],
+        serveStatic: ['test/fixtures'],
         //rewriteRules: [
         //    {
         //        match: '<head>',
@@ -41,7 +41,7 @@ var bs = require('./')
             }
         ],
         plugins: [
-            '/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp',
+            //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp',
             //'/Users/shaneobsourne/code/browser-sync-core/node_modules/browser-sync-client',
             //'/Users/shaneobsourne/code/UI',
             {
