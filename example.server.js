@@ -42,9 +42,9 @@ var bs = require('./')
             }
         ],
         plugins: [
-            //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp',
+            '/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp',
             //'/Users/shaneobsourne/code/browser-sync-core/node_modules/browser-sync-client',
-            '/Users/shaneobsourne/code/UI',
+            //'/Users/shaneobsourne/code/UI',
             {
                 module: './test/fixtures/plugin1.js'
             },

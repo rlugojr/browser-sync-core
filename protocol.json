@@ -48,8 +48,8 @@
             {
                 "name": "set",
                 "parameters": [
-                    { "name": "options",  "type": "object", "description": "The sub-set of options to override on the client" },
-                    { "name": "id",       "type": "string", "description": "Where to set the options - default or to a specific client?" }
+                    { "name": "id",       "type": "string", "description": "Where to set the options - default or to a specific client?" },
+                    { "name": "options",  "type": "object", "description": "The sub-set of options to override on the client" }
                 ],
                 "description": "Update options on a client"
             }
