@@ -12,6 +12,7 @@ var bs = require('./')
         minify: false,
         port: 3000,
         online: true,
+        reloadOnRestart: true,
         clientJs: [
             //{
             //    //content: fs.readFileSync('./client.js', 'utf8')
@@ -43,7 +44,7 @@ var bs = require('./')
         plugins: [
             //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp',
             //'/Users/shaneobsourne/code/browser-sync-core/node_modules/browser-sync-client',
-            //'/Users/shaneobsourne/code/UI',
+            '/Users/shaneobsourne/code/UI',
             {
                 module: './test/fixtures/plugin1.js'
             },
