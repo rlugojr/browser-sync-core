@@ -40,5 +40,18 @@
                 "description": "Inform all browsers to the replace the url of an asset to force a reload"
             }
         ]
+    },{
+        "domain": "Options",
+        "description": "",
+        "types": [],
+        "commands": [
+            {
+                "name": "set",
+                "parameters": [
+                    { "name": "options",  "type": "object", "description": "The sub-set of options to override on the client" }
+                ],
+                "description": "Update options on a client"
+            }
+        ]
     }]
 }
