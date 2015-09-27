@@ -54,5 +54,28 @@
                 "description": "Update options on a client"
             }
         ]
-    }]
+    },{
+        "domain": "Client",
+        "description": "",
+        "types": [
+            {
+                "id": "Client",
+                "type": "Object",
+                "description": "Unique DOM node identifier."
+            }
+        ],
+        "commands": [
+            {
+                "name": "register",
+                "parameters": [
+                    { "name": "client", "type": "object", "description": "Client information", "properties": [
+                        { "name": "id", "type": "string", "description": "Per tab, Per session id for a client" }
+                    ]},
+                    { "name": "data", "type": "object", "optional": true, "description": "Any additional data to send on register" }
+                ],
+                "description": "register a client with an id"
+            }
+        ]
+    }
+    ]
 }
