@@ -41,10 +41,14 @@ var bs = require('./')
                 locator: /styles(.+?)?\.css$/
             }
         ],
+        externals: {
+            clientJs: '/Users/shaneobsourne/sites/browser-sync-client'
+        },
         plugins: [
-            '/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp',
+            //'/Users/shaneobsourne/sites/browser-sync-client',
+            //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp',
             //'/Users/shaneobsourne/code/browser-sync-core/node_modules/browser-sync-client',
-            //'/Users/shaneobsourne/code/UI',
+            '/Users/shaneobsourne/code/UI',
             {
                 module: './test/fixtures/plugin1.js'
             },
