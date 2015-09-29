@@ -31,9 +31,6 @@ var bs = require('./')
                 }
             }
         ],
-        watchOptions: {
-            delay: 'oh yeah'
-        },
         files: [
             "test/fixtures/*.html",
             {
@@ -42,13 +39,16 @@ var bs = require('./')
             }
         ],
         externals: {
-            clientJs: '/Users/shaneobsourne/sites/browser-sync-client'
+            clientJs: '/Users/shakyshane/code/bs-client'
+            //clientJs: '/Users/shaneobsourne/sites/browser-sync-client'
+            //clientJs: '/Users/shakyshane/sites/oss/browser-sync-client'
         },
         plugins: [
             //'/Users/shaneobsourne/sites/browser-sync-client',
-            //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp',
+            '/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp',
             //'/Users/shaneobsourne/code/browser-sync-core/node_modules/browser-sync-client',
-            '/Users/shaneobsourne/code/UI',
+            //'/Users/shaneobsourne/code/UI',
+            //'/Users/shakyshane/sites/oss/UI',
             {
                 module: './test/fixtures/plugin1.js'
             },
