@@ -2,78 +2,51 @@
 
 var bs     = require('../../../');
 var opts   = require('../../../lib/default-options');
+var merge  = require('../utils').optmerge;
+var files  = require('../../../lib/files');
 var assert = require('chai').assert;
 
-describe('init with files option', function () {
-    it('has core files option as string', function (done) {
-        bs.create({
-            server: './test/fixtures',
-            watchOptions: {
-                killer: 'whale'
-            },
+function process(conf) {
+    return [merge(conf)].map(files.merge)[0];
+}
+
+describe.only('init with files option', function () {
+    it('accepts files options', function () {
+        var actual = process({
             files: [
                 '*.css',
                 {
-                    match: '*.htmll',
+                    match: '*.html',
                     fn: function () {},
                     options: {
                         name: 'kittie'
                     }
                 }
-            ],
+            ]
+        }).get('files').toJS();
+
+        assert.equal(actual.length, 2);
+
+        assert.equal(actual[0].namespace, 'core');
+        assert.equal(actual[0].fn, undefined);
+        assert.equal(actual[0].match, '*.css');
+
+        assert.equal(actual[1].namespace, 'core');
+        assert.isFunction(actual[1].fn);
+        assert.equal(actual[1].match, '*.html');
+    });
+    it('accepts files in pluigns', function () {
+        var actual = process({
             plugins: [
                 {
                     module: {},
                     options: {
-                        files: [
-                            '*.jade',
-                            {
-                                match: ['*.html', '*.kittie'],
-                                options: {
-                                    large: 'horse'
-                                }
-                            }
-                        ]
-                    }
-                },
-                {
-                    module: {},
-                    options: {
-                        files: [
-                            '*.txt', '*.otherp', {
-                                match: 'css/*.css',
-                                fn: function() {},
-                                options: {
-                                    ignored: '*.txt'
-                                }
-                            }
-                        ]
+                        files: ['*.css']
                     }
                 }
             ]
-        }, function (err, bs) {
-            var files = bs.options.get('files').toJS();
-            var plugins = Object.keys(bs.options.get('plugins').toJS());
-            assert.deepEqual(files.length, 7);
-            assert.deepEqual(files[0].namespace, 'core');
-            assert.deepEqual(files[1].namespace, 'core');
-            assert.deepEqual(files[2].namespace, plugins[0]);
-            assert.deepEqual(files[3].namespace, plugins[0]);
-            assert.deepEqual(files[4].namespace, plugins[1]);
-            assert.deepEqual(files[4].match, '*.txt');
-            assert.deepEqual(files[5].match, '*.otherp');
-            assert.deepEqual(files[6].match, 'css/*.css');
-            assert.deepEqual(files[6].options.ignored, '*.txt');
+        }).get('files').toJS();
 
-            assert.equal(files[3].options.ignored.source, opts.watchOptions.ignored.source);
-            assert.equal(files[3].options.large, 'horse');
-
-            // setting default options
-            assert.equal(files[0].options.ignored.source, opts.watchOptions.ignored.source);
-            assert.equal(files[1].options.ignored.source, opts.watchOptions.ignored.source);
-
-            bs.cleanup();
-            done();
-        });
+        console.log(actual);
     });
 });
