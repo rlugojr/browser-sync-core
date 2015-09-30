@@ -10,6 +10,8 @@ var bs = require('./')
         //    }
         //],
         minify: false,
+        reloadDelay: 0,
+        //reloadThrottle: 3000,
         port: 3000,
         online: true,
         reloadOnRestart: true,
@@ -39,15 +41,15 @@ var bs = require('./')
             }
         ],
         externals: {
-            clientJs: '/Users/shakyshane/code/bs-client'
-            //clientJs: '/Users/shaneobsourne/sites/browser-sync-client'
+            //clientJs: '/Users/shakyshane/code/bs-client'
+            clientJs: '/Users/shaneobsourne/sites/browser-sync-client'
             //clientJs: '/Users/shakyshane/sites/oss/browser-sync-client'
         },
         plugins: [
             //'/Users/shaneobsourne/sites/browser-sync-client',
-            '/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp',
+            //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp',
             //'/Users/shaneobsourne/code/browser-sync-core/node_modules/browser-sync-client',
-            //'/Users/shaneobsourne/code/UI',
+            '/Users/shaneobsourne/code/UI',
             //'/Users/shakyshane/sites/oss/UI',
             {
                 module: './test/fixtures/plugin1.js'
@@ -67,15 +69,16 @@ var bs = require('./')
                         //    });
                         //}).subscribe();
 
-                        bs.setOption('rewriteRules', function (rr) {
-                            return rr.concat({
-                                match: '<head>',
-                                replace: "<head><meta />"
-                            });
-                        }).subscribe();
+                        //bs.setOption('rewriteRules', function (rr) {
+                        //    return rr.concat({
+                        //        match: '<head>',
+                        //        replace: "<head><meta />"
+                        //    });
+                        //}).subscribe();
 
                         //bs.getWatcher('My New Plugin')
                         //    .filter(x => x.event !== 'add' && x.event !== 'addDir')
+                        //    .throttle(5000)
                         //    .do(x => console.log(x))
                         //    .subscribe();
 
