@@ -6,7 +6,6 @@ var assert   = require('chai').assert;
 
 describe('async plugin resolution', function () {
     it('accepts a plugin that takes time to initialise', function (done) {
-        var spy = sinon.spy();
         var calls = [];
         bs.create({
             plugins: [
@@ -37,8 +36,11 @@ describe('async plugin resolution', function () {
             ]
         }, function (err, bs) {
 
-            var plugin = bs.options.getIn(['plugins', 'My Awesome Plugin']).toJS();
-            //console.log(bs.options.getIn(['plugins']).toJS());
+            var plugin = bs.options
+                .get('plugins')
+                .filter(x => x.get('name') === 'My Awesome Plugin')
+                .get(0)
+                .toJS();
 
             assert.equal(plugin.options.name, 'shane');
             assert.equal(plugin.via, 'inline');

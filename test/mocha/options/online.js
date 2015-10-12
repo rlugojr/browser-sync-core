@@ -23,7 +23,6 @@ describe('init with online option', function () {
         bs.create({}, function (err, bs) {
             assert.equal(bs.options.get('online'), false);
             stub.restore();
-
             bs.cleanup();
             done();
         });

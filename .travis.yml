@@ -3,7 +3,7 @@ git:
   depth: 2
 language: node_js
 node_js:
-  - iojs
   - node
-  - '0.10'
+#  - '0.10' // todo: transpile down to es5 for older node envs ?
+#  - '0.12'
 after_script: npm run cover
