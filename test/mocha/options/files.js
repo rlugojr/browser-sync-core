@@ -10,7 +10,7 @@ function process(conf) {
     return [merge(conf)].map(files.merge)[0];
 }
 
-describe.only('init with files option', function () {
+describe('init with files option', function () {
     it('accepts files options', function () {
         var actual = process({
             files: [
@@ -44,9 +44,11 @@ describe.only('init with files option', function () {
                         files: ['*.css']
                     }
                 }
-            ]
-        }).get('files').toJS();
+            ]})
+            .get('files')
+            .toJS();
 
-        console.log(actual);
+        assert.equal(actual.length, 1);
+        assert.equal(actual[0].match[0], '*.css');
     });
 });
