@@ -35,7 +35,7 @@ describe('init with files option', function () {
         assert.isFunction(actual[1].fn);
         assert.equal(actual[1].match, '*.html');
     });
-    it('accepts files in pluigns', function () {
+    it('accepts files in plugins', function () {
         var actual = process({
             plugins: [
                 {
