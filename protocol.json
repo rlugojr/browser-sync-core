@@ -74,6 +74,16 @@
                     { "name": "data", "type": "object", "optional": true, "description": "Any additional data to send on register" }
                 ],
                 "description": "register a client with an id"
+            },
+            {
+                "name": "heartbeat",
+                "parameters": [
+                    { "name": "client", "type": "object", "description": "Client information", "properties": [
+                        { "name": "id", "type": "string", "description": "Per tab, Per session heartbeat for a client" }
+                    ]},
+                    { "name": "data", "type": "object", "optional": true, "description": "Any additional data to send on register" }
+                ],
+                "description": "Send a heartbeat from a client"
             }
         ]
     }
