@@ -36,6 +36,7 @@
     "eslint": "^1.6.0",
     "mocha": "^2.3.3",
     "protractor": "^2.5.1",
+    "rx-lite": "^4.0.6",
     "sinon": "^1.17.1",
     "supertest": "^1.1.0"
   },

@@ -1,37 +1,44 @@
-var Rx = require('rx');
-var Immutable = require('immutable');
+var Rx                = require('rx');
+var Immutable         = require('immutable');
+var maxHeartbeat      = 5000;
+var heartbeatInterval = 1000;
 
-var clients = Immutable.fromJS({
-    'default': createClient({id: 'default'}),
-    'client1': createClient({id: '123456'})
-});
+// Initial client list
+var clients$ = new Rx.BehaviorSubject(Immutable.OrderedMap({
+    'client1': createClient({id: '123456'}),
+    'client2': createClient({id: '122112'})
+}));
 
+// Fake users to simulate connections
 var users = [
-    {
-        id: 'client2'
-    },
     {
         id: 'client3'
     },
     {
         id: 'client4'
+    },
+    {
+        id: 'client5'
     }
 ];
 
-var clients$ = new Rx.BehaviorSubject(clients);
-
-var connections$ = Rx.Observable.create(function (obs) {
+// Send fake heartbeats very second for 3 items
+var fakeConnections$ = Rx.Observable.create(function (obs) {
     var count = 0;
-	var int = setInterval(function () {
+	setInterval(function () {
 		obs.onNext(users[count]);
         count += 1;
         if (count === users.length) {
             count = 0;
         }
-	}, 1050);
+	}, 1000);
 }).share();
 
-connections$
+/**
+ * If a client already exists, update the timestamp
+ * If it's a new client, add a new entry and return
+ */
+fakeConnections$
     .withLatestFrom(clients$, (connection, clients) => {
         return {
             connection: connection,
@@ -39,17 +46,41 @@ connections$
         }
     })
     .map(x => {
+        // Client exists, update the heartbeat
         if (x.clients.hasIn([x.connection.id])) {
-            console.log('EXISTS:', x.connection.id);
-            return x.clients.update(x.connection.id, function (client) {
-            	return client.set('heartbeat', new Date().getTime());
-            })
-        } else {
-            return x.clients.set(x.connection.id, createClient(x.connection));
+            return x.clients.update(x.connection.id, updateHeartbeat);
         }
-        return x.clients;
+
+        // New client, add to the collection
+        return x.clients.set(x.connection.id, createClient(x.connection));
     })
     .subscribe(clients$);
+
+/**
+ * Heartbeat filter. Filter the clients every second to exclude those
+ * with a heartbeat not within the threshold
+ */
+var source = Rx.Observable
+    .interval(1000)
+    .withLatestFrom(clients$, (_, x) => x)
+    .map(x => x.filter(client => getTime() - client.get('heartbeat') < maxHeartbeat))
+    .subscribe(clients$);
+
+var count = 0;
+
+/**
+ * Finally, create a client stream that only includes
+ * updates to the clients
+ */
+clients$
+    .distinctUntilChanged(x => x.map(x => x.get('id')))
+    .subscribe(function (clients) {
+        console.log(clients.map(x => x.get('id')));
+        count += 1;
+        console.log('call', count);
+        console.log('--~~');
+        console.log(clients.toJS());
+    });
 
 function createClient (incoming) {
     return Immutable.Map({
@@ -58,14 +89,10 @@ function createClient (incoming) {
     });
 }
 
-var source = Rx.Observable
-    .interval(1000)
-    .withLatestFrom(clients$, (_, x) => x)
-    .do(function (clients) {
-        console.log('--~~--~~--~~--~~--~~--~~--~~--~~--~~--');
-        console.log(clients.size);
-    	//clients.toList().forEach(function (val, i) {
-    	//	console.log('index:', i, 'id:', val.get('id'), 'hb', val.get('heartbeat'));
-    	//})
-    })
-    .subscribe();
+function getTime () {
+    return new Date().getTime();
+}
+
+function updateHeartbeat(client) {
+    return client.set('heartbeat', getTime());
+}
