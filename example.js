@@ -82,17 +82,3 @@ clients$
         console.log(clients.toJS());
     });
 
-function createClient (incoming) {
-    return Immutable.Map({
-        id: incoming.id,
-        heartbeat: new Date().getTime()
-    });
-}
-
-function getTime () {
-    return new Date().getTime();
-}
-
-function updateHeartbeat(client) {
-    return client.set('heartbeat', getTime());
-}
