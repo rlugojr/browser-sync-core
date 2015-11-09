@@ -7,7 +7,9 @@
     "lint": "eslint lib test",
     "unit": "mocha test/mocha/**/*.js",
     "test": "npm run lint && npm run unit",
-    "e2e": "protractor test/protractor/config.js"
+    "e2e": "protractor test/protractor/config.js",
+    "start": "nodemon example.server.js --watch"
+
   },
   "repository": "Browsersync/browser-sync-core",
   "keywords": [
@@ -35,6 +37,7 @@
     "chai": "^3.3.0",
     "eslint": "^1.6.0",
     "mocha": "^2.3.3",
+    "nodemon": "^1.8.1",
     "protractor": "^2.5.1",
     "sinon": "^1.17.1",
     "supertest": "^1.1.0"
