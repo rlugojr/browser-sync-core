@@ -9,7 +9,6 @@
     "test": "npm run lint && npm run unit",
     "e2e": "protractor test/protractor/config.js",
     "start": "nodemon example.server.js --watch"
-
   },
   "repository": "Browsersync/browser-sync-core",
   "keywords": [
