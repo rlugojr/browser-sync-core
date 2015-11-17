@@ -83,8 +83,8 @@ describe('client js as options', function () {
             .slice(0, 3)
             .reverse();
 
-            assert.equal(ids[0].via, 'PLUGIN: Client Plugin');
-            assert.equal(ids[1].id, 'My first inline');
-            assert.equal(ids[2].id, 'My second inline');
+        assert.equal(ids[0].via, 'PLUGIN: Client Plugin');
+        assert.equal(ids[1].id, 'My first inline');
+        assert.equal(ids[2].id, 'My second inline');
     });
 });

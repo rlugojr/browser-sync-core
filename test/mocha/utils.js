@@ -1,7 +1,7 @@
 const utils      = exports;
 const opts       = require('../../lib/incoming-options');
 const transform  = require('../../lib/transform-options');
-const socket     = require("socket.io-client");
+const socket     = require('socket.io-client');
 
 utils.optmerge = function (input) {
     return opts.merge(input);

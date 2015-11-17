@@ -4,7 +4,7 @@
   "description": "Browsersync's Engine",
   "main": "lib/browser-sync.js",
   "scripts": {
-    "lint": "eslint lib",
+    "lint": "eslint lib test/mocha",
     "unit": "mocha test/mocha/**/*.js",
     "test": "npm run lint && npm run unit",
     "e2e": "protractor test/protractor/config.js",
