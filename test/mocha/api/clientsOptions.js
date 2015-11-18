@@ -20,4 +20,34 @@ describe('Client options', function () {
                 }, err => done(err));
         });
     });
+    it('updates a single clients options', function (done) {
+        browserSync.create({}, function (err, bs) {
+            const client = utils.getClientSocket(bs);
+
+            client.emit(conf.events.CLIENT_REGISTER, utils.getClient('123456'));
+
+            bs.clients$.skip(1).take(1).subscribe(function (client) {
+            	assert.equal(client.getIn(['123456', 'options', 'reloadOnRestart']), false);
+                listen();
+            });
+
+            function listen() {
+                bs.clients$
+                    .skip(1)
+                    .take(1)
+                    .subscribe(function (clients) {
+                        assert.equal(
+                            clients.getIn(['123456', 'options', 'reloadOnRestart']),
+                            true
+                        );
+                        bs.cleanup();
+                        done();
+                    });
+
+                bs.setClientOption('123456', ['reloadOnRestart'], (value) => {
+                    return !value;
+                });
+            }
+        });
+    });
 });
