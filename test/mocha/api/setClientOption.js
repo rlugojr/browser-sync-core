@@ -46,7 +46,7 @@ describe('Client connection stream', function () {
                 }, err => done(err));
         });
     });
-    it.only('allows unique clients (stress)', function (done) {
+    it('allows unique clients (stress)', function (done) {
         browserSync.create({}, function (err, bs) {
             for (var i = 1, n = 51; i < n; i += 1) {
                 utils.getClientSocket(bs).emit(conf.events.CLIENT_REGISTER, utils.getClient('id-' + i));
