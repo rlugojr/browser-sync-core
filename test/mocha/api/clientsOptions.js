@@ -53,13 +53,12 @@ describe('Client options', function () {
             }
         });
     });
-    it.only('updates the default client options so that new connections get the updated value', function (done) {
+    it('updates the default client options so that new connections get the updated value', function (done) {
         browserSync.create({}, function (err, bs) {
-            bs.setDefaultClientOption(['reloadOnRestart'], (value) => {
-                return !value;
-            })
-            .subscribe(x => {
-                console.log('new value', x.getIn(['clientOptions', 'reloadOnRestart']));
+            bs.setDefaultClientOption(['reloadOnRestart'], () => {
+                return true;
+            }).subscribe(x => {
+                assert.equal(x.getIn(['clientOptions', 'reloadOnRestart']), true);
                 connect();
             });
 
@@ -77,6 +76,52 @@ describe('Client options', function () {
                     done();
                 }, err => done(err));
             }
+        });
+    });
+    it('overrides a previously set client option with an override', function (done) {
+        browserSync.create({}, function (err, bs) {
+
+            const client = utils.getClientSocket(bs);
+
+            client.emit(conf.events.CLIENT_REGISTER, utils.getClient('123456'));
+
+            bs.clients$.skip(1).take(1).subscribe(function (client) {
+                assert.equal(client.getIn(['123456', 'options', 'reloadOnRestart']), false);
+                connect();
+            }, err => done(err));
+
+            function connect() {
+                bs.clients$.skip(1).take(1).subscribe(function (client) {
+                    assert.equal(client.getIn(['123456', 'options', 'reloadOnRestart']), true);
+                    bs.clients$.skip(1).take(1).subscribe(function (client) {
+                        assert.equal(client.getIn(['123456', 'options', 'reloadOnRestart']), 'shane');
+                        done();
+                    });
+                    bs.overrideClientOptions(['reloadOnRestart'], (value) => {
+                        return 'shane';
+                    }).subscribe();
+                }, err => done(err));
+                bs.setClientOption('123456', ['reloadOnRestart'], (value) => {
+                    return !value;
+                });
+                //bs.overrideClientOptions(['reloadOnRestart'], () => {
+
+                    //return true;
+                //}).subscribe(x => {
+                //    assert.equal(x.getIn(['clientOptions', 'reloadOnRestart']), true);
+                //    connect();
+                //});
+            }
+
+            //
+            //function connect () {
+            //
+            //    const client = utils.getClientSocket(bs);
+            //
+            //    client.emit(conf.events.CLIENT_REGISTER, utils.getClient('123456'));
+            //
+            //
+            //}
         });
     });
 });
