@@ -27,7 +27,10 @@ describe('Client options', function () {
             client.emit(conf.events.CLIENT_REGISTER, utils.getClient('123456'));
 
             bs.clients$.skip(1).take(1).subscribe(function (client) {
-            	assert.equal(client.getIn(['123456', 'options', 'reloadOnRestart']), false);
+            	assert.equal(
+                    client.getIn(['123456', 'options', 'reloadOnRestart']),
+                    false
+                );
                 listen();
             });
 
@@ -47,6 +50,32 @@ describe('Client options', function () {
                 bs.setClientOption('123456', ['reloadOnRestart'], (value) => {
                     return !value;
                 });
+            }
+        });
+    });
+    it.only('updates the default client options so that new connections get the updated value', function (done) {
+        browserSync.create({}, function (err, bs) {
+            bs.setDefaultClientOption(['reloadOnRestart'], (value) => {
+                return !value;
+            })
+            .subscribe(x => {
+                console.log('new value', x.getIn(['clientOptions', 'reloadOnRestart']));
+                connect();
+            });
+
+            function connect () {
+
+                const client = utils.getClientSocket(bs);
+
+                client.emit(conf.events.CLIENT_REGISTER, utils.getClient('123456'));
+
+                bs.clients$.skip(1).take(1).subscribe(function (client) {
+                    assert.equal(
+                        client.getIn(['123456', 'options', 'reloadOnRestart']),
+                        true
+                    );
+                    done();
+                }, err => done(err));
             }
         });
     });
