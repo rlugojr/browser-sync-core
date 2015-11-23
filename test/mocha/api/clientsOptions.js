@@ -3,6 +3,8 @@ const files       = require('../../../lib/files');
 const utils       = require('../utils');
 const conf        = require('../../../lib/config');
 const assert      = require('chai').assert;
+const Rx          = require('rx');
+const Observable  = Rx.Observable;
 
 describe('Client options', function () {
     it('adds the default options to new clients', function (done) {
@@ -78,50 +80,26 @@ describe('Client options', function () {
             }
         });
     });
-    it('overrides a previously set client option with an override', function (done) {
+    it.only('overrides a previously set client option with an override', function (done) {
         browserSync.create({}, function (err, bs) {
 
             const client = utils.getClientSocket(bs);
+            bs.clients$
+                .take(4)
+                .toArray()
+                .subscribe(function (c) {
+                    assert.equal(c[3].getIn(['123456', 'options', 'notify']), 'kittie');
+                    done();
+                });
 
             client.emit(conf.events.CLIENT_REGISTER, utils.getClient('123456'));
 
-            bs.clients$.skip(1).take(1).subscribe(function (client) {
-                assert.equal(client.getIn(['123456', 'options', 'reloadOnRestart']), false);
-                connect();
-            }, err => done(err));
-
-            function connect() {
-                bs.clients$.skip(1).take(1).subscribe(function (client) {
-                    assert.equal(client.getIn(['123456', 'options', 'reloadOnRestart']), true);
-                    bs.clients$.skip(1).take(1).subscribe(function (client) {
-                        assert.equal(client.getIn(['123456', 'options', 'reloadOnRestart']), 'shane');
-                        done();
-                    });
-                    bs.overrideClientOptions(['reloadOnRestart'], (value) => {
-                        return 'shane';
-                    }).subscribe();
-                }, err => done(err));
-                bs.setClientOption('123456', ['reloadOnRestart'], (value) => {
-                    return !value;
-                });
-                //bs.overrideClientOptions(['reloadOnRestart'], () => {
-
-                    //return true;
-                //}).subscribe(x => {
-                //    assert.equal(x.getIn(['clientOptions', 'reloadOnRestart']), true);
-                //    connect();
-                //});
-            }
-
-            //
-            //function connect () {
-            //
-            //    const client = utils.getClientSocket(bs);
-            //
-            //    client.emit(conf.events.CLIENT_REGISTER, utils.getClient('123456'));
-            //
-            //
-            //}
+            setTimeout(function () {
+                Observable.concat([
+                    bs.setClientOption('123456', ['notify'], x => 'shane'),
+                    bs.overrideClientOptions(['notify'], x => 'kittie')
+                ]).subscribe();
+            }, 500);
         });
     });
 });
