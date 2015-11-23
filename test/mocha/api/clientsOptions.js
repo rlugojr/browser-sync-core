@@ -84,22 +84,24 @@ describe('Client options', function () {
         browserSync.create({}, function (err, bs) {
 
             const client = utils.getClientSocket(bs);
-            bs.clients$
-                .take(4)
-                .toArray()
-                .subscribe(function (c) {
-                    assert.equal(c[3].getIn(['123456', 'options', 'notify']), 'kittie');
+            client.emit(conf.events.CLIENT_REGISTER, utils.getClient('123456'));
+
+            bs.clients$.take(4).toArray()
+                .subscribe(clients => {
+                    var path = ['123456', 'options', 'notify'];
+                    assert.equal(clients[1].getIn(path), true);
+                    assert.equal(clients[2].getIn(path), 'shane');
+                    assert.equal(clients[3].getIn(path), 'kittie');
                     done();
                 });
 
-            client.emit(conf.events.CLIENT_REGISTER, utils.getClient('123456'));
 
-            setTimeout(function () {
-                Observable.concat([
+            bs.registered$.take(1).flatMap(x => {
+                return Observable.concat([
                     bs.setClientOption('123456', ['notify'], x => 'shane'),
                     bs.overrideClientOptions(['notify'], x => 'kittie')
-                ]).subscribe();
-            }, 500);
+                ])
+            }).subscribe();
         });
     });
 });
