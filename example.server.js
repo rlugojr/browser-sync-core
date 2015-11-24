@@ -2,7 +2,7 @@ var bs = require('./');
 
 bs.create({
     serveStatic: ['test/fixtures'],
-    //plugins: ['/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp'],
+    plugins: ['/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp'],
     //plugins: ['/Users/shakyshane/sites/oss/UI'],
     externals: {
         //clientJs: '/Users/shaneobsourne/sites/browser-sync-client'
