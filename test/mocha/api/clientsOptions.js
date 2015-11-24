@@ -24,7 +24,6 @@ describe('Client options', function () {
         browserSync.create({}, function (err, bs) {
 
             const client = utils.getClientSocket(bs);
-
             client.emit(conf.events.CLIENT_REGISTER, utils.getClient('123456'));
 
             bs.clients$.take(3).toArray()
@@ -40,12 +39,10 @@ describe('Client options', function () {
                 });
 
             bs.registered$.take(1)
-                .flatMap(() => {
-                    return bs.setDefaultClientOption('reloadOnRestart', x => 'shane')
-                })
+                .flatMap(() => bs.setDefaultClientOption('reloadOnRestart', x => 'shane'))
                 // add a second client, after updating default options
                 .do(x => client.emit(conf.events.CLIENT_REGISTER, utils.getClient('654321')))
-                .subscribe()
+                .subscribe();
         });
     });
     it('sets a single option on a client', function (done) {
@@ -85,7 +82,6 @@ describe('Client options', function () {
                     bs.cleanup();
                     done();
                 });
-
 
             bs.registered$.take(1).flatMap(x => {
                 return Observable.concat([
