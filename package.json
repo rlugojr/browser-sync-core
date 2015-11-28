@@ -47,7 +47,6 @@
     "browser-sync-client": "^2.3.3",
     "chokidar": "^1.2.0",
     "connect": "^3.4.0",
-    "cookie": "^0.2.3",
     "dev-ip": "^1.0.1",
     "emitter-steward": "^1.0.0",
     "http-proxy": "^1.12.0",
