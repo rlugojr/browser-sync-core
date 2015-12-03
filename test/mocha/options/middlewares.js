@@ -42,7 +42,7 @@ describe('middlewares as options', function () {
                     }
                 }
             ]
-        })
+        });
 
         var middleware = actual.get('middleware').toJS();
         var plugins    = actual.get('plugins').toJS();
