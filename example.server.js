@@ -2,6 +2,10 @@ var bs = require('./');
 
 bs.create({
     serveStatic: ['test/fixtures'],
+    files:       [
+        'test/fixtures/*.html',
+        'test/fixtures/ui/**'
+    ],
     //proxy: {target: 'http://www.bbc.co.uk'},
     //scheme: 'https',
     rewriteRules: [
@@ -24,5 +28,5 @@ bs.create({
     }
     //minify: false
 }, function (err, bs) {
-    console.log(bs.options.get('urls'));
+    console.log(bs.options.get('files').toJS());
 });
