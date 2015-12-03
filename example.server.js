@@ -17,8 +17,9 @@ bs.create({
         //}
     ],
     plugins: [
-        './lib/proxy',
         '/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp', // laptop
+        './lib/plugins/proxy',
+        './lib/plugins/404'
         //'/Users/shakyshane/sites/oss/UI'
     ],
     externals: {
@@ -28,5 +29,5 @@ bs.create({
     }
     //minify: false
 }, function (err, bs) {
-    console.log(bs.options.get('files').toJS());
+    console.log(bs.options.get('urls').toJS());
 });
