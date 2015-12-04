@@ -25,8 +25,6 @@ describe('init with files option', function () {
             ]
         }).get('files').toJS();
 
-        console.log(actual);
-
         assert.equal(actual.length, 2);
 
         assert.equal(actual[0].namespace, 'core');
