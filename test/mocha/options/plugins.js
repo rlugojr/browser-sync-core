@@ -25,10 +25,10 @@ describe('plugins as options', function () {
                     }
                 }
             ]
-        }).get('plugins').toJS();
+        }).get('plugins');
 
-        assert.equal(out.length, 1);
-        assert.ok(out[0].name.match(/bs-plugin-\d{1,2}/));
+        assert.equal(out.size, 1);
+        assert.ok(out.get(0).name.match(/bs-plugin-\d{1,2}/));
     });
     it('init with plugin option as string', function () {
         var plugin = process({
