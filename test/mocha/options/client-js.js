@@ -75,16 +75,25 @@ describe('client js as options', function () {
                     }
                 }
             ]
-        })
-            .get('clientJs')
+        }).get('clientJs');
+
+        var idsJs = ids
             .toJS()
             .reduce((prev, curr) => prev.concat(curr), [])
             .reverse(null, -3)
             .slice(0, 3)
             .reverse();
 
-        assert.equal(ids[0].via, 'PLUGIN: Client Plugin');
-        assert.equal(ids[1].id, 'My first inline');
-        assert.equal(ids[2].id, 'My second inline');
+        assert.equal(idsJs[0].via, 'PLUGIN: Client Plugin');
+        assert.equal(idsJs[1].id, 'My first inline');
+        assert.equal(idsJs[2].id, 'My second inline');
+    });
+    it('has expected built-ins', function () {
+        const items = process({}).get('clientJs').toJS();
+        assert.equal(items[0].via, 'Browsersync core');
+        assert.equal(items[0].id, 'bs-no-conflict');
+        assert.equal(items[1].id, 'bs-socket-io');
+        assert.equal(items[2].id, 'bs-socket-connector');
+        assert.equal(items[3].id, 'browser-sync-client');
     });
 });
