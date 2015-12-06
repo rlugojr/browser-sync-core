@@ -1,12 +1,15 @@
 var bs = require('./');
 
 bs.create({
-    serveStatic: ['test/fixtures'],
+    //serveStatic: ['test/fixtures'],
     files:       [
         'test/fixtures/*.html',
         'test/fixtures/ui/**'
     ],
-    //proxy: {target: 'http://www.bbc.co.uk'},
+    proxy: {
+        target: 'http://magento.dev',
+        rewriteRules: true
+    },
     //scheme: 'https',
     rewriteRules: [
         //{
