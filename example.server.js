@@ -7,7 +7,17 @@ bs.create({
         'test/fixtures/ui/**'
     ],
     proxy: {
-        target: 'http://magento.dev'
+        target: 'http://magento.dev',
+        proxyErr: function (err) {
+        	//console.log('ERR bro', err);
+        }
+        //proxyRes: [
+        //    function (res, req) {
+        //        if (res.headers['x-powered-by']) {
+        //            delete res.headers['x-powered-by'];
+        //        }
+        //    }
+        //]
     },
     //scheme: 'https',
     rewriteRules: [
