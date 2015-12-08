@@ -66,16 +66,41 @@ describe('Transforming proxy option', function () {
     });
     it('maintains default map for options and overrides', function () {
         const opts = utils.optmerge({
-            proxy: {
+            proxy: [{
                 target: 'http://some.backend.dev',
                 options: {
                     xfwd: true,
                     changeOrigin: false
                 }
-            }
+            },{
+                route:  '/api',
+                target: 'http://some.other.backend.dev'
+            }]
         });
-        const setOpts = proxy.transformOptions(opts).getIn(['proxy', 0, 'options']).toJS();
-        assert.equal(setOpts.changeOrigin, false);
+        const setOpts = proxy.transformOptions(opts).getIn(['proxy']).toJS();
+        assert.equal(setOpts[0].options.changeOrigin, false);
+        assert.equal(setOpts[1].options.changeOrigin, true);
+    });
+    it('has cookie options', function () {
+        const opts = utils.optmerge({
+            proxy: [{
+                target: 'http://some.backend.dev',
+            }]
+        });
+        const setOpts = proxy.transformOptions(opts).getIn(['proxy']).toJS();
+        assert.equal(setOpts[0].cookies.stripDomain, true);
+    });
+    it('overrides cookie cookie options', function () {
+        const opts = utils.optmerge({
+            proxy: [{
+                target: 'http://some.backend.dev',
+                cookies: {
+                    stripDomain: false
+                }
+            }]
+        });
+        const setOpts = proxy.transformOptions(opts).getIn(['proxy']).toJS();
+        assert.equal(setOpts[0].cookies.stripDomain, false);
     });
     it('ignores when option not given', function () {
         const opts  = utils.optmerge({});

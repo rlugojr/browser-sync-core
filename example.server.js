@@ -7,8 +7,7 @@ bs.create({
         'test/fixtures/ui/**'
     ],
     proxy: {
-        target: 'http://magento.dev',
-        rewriteRules: true
+        target: 'http://magento.dev'
     },
     //scheme: 'https',
     rewriteRules: [
