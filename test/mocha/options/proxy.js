@@ -2,7 +2,7 @@ const proxy = require('../../../lib/plugins/proxy');
 const assert = require('chai').assert;
 const utils = require('../utils');
 
-describe.only('Transforming proxy option', function () {
+describe('Transforming proxy option', function () {
     it('accepts a target only proxy option as array', function () {
         const opts = utils.optmerge({
             proxy: [
@@ -51,6 +51,31 @@ describe.only('Transforming proxy option', function () {
         const trans = proxy.transformOptions(opts).get('proxy').toJS();
         assert.equal(trans[0].route, '');
         assert.equal(trans[0].target, 'http://some.backend.dev');
+    });
+    it('maintains default map for options', function () {
+        const opts = utils.optmerge({
+            proxy: {
+                target: 'http://some.backend.dev',
+                options: {
+                    xfwd: true
+                }
+            }
+        });
+        const setOpts = proxy.transformOptions(opts).getIn(['proxy', 0, 'options']).toJS();
+        assert.equal(setOpts.changeOrigin, true);
+    });
+    it('maintains default map for options and overrides', function () {
+        const opts = utils.optmerge({
+            proxy: {
+                target: 'http://some.backend.dev',
+                options: {
+                    xfwd: true,
+                    changeOrigin: false
+                }
+            }
+        });
+        const setOpts = proxy.transformOptions(opts).getIn(['proxy', 0, 'options']).toJS();
+        assert.equal(setOpts.changeOrigin, false);
     });
     it('ignores when option not given', function () {
         const opts  = utils.optmerge({});
