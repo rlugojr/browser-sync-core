@@ -3,21 +3,23 @@ var bs = require('./');
 bs.create({
     //serveStatic: ['test/fixtures'],
     files:       [
-        'test/fixtures/*.html',
-        'test/fixtures/ui/**'
+        //'test/fixtures/*.html',
+        {
+            match: [
+                '/Users/shakyshane/jh/harp',
+                '!/Users/shakyshane/jh/harp/.idea'
+            ],
+            fn: function (event, file, obj) {
+                obj.ext      = 'css';
+                obj.path     = obj.path.replace(/less$/, 'css');
+                obj.basename = obj.basename.replace(/less$/, 'css');
+                this.inject(obj);
+            }
+        }
+
     ],
     proxy: {
-        target: 'http://magento.dev',
-        proxyErr: function (err) {
-        	//console.log('ERR bro', err);
-        }
-        //proxyRes: [
-        //    function (res, req) {
-        //        if (res.headers['x-powered-by']) {
-        //            delete res.headers['x-powered-by'];
-        //        }
-        //    }
-        //]
+        target: 'http://localhost:9000/'
     },
     //scheme: 'https',
     rewriteRules: [
@@ -33,6 +35,12 @@ bs.create({
         './lib/plugins/proxy',
         './lib/plugins/404'
         //'/Users/shakyshane/sites/oss/UI'
+    ],
+    middleware: [
+        {
+            route: '/js',
+            handle: require('browserify-middleware')('test/fixtures/js/app.js')
+        }
     ],
     externals: {
         //clientJs: '/Users/shaneobsourne/sites/browser-sync-client'
