@@ -62,7 +62,7 @@ describe('uses file-watcher plugin with custom fn', function () {
         const first = actual.getIn(['files', 0]);
         assert.equal(first.get('fn'), fn1);
     });
-    it.only('accepts single Object with array of strings', function () {
+    it('accepts single Object with array of strings', function () {
         const fn1 = () => {};
         const actual = watcher.transformOptions(fromJS({
             files: {

@@ -5,11 +5,19 @@ const bs      = require('../../../');
 const fromJS  = require('immutable').fromJS;
 const List    = require('immutable').List;
 const watcher = require('../../../lib/plugins/watcher');
+const plugs   = require('../../../lib/plugins');
+const startup = require('../../../lib/startup');
+const opts    = require('../../../lib/incoming-options');
+
+function process(obj) {
+    return watcher.transformOptions(startup.process(opts.merge(obj), startup.pipeline));
+}
 
 describe('uses file-watcher plugin', function () {
-    it('accepts zero file options', function () {
-        const actual = watcher.transformOptions(fromJS({}));
-        assert.deepEqual(actual.get('files'), undefined);
+    it.only('accepts zero file options', function () {
+        const actual = process({});
+        console.log(actual);
+        //assert.deepEqual(actual.get('files'), undefined);
     });
     it('accepts array of objects', function () {
 
@@ -78,5 +86,47 @@ describe('uses file-watcher plugin', function () {
         assert.isTrue(List.isList(first.getIn(['match'])));
         assert.equal(first.getIn(['match', 0]), '*.html');
         assert.equal(first.getIn(['match', 1]), '*.css');
+    });
+    it('accepts files options from plugins', function () {
+
+        const actual = process({
+            files: {
+                match: ['*.html', '*.css']
+            },
+            plugins: [
+                {
+                    module: {},
+                    options: {
+                        files: '*.html'
+                    }
+                },
+                {
+                    module: {},
+                    options: {
+                        files: {
+                            match: ['*.css', '*.jade']
+                        }
+                    }
+                },
+            ]
+        });
+
+        const first  = actual.getIn(['files', 0]);
+        const plug1  = actual.getIn(['plugins', 0]);
+        const plug2  = actual.getIn(['plugins', 1]);
+
+        //console.log(
+        assert.equal(first.getIn(['match', 0]),  '*.html');
+        assert.equal(first.getIn(['match', 1]),  '*.css');
+        assert.equal(first.getIn(['namespace']), 'core');
+
+        const second = actual.getIn(['files', 1]);
+        const third = actual.getIn(['files', 2]);
+        assert.equal(second.getIn(['match', 0]),  '*.html');
+
+        assert.equal(third.getIn(['match', 0]),  '*.css');
+        assert.equal(third.getIn(['match', 1]),  '*.jade');
+        assert.equal(second.get('namespace'), plug1.get('name'));
+        assert.equal(third.get('namespace'), plug2.get('name'));
     });
 });
