@@ -1,33 +1,36 @@
 'use strict';
 
-const assert  = require('chai').assert;
-const bs      = require('../../../');
-const fromJS  = require('immutable').fromJS;
-const List    = require('immutable').List;
-const watcher = require('../../../lib/plugins/watcher');
+const assert    = require('chai').assert;
+const bs        = require('../../../');
+const Immutable = require('immutable');
+const fromJS    = Immutable.fromJS;
+const List      = Immutable.List;
+const isList    = Immutable.List.isList;
+const isMap     = Immutable.Map.isMap;
+const watcher   = require('../../../lib/plugins/watcher');
 
-describe('uses file-watcher plugin', function () {
-    it('accepts zero file options', function () {
-        const actual = watcher.transformOptions(fromJS({}));
-        assert.deepEqual(actual.get('files'), undefined);
-    });
+describe('uses file-watcher plugin with options', function () {
     it('accepts array of objects', function () {
 
         const actual = watcher.transformOptions(fromJS({
             files: [
-                {match: '*.html'},
-                {match: ['*.css', 'templates/*.jade']}
+                {
+                    match: '*.html'
+                },
+                {
+                    match:   ['*.css', 'templates/*.jade'],
+                    options: {
+                        ignored: '*.txt'
+                    }
+                }
             ]
         }));
 
         const first = actual.getIn(['files', 0]);
-        assert.isTrue(List.isList(first.getIn(['match'])));
-        assert.equal(first.getIn(['match', 0]), '*.html');
+        assert.isUndefined(first.getIn(['options', 'ignored']));
+
         const second = actual.getIn(['files', 1]);
-        assert.isTrue(List.isList(second.getIn(['match'])));
-        assert.equal(second.getIn(['match', 0]), '*.css');
-        assert.equal(second.getIn(['match', 1]), 'templates/*.jade');
-        assert.equal(second.getIn(['namespace']), 'core');
+        assert.equal(second.getIn(['options', 'ignored']), '*.txt');
     });
     it('accepts array of strings', function () {
 
@@ -40,9 +43,8 @@ describe('uses file-watcher plugin', function () {
 
         const first  = actual.getIn(['files', 0]);
         const second = actual.getIn(['files', 1]);
-        assert.isTrue(List.isList(first.getIn(['match'])));
-        assert.equal(first.getIn(['match', 0]), '*.html');
-        assert.equal(second.getIn(['match', 0]), '*.css');
+        assert.isTrue(isMap(first.get('options')));
+        assert.isTrue(isMap(second.get('options')));
     });
     it('accepts single string', function () {
 
@@ -51,20 +53,23 @@ describe('uses file-watcher plugin', function () {
         }));
 
         const first  = actual.getIn(['files', 0]);
-        assert.isTrue(List.isList(first.getIn(['match'])));
-        assert.equal(first.getIn(['match', 0]), '*.html');
+        assert.isTrue(isMap(first.get('options')));
     });
     it('accepts single Object with match as string', function () {
 
         const actual = watcher.transformOptions(fromJS({
             files: {
-                match: '*.html'
+                match: '*.html',
+                throttle: 1000,
+                options: {
+                    ignored: ['*.txt']
+                }
             }
         }));
 
         const first  = actual.getIn(['files', 0]);
-        assert.isTrue(List.isList(first.getIn(['match'])));
-        assert.equal(first.getIn(['match', 0]), '*.html');
+        assert.equal(first.get('throttle'), 1000);
+        assert.equal(first.getIn(['options', 'ignored', 0]), '*.txt');
     });
     it('accepts single Object with array of strings', function () {
 
@@ -75,7 +80,7 @@ describe('uses file-watcher plugin', function () {
         }));
 
         const first  = actual.getIn(['files', 0]);
-        assert.isTrue(List.isList(first.getIn(['match'])));
+        assert.isTrue(isList(first.getIn(['match'])));
         assert.equal(first.getIn(['match', 0]), '*.html');
         assert.equal(first.getIn(['match', 1]), '*.css');
     });
