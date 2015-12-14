@@ -14,19 +14,18 @@ function process(obj) {
 }
 
 describe('uses file-watcher plugin', function () {
-    it.only('accepts zero file options', function () {
+    it('accepts zero file options', function () {
         const actual = process({});
-        console.log(actual);
-        //assert.deepEqual(actual.get('files'), undefined);
+        assert.deepEqual(actual.get('files').toJS(), []);
     });
     it('accepts array of objects', function () {
 
-        const actual = watcher.transformOptions(fromJS({
+        const actual = process({
             files: [
                 {match: '*.html'},
                 {match: ['*.css', 'templates/*.jade']}
             ]
-        }));
+        });
 
         const first = actual.getIn(['files', 0]);
         assert.isTrue(List.isList(first.getIn(['match'])));
@@ -39,12 +38,12 @@ describe('uses file-watcher plugin', function () {
     });
     it('accepts array of strings', function () {
 
-        const actual = watcher.transformOptions(fromJS({
+        const actual = process({
             files: [
                 '*.html',
                 '*.css'
             ]
-        }));
+        });
 
         const first  = actual.getIn(['files', 0]);
         const second = actual.getIn(['files', 1]);
@@ -54,9 +53,9 @@ describe('uses file-watcher plugin', function () {
     });
     it('accepts single string', function () {
 
-        const actual = watcher.transformOptions(fromJS({
+        const actual = process({
             files: '*.html'
-        }));
+        });
 
         const first  = actual.getIn(['files', 0]);
         assert.isTrue(List.isList(first.getIn(['match'])));
@@ -64,11 +63,11 @@ describe('uses file-watcher plugin', function () {
     });
     it('accepts single Object with match as string', function () {
 
-        const actual = watcher.transformOptions(fromJS({
+        const actual = process({
             files: {
                 match: '*.html'
             }
-        }));
+        });
 
         const first  = actual.getIn(['files', 0]);
         assert.isTrue(List.isList(first.getIn(['match'])));
@@ -76,11 +75,11 @@ describe('uses file-watcher plugin', function () {
     });
     it('accepts single Object with array of strings', function () {
 
-        const actual = watcher.transformOptions(fromJS({
+        const actual = process({
             files: {
                 match: ['*.html', '*.css']
             }
-        }));
+        });
 
         const first  = actual.getIn(['files', 0]);
         assert.isTrue(List.isList(first.getIn(['match'])));
