@@ -3,6 +3,25 @@ const assert = require('chai').assert;
 const utils = require('../utils');
 
 describe('Transforming proxy option', function () {
+    it('accepts a string-only proxy option', function () {
+        const opts = utils.optmerge({
+            proxy: ['http://bbc.co.uk']
+        });
+        const trans = proxy.transformOptions(opts).get('proxy').toJS();
+        assert.equal(trans[0].target, 'http://bbc.co.uk');
+        assert.equal(trans[0].url.href, 'http://bbc.co.uk/');
+    });
+    it('accepts an array of string only proxy options', function () {
+        const opts = utils.optmerge({
+            proxy: ['http://www.bbc.co.uk', 'http://app.bbc.co.uk']
+        });
+        const trans = proxy.transformOptions(opts).get('proxy').toJS();
+        assert.equal(trans[0].target, 'http://www.bbc.co.uk');
+        assert.equal(trans[0].url.href, 'http://www.bbc.co.uk/');
+
+        assert.equal(trans[1].target, 'http://app.bbc.co.uk');
+        assert.equal(trans[1].url.href, 'http://app.bbc.co.uk/');
+    });
     it('accepts a target only proxy option as array', function () {
         const opts = utils.optmerge({
             proxy: [

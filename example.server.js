@@ -3,9 +3,9 @@ var bs = require('./');
 bs.create({
     serveStatic: ['test/fixtures'],
     //files: [],
-    //proxy: {
-    //    target: 'http://localhost:9000/'
-    //},
+    proxy: {
+        target: 'http://www.bbc.co.uk'
+    },
     //scheme: 'https',
     //rewriteRules: [
         //{
