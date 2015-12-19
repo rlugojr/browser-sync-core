@@ -1,13 +1,11 @@
 'use strict';
 
-var bs     = require('../../../');
-var opts   = require('../../../lib/default-options');
 var merge  = require('../utils').optmerge;
 var files  = require('../../../lib/files');
 var assert = require('chai').assert;
 
 function process(conf) {
-    return [merge(conf)].map(files.merge)[0];
+    return files.merge(merge(conf))
 }
 
 describe('init with files option', function () {
