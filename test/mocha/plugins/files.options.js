@@ -2,11 +2,9 @@
 
 const assert    = require('chai').assert;
 const Immutable = require('immutable');
-const fromJS    = Immutable.fromJS;
 const isList    = Immutable.List.isList;
 const isMap     = Immutable.Map.isMap;
 const watcher   = require('../../../lib/plugins/watcher');
-const plugs     = require('../../../lib/plugins');
 const startup   = require('../../../lib/startup');
 const opts      = require('../../../lib/incoming-options');
 
