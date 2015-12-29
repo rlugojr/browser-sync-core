@@ -1,0 +1,21 @@
+watch:
+    tasks:
+        default:
+            before: ['$bgShell {{cmd.watchify}}', '$bgShell {{cmd.nodemon}}']
+
+tasks:
+    build-client: ['$shell {{cmd.browserify}}', '$shell {{cmd.uglify}}']
+
+config:
+    npm: './node_modules/.bin'
+    cmd:
+        transforms: '-t [ babelify --presets [ es2015 ] ]'
+        browserify: '{{npm}}/browserify {{client.input}} -o {{client.output}} -d {{cmd.transforms}}'
+        watchify: '{{npm}}/watchify {{client.input}} -o {{client.output}} -v -d {{cmd.transforms}}'
+        nodemon: 'nodemon example.server.js --watch lib --watch client/dist/index.js'
+        uglify: '{{npm}}/uglifyjs {{client.output}} > {{client.min}}'
+
+    client:
+        input: 'client/lib/index.js'
+        output: 'client/dist/index.js'
+        min: 'client/dist/index.min.js'

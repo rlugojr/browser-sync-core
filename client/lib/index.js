@@ -11,7 +11,8 @@ var events       = require("./events");
 var utils        = require("./browser.utils");
 
 var shouldReload = false;
-var initialised    = false;
+var initialised  = false;
+
 
 /**
  * @param options
