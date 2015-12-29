@@ -86,7 +86,7 @@ describe('uses file-watcher plugin', function () {
         assert.equal(first.getIn(['match', 0]), '*.html');
         assert.equal(first.getIn(['match', 1]), '*.css');
     });
-    it.only('accepts files options from plugins', function () {
+    it('accepts files options from plugins', function () {
 
         const actual = process({
             files: {
