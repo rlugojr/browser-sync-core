@@ -3,6 +3,16 @@ var bs = require('./');
 bs.create({
     strict: false,
     serveStatic: ['test/fixtures'],
+    files: [
+        'test/fixtures/*.html',
+        'test/fixtures/**/*.css',
+        //{
+        //    match: 'test/fixtures/*.html',
+        //    fn: function (event, path, x) {
+        //        console.log(event, path);
+        //    }
+        //}
+    ],
     devMode: true,
     //clientJs: [
     //    'const s = window.___browserSync___.socket; s.on("connection", (x) => console.log(x))'
@@ -21,10 +31,22 @@ bs.create({
         //}
     //],
     plugins: [
+        //{
+        //    module: {
+        //        initAsync: function (bs, opts, cb) {
+        //            bs.getWatcher()
+        //        }
+        //    },
+        //    name: 'my plugin',
+        //    options: {
+        //        files: "test/fixtures/*.html"
+        //    }
+        //},
         //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp', // laptop
         //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp', // laptop
         //'./lib/plugins/proxy',
-        './lib/plugins/404'
+        './lib/plugins/404',
+        './lib/plugins/watcher'
         //'/Users/shakyshane/sites/oss/UI'
     ],
     //middleware: [
@@ -45,4 +67,5 @@ bs.create({
         return;
     }
     console.log(bs.options.get('urls').toJS());
+    //console.log(bs.options.get('files'));
 });
