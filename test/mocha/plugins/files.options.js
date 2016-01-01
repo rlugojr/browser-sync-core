@@ -87,4 +87,19 @@ describe('uses file-watcher plugin with options', function () {
         assert.equal(first.getIn(['match', 0]), '*.html');
         assert.equal(first.getIn(['match', 1]), '*.css');
     });
+    it('accepts locator regex', function () {
+        const actual = process({
+            files: [
+                {
+                    match:   ['*.css'],
+                    locator: /style\.([a-z]?)\.css/g
+                }
+            ]
+        });
+
+        const first = actual.getIn(['files', 0]);
+        assert.isTrue(first.getIn(['locator', 'global']));
+        assert.isFalse(first.getIn(['locator', 'ignoreCase']));
+        assert.isFalse(first.getIn(['locator', 'multiline']));
+    });
 });

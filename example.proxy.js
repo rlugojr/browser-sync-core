@@ -3,12 +3,20 @@ var bs = require('./');
 bs.create({
     strict: false,
     proxy: 'http://www.bbc.co.uk',
-    devMode: true,
+    files: ["*.js", "test/fixtures"],
+    //devMode: true,
+    //rewriteRules: [
+    //    {
+    //        match: "http://static.bbci.co.uk/frameworks/barlesque/3.7.3/orb/4/style/orb.min.css",
+    //        replace:
+    //    }
+    //]
     plugins: [
         //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp', // laptop
         //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp', // laptop
         './lib/plugins/proxy',
-        './lib/plugins/404'
+        './lib/plugins/404',
+        './lib/plugins/watcher'
         //'/Users/shakyshane/sites/oss/UI'
     ],
     externals: {
