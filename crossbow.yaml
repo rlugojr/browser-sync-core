@@ -4,18 +4,25 @@ watch:
             before: ['$bgShell {{cmd.watchify}}', '$bgShell {{cmd.nodemon}}']
 
 tasks:
-    build-client: ['$shell {{cmd.browserify}}', '$shell {{cmd.uglify}}']
+    build-client: ['$shell {{cmd.browserify}}', '$shell {{cmd.uglify-client}}', '$shell {{cmd.socketio}}']
 
 config:
+
     npm: './node_modules/.bin'
+
     cmd:
         transforms: '-t [ babelify --presets [ es2015 ] ]'
-        browserify: '{{npm}}/browserify {{client.input}} -o {{client.output}} -d {{cmd.transforms}}'
-        watchify: '{{npm}}/watchify {{client.input}} -o {{client.output}} -v -d {{cmd.transforms}}'
+        browserify: '{{npm}}/browserify {{client.input}} -o {{client.output}} {{cmd.transforms}}'
+        watchify: '{{npm}}/watchify {{client.input}} -o {{client.output}} -v {{cmd.transforms}}'
         nodemon: 'nodemon example.server.js --watch lib --watch client/dist/index.js'
-        uglify: '{{npm}}/uglifyjs {{client.output}} > {{client.min}}'
+        uglify-client: '{{npm}}/uglifyjs {{client.output}} > {{client.min}}'
+        socketio: '{{npm}}/uglifyjs {{socketio.input}} > {{socketio.min}}'
 
     client:
         input: 'client/lib/index.js'
         output: 'client/dist/index.js'
         min: 'client/dist/index.min.js'
+
+    socketio:
+        input: 'client/dist/socket.io.js'
+        min: 'client/dist/socket.io.min.js'

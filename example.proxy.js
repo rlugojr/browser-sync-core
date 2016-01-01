@@ -2,37 +2,15 @@ var bs = require('./');
 
 bs.create({
     strict: false,
-    serveStatic: ['test/fixtures'],
+    proxy: 'http://www.bbc.co.uk',
     devMode: true,
-    //clientJs: [
-    //    'const s = window.___browserSync___.socket; s.on("connection", (x) => console.log(x))'
-    //],
-    //files:       [],
-    //proxy: {
-    //    target: 'http://www.bbc.co.uk'
-    //},
-    //scheme: 'https',
-    //rewriteRules: [
-        //{
-            //match: /info\.sunspel\.dev/g,
-            //fn: function (req, res, match) {
-            //    return 'http://' + req.headers['host'];
-            //}
-        //}
-    //],
     plugins: [
         //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp', // laptop
         //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp', // laptop
-        //'./lib/plugins/proxy',
+        './lib/plugins/proxy',
         './lib/plugins/404'
         //'/Users/shakyshane/sites/oss/UI'
     ],
-    //middleware: [
-    //    {
-    //        route: '/js',
-    //        handle: require('browserify-middleware')('test/fixtures/js/app.js')
-    //    }
-    //],
     externals: {
         clientJs: __dirname + '/client/'
         //clientJs: '/Users/shakyshane/code/bs-client' // laptop
