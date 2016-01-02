@@ -67,5 +67,7 @@ bs.create({
         return;
     }
     console.log(bs.options.get('urls').toJS());
+
+    bs.cleanup();
     //console.log(bs.options.get('files'));
 });
