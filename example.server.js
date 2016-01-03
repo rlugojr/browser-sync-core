@@ -66,8 +66,13 @@ bs.create({
     if (err) {
         return;
     }
-    console.log(bs.options.get('urls').toJS());
+    //process.nextTick(function () {
+    //    console.log('clentup');
+    //})
+    //setTimeout(function () {
+    //}, 1000);
 
     bs.cleanup();
-    //console.log(bs.options.get('files'));
+
+    console.log(bs.options.get('urls').toJS());
 });
