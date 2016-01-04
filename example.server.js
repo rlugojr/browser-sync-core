@@ -67,7 +67,7 @@ bs.create({
         return;
     }
 
-    bs.cleanup();
+    //bs.cleanup();
 
     console.log(bs.options.get('urls').toJS());
 });
