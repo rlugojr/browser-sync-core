@@ -4,8 +4,8 @@ bs.create({
     strict: false,
     serveStatic: ['test/fixtures'],
     files: [
-        'test/fixtures/*.html',
-        'test/fixtures/**/*.css',
+        'test/fixtures/*.html'
+        //'test/fixtures/**/*.css',
         //{
         //    match: 'test/fixtures/*.html',
         //    fn: function (event, path, x) {
@@ -72,7 +72,11 @@ bs.create({
     //setTimeout(function () {
     //}, 1000);
 
-    bs.cleanup();
+    setTimeout(function () {
+        //console.log('clcean');
+        bs.cleanup();
+
+    }, 2000);
 
     console.log(bs.options.get('urls').toJS());
 });

@@ -1,5 +1,4 @@
 const browserSync = require('../../../');
-const files       = require('../../../lib/files');
 const utils       = require('../utils');
 const conf        = require('../../../lib/config');
 const assert      = require('chai').assert;
