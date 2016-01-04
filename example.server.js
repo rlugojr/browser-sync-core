@@ -4,7 +4,9 @@ bs.create({
     strict: false,
     serveStatic: ['test/fixtures'],
     files: [
-        'test/fixtures/*.html'
+        {
+            match: 'test/fixtures/*.html'
+        }
         //'test/fixtures/**/*.css',
         //{
         //    match: 'test/fixtures/*.html',
@@ -67,7 +69,7 @@ bs.create({
         return;
     }
 
-    //bs.cleanup();
+    bs.cleanup();
 
     console.log(bs.options.get('urls').toJS());
 });
