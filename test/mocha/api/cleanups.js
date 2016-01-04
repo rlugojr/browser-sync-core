@@ -38,8 +38,8 @@ describe('Process cleanups', function () {
                             obs.done();
                             return (done) => {
                                 setTimeout(function () {
-                                	//console.log('done bra');
                                     calls += 1;
+                                    done();
                                 }, 100);
                             }
                         }

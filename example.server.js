@@ -56,7 +56,7 @@ bs.create({
     //    }
     //],
     externals: {
-        clientJs: __dirname + '/client/'
+        //clientJs: __dirname + '/client/'
         //clientJs: '/Users/shakyshane/code/bs-client' // laptop
         //clientJs: '/Users/shakyshane/sites/oss/browser-sync-client/' // home imac
     }
@@ -66,17 +66,8 @@ bs.create({
     if (err) {
         return;
     }
-    //process.nextTick(function () {
-    //    console.log('clentup');
-    //})
-    //setTimeout(function () {
-    //}, 1000);
 
-    setTimeout(function () {
-        //console.log('clcean');
-        bs.cleanup();
-
-    }, 2000);
+    bs.cleanup();
 
     console.log(bs.options.get('urls').toJS());
 });
