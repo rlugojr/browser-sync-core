@@ -83,6 +83,34 @@ bs.create({
     //    });
     //}, 1000);
 
+    //bs.setOption('clientJs', function (cli) {
+    //    //console.log(cli[0]);
+    //    return cli.concat('console.log("Simon")');
+    //}).subscribe();
+    //
+    //setTimeout(function () {
+    //    bs.setOption('middleware', function (mw) {
+    //        return mw.concat({id: 'shane', handle: function (req, res, next) {
+    //            next();
+    //        }});
+    //    }).subscribe();
+    //}, 2000);
+    //
+    //setTimeout(function () {
+    //    bs.setOption('middleware', function (mw) {
+    //        return mw.filter(x => x.id !== 'shane');
+    //    }).subscribe();
+    //}, 4000);
+
+    //
+    //setTimeout(function () {
+    //    bs.setOption('clientJs', function (cli) {
+    //        //console.log(cli[0]);
+    //        return cli.filter(x => x.id !== 'shane');
+    //    }).subscribe();
+    //}, 10000);
+    //bs.options$.subscribe(x => console.log('change'))
+
     //bs.cleanup();
 
     console.log(bs.options.get('urls').toJS());
