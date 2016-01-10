@@ -73,21 +73,31 @@ bs.create({
         return;
     }
 
-    //setTimeout(function () {
-    //    console.log('5 seconds passed');
-    //    bs.setOption(['files'], function (f) {
-    //        return f.map(x => x.set('active', true));
-    //    }).subscribe(x => {
-    //        console.log('updateing');
-    //        console.log(x);
-    //    });
-    //}, 1000);
+    setTimeout(function () {
+        //bs.setOption(['files'], function (f) {
+        //    return f.map(x => x.set('active', true));
+        //}).subscribe(x => {
+        //    console.log('updateing');
+        //    console.log(x);
+        //});
+        bs.setOption('clientJs', function (js) {
+            return js.concat({
+                id: 'test',
+                content: 'console.log("navigator" in location)'
+            });
+        }).subscribe();
+    }, 1000);
 
-    //bs.setOption('clientJs', function (cli) {
+    //bs.setOption('middleware', function (cli) {
     //    //console.log(cli[0]);
-    //    return cli.concat('console.log("Simon")');
-    //}).subscribe();
-    //
+    //    return cli.concat(function (res, res, next) {
+    //        console.log('cats');
+    //        next();
+    //    });
+    //}).subscribe(x => {
+    //    console.log(x.get('middleware'));
+    //});
+
     //setTimeout(function () {
     //    bs.setOption('middleware', function (mw) {
     //        return mw.concat({id: 'shane', handle: function (req, res, next) {
@@ -110,7 +120,6 @@ bs.create({
     //    }).subscribe();
     //}, 10000);
     //bs.options$.subscribe(x => console.log('change'))
-
     //bs.cleanup();
 
     console.log(bs.options.get('urls').toJS());
