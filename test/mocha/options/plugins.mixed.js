@@ -20,7 +20,7 @@ describe('async & sync mixed plugin resolution in correct order', function () {
                     module: {initAsync: (bs, opts, cb) => {
                         setTimeout(() => {
                             calls.push('2');
-                            cb()
+                            cb.done()
                         }, 200);
                     }}
                 },
@@ -31,7 +31,7 @@ describe('async & sync mixed plugin resolution in correct order', function () {
                     module: {initAsync: (bs, opts, cb) => {
                         setTimeout(() => {
                             calls.push('4');
-                            cb()
+                            cb.done()
                         }, 200);
                     }}
                 },

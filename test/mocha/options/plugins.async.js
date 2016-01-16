@@ -11,10 +11,10 @@ describe('async plugin resolution', function () {
             plugins: [
                 {
                     module: {
-                        initAsync: function (bs, opts, done) {
+                        initAsync: function (bs, opts, obs) {
                             setTimeout(function () {
                                 calls.push('plugin 1');
-                                done();
+                                obs.done();
                             }, 500);
                         },
                         'plugin:name': 'My Awesome Plugin'
@@ -25,10 +25,10 @@ describe('async plugin resolution', function () {
                 },
                 {
                     module: {
-                        initAsync: function (bs, opts, done) {
+                        initAsync: function (bs, opts, obs) {
                             setTimeout(function () {
                                 calls.push('plugin 2');
-                                done();
+                                obs.done();
                             }, 0);
                         }
                     }
