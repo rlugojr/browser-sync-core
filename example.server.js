@@ -5,8 +5,7 @@ bs.create({
     serveStatic: ['test/fixtures'],
     files: [
         {
-            match: 'test/fixtures/*.html',
-            active: false
+            match: 'test/fixtures/**/*.css'
         }
         //'test/fixtures/**/*.css',
         //{
