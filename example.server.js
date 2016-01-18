@@ -5,6 +5,14 @@ bs.create({
     serveStatic: [
         'test/fixtures'
     ],
+    middleware: [
+        {
+            handle: function (req, res, next) {
+
+                next();
+            }
+        }
+    ],
     files: [
         {
             match: 'test/fixtures/**/*.css'

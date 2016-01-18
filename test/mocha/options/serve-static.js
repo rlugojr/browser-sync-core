@@ -2,6 +2,7 @@
 
 var assert   = require('chai').assert;
 var ss       = require('../../../lib/opt.serve-static');
+var bs       = require('../../../');
 var merge    = require('../utils').optmerge;
 
 function process(conf) {
@@ -9,15 +10,27 @@ function process(conf) {
 }
 
 describe('serveStatic as options', function () {
-    it('accepts a single string', function () {
-        var result = process({
-            serveStatic: './css'
-        })
-            .get('serveStatic')
-            .toJS();
+    it('doesn\'t blow up if optoin missing', function (done) {
+        bs.create({}, function (err, bs) {
+            bs.cleanup(() => done());
+        });
+    });
+    it('accepts a single string', function (done) {
 
-        assert.equal(result.length, 1);
-        assert.equal(result[0].root, './css');
+        bs.create({
+            serveStatic: './css'
+        }, function (err, bs) {
+
+            var result = bs.options
+                .get('serveStatic')
+                .toJS();
+
+            assert.equal(result.length, 1);
+            assert.equal(result[0].root, './css');
+
+            bs.cleanup(() => done());
+        });
+
     });
     it('accepts array of strings', function () {
         var result = process({
@@ -27,8 +40,8 @@ describe('serveStatic as options', function () {
             .toJS();
 
         assert.equal(result.length, 2);
-        //assert.equal(result[0].root, './css');
-        //assert.equal(result[1].root, './app');
+        assert.equal(result[0].root, './css');
+        assert.equal(result[1].root, './app');
     });
     it('accepts a single object', function () {
         var result = process({
