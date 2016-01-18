@@ -2,7 +2,9 @@ var bs = require('./');
 
 bs.create({
     strict: false,
-    serveStatic: ['test/fixtures'],
+    serveStatic: [
+        'test/fixtures'
+    ],
     files: [
         {
             match: 'test/fixtures/**/*.css'
