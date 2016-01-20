@@ -20,7 +20,8 @@
     "cli.js",
     "index.js",
     "lib",
-    "client"
+    "client",
+    "protocol.json"
   ],
   "engines": {
     "node": ">= 0.10.0"
