@@ -2,8 +2,11 @@ var bs = require('./');
 
 bs.create({
     strict: false,
-    proxy: 'http://www.bbc.co.uk',
-    files: ["*.js", "test/fixtures"],
+    proxy: {
+        target: 'http://localhost:3000',
+        ws: true
+    },
+    files: ['*.js', 'test/fixtures'],
     //devMode: true,
     //rewriteRules: [
     //    {
