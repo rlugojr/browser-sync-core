@@ -8,14 +8,16 @@ bs.create({
     middleware: [
         {
             handle: function (req, res, next) {
-
+                if (req.url === '/shane') {
+                    return res.end('<html>shane is cool</html>');
+                }
                 next();
             }
         }
     ],
     files: [
         {
-            match: 'test/fixtures/**/*.css'
+            match: 'test/fixtures'
         }
         //'test/fixtures/**/*.css',
         //{
