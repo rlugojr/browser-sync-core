@@ -19,7 +19,8 @@
   "files": [
     "cli.js",
     "index.js",
-    "lib"
+    "lib",
+    "client"
   ],
   "engines": {
     "node": ">= 0.10.0"
