@@ -4,7 +4,7 @@ const assert  = require('chai').assert;
 const bs      = require('../../../');
 const fromJS  = require('immutable').fromJS;
 const List    = require('immutable').List;
-const watcher = require('../../../lib/plugins/watcher');
+const watcher = require('../../../lib/plugins/watch');
 const plugs   = require('../../../lib/plugins');
 const startup = require('../../../lib/startup');
 const opts    = require('../../../lib/incoming-options');
@@ -16,21 +16,21 @@ function process(obj) {
 describe('uses file-watcher plugin', function () {
     it('accepts zero file options', function () {
         const actual = process({});
-        assert.deepEqual(actual.get('files').toJS(), []);
+        assert.deepEqual(actual.get('watch').toJS(), []);
     });
     it('accepts array of objects', function () {
 
         const actual = process({
-            files: [
+            watch: [
                 {match: '*.html'},
                 {match: ['*.css', 'templates/*.jade']}
             ]
         });
 
-        const first = actual.getIn(['files', 0]);
+        const first = actual.getIn(['watch', 0]);
         assert.isTrue(List.isList(first.getIn(['match'])));
         assert.equal(first.getIn(['match', 0]), '*.html');
-        const second = actual.getIn(['files', 1]);
+        const second = actual.getIn(['watch', 1]);
         assert.isTrue(List.isList(second.getIn(['match'])));
         assert.equal(second.getIn(['match', 0]), '*.css');
         assert.equal(second.getIn(['match', 1]), 'templates/*.jade');
@@ -39,14 +39,14 @@ describe('uses file-watcher plugin', function () {
     it('accepts array of strings', function () {
 
         const actual = process({
-            files: [
+            watch: [
                 '*.html',
                 '*.css'
             ]
         });
 
-        const first  = actual.getIn(['files', 0]);
-        const second = actual.getIn(['files', 1]);
+        const first  = actual.getIn(['watch', 0]);
+        const second = actual.getIn(['watch', 1]);
         assert.isTrue(List.isList(first.getIn(['match'])));
         assert.equal(first.getIn(['match', 0]), '*.html');
         assert.equal(second.getIn(['match', 0]), '*.css');
@@ -54,34 +54,34 @@ describe('uses file-watcher plugin', function () {
     it('accepts single string', function () {
 
         const actual = process({
-            files: '*.html'
+            watch: '*.html'
         });
 
-        const first  = actual.getIn(['files', 0]);
+        const first  = actual.getIn(['watch', 0]);
         assert.isTrue(List.isList(first.getIn(['match'])));
         assert.equal(first.getIn(['match', 0]), '*.html');
     });
     it('accepts single Object with match as string', function () {
 
         const actual = process({
-            files: {
+            watch: {
                 match: '*.html'
             }
         });
 
-        const first  = actual.getIn(['files', 0]);
+        const first  = actual.getIn(['watch', 0]);
         assert.isTrue(List.isList(first.getIn(['match'])));
         assert.equal(first.getIn(['match', 0]), '*.html');
     });
     it('accepts single Object with array of strings', function () {
 
         const actual = process({
-            files: {
+            watch: {
                 match: ['*.html', '*.css']
             }
         });
 
-        const first  = actual.getIn(['files', 0]);
+        const first  = actual.getIn(['watch', 0]);
         assert.isTrue(List.isList(first.getIn(['match'])));
         assert.equal(first.getIn(['match', 0]), '*.html');
         assert.equal(first.getIn(['match', 1]), '*.css');
@@ -89,20 +89,20 @@ describe('uses file-watcher plugin', function () {
     it('accepts files options from plugins', function () {
 
         const actual = process({
-            files: {
+            watch: {
                 match: ['*.html', '*.css']
             },
             plugins: [
                 {
                     module: {},
                     options: {
-                        files: '*.html'
+                        watch: '*.html'
                     }
                 },
                 {
                     module: {},
                     options: {
-                        files: {
+                        watch: {
                             match: ['*.css', '*.jade']
                         }
                     }
@@ -110,7 +110,7 @@ describe('uses file-watcher plugin', function () {
             ]
         });
 
-        const first  = actual.getIn(['files', 0]);
+        const first  = actual.getIn(['watch', 0]);
         const plug1  = actual.getIn(['plugins', 0]);
         const plug2  = actual.getIn(['plugins', 1]);
 
@@ -119,8 +119,8 @@ describe('uses file-watcher plugin', function () {
         assert.equal(first.getIn(['match', 1]),  '*.css');
         assert.equal(first.getIn(['namespace']), 'core');
 
-        const second = actual.getIn(['files', 1]);
-        const third = actual.getIn(['files', 2]);
+        const second = actual.getIn(['watch', 1]);
+        const third = actual.getIn(['watch', 2]);
         assert.equal(second.getIn(['match', 0]),  '*.html');
 
         assert.equal(third.getIn(['match', 0]),  '*.css');
