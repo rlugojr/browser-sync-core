@@ -18,7 +18,7 @@ bs.create({
         //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp', // laptop
         //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp', // laptop
         './lib/plugins/proxy',
-        './lib/plugins/404',
+        //'./lib/plugins/404',
         './lib/plugins/watcher'
         //'/Users/shakyshane/sites/oss/UI'
     ],
@@ -33,5 +33,10 @@ bs.create({
     if (err) {
         return;
     }
-    console.log(bs.options.get('urls').toJS());
+    setTimeout(() => {
+        bs.cleanup(function () {
+
+        });
+    }, 4000);
+    //console.log(bs.options.get('urls').toJS());
 });
