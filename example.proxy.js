@@ -1,9 +1,12 @@
 var bs = require('./');
-var m = require('meow');
+//var m = require('meow');
 
-console.log(m().flags);
+//console.log(m().flags);
 //
-bs.create(m().flags, function (err, bs) {
+bs.create({
+    proxy: 'http://localhost:3000/',
+    plugins: './test/fixtures/plugin2.js'
+}, function (err, bs) {
     console.log(err);
     console.log(bs.options.get('urls'));
 });
