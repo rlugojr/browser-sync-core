@@ -30,7 +30,18 @@ describe('plugins as options', function () {
         assert.equal(out.size, 1);
         assert.ok(out.get(0).name.match(/bs-plugin-\d{1,2}/));
     });
-    it('init with plugin option as string', function () {
+    it('init with plugin option as string only', function () {
+        var plugin = process({
+                plugins: './test/fixtures/plugin2.js'
+            })
+            .getIn(['plugins', 0])
+            .toJS();
+
+        assert.isString(plugin.name);
+        assert.isTrue(plugin.name.length > 0); // random ID generated for this
+        assert.ok(plugin.via.match(/test\/fixtures\/plugin2\.js$/));
+    });
+    it('init with plugin option as string in array', function () {
         var plugin = process({
             plugins: [
                 './test/fixtures/plugin1.js'

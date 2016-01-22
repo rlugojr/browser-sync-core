@@ -1,11 +1,12 @@
 var bs = require('./');
 var m = require('meow');
 
-//console.log(m().flags);
-
-//bs.create(m().flags, function (err, bs) {
-//    console.log(bs.options.get('urls'));
-//});
+console.log(m().flags);
+//
+bs.create(m().flags, function (err, bs) {
+    console.log(err);
+    console.log(bs.options.get('urls'));
+});
     //strict: false,
     //proxy: {
 //        target: 'http://localhost:3000/',
