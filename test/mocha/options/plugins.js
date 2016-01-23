@@ -30,6 +30,38 @@ describe('plugins as options', function () {
         assert.equal(out.size, 1);
         assert.ok(out.get(0).name.match(/bs-plugin-\d{1,2}/));
     });
+    it('init with plugin option as fn only', function () {
+        const fn = function (bs) {
+            console.log(bs.options.get('urls'));
+        };
+        var plugin = process({
+                plugins: [fn]
+            })
+            .getIn(['plugins', 0])
+            .toJS();
+
+        assert.isString(plugin.name);
+        assert.equal(plugin.init, fn);
+        assert.isTrue(plugin.name.length > 0); // random ID generated for this
+    });
+    it('multiple simple plugins as fns', function () {
+        const fn = (bs) => console.log(bs.options.get('urls'));
+        const fn2 = (bs) => console.log(bs.options.get('urls2'));
+        var plugin = process({
+                plugins: [fn, fn2]
+            })
+            .getIn(['plugins'])
+            .toJS();
+
+        assert.isString(plugin[0].name);
+        assert.equal(plugin[0].init, fn);
+        assert.isTrue(plugin[0].name.length > 0); // random ID generated for this
+
+        assert.isString(plugin[1].name);
+        assert.equal(plugin[1].init, fn2);
+        assert.isTrue(plugin[1].name.length > 0); // random ID generated for this
+        assert.isTrue(plugin[1].name !== plugin[0].name); // random ID generated for this
+    });
     it('init with plugin option as string only', function () {
         var plugin = process({
                 plugins: './test/fixtures/plugin2.js'
