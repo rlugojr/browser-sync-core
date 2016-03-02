@@ -41,7 +41,7 @@ describe('plugins as options', function () {
             .toJS();
 
         assert.isString(plugin.name);
-        assert.equal(plugin.init, fn);
+        assert.equal(plugin.module.init, fn);
         assert.isTrue(plugin.name.length > 0); // random ID generated for this
     });
     it('multiple simple plugins as fns', function () {
@@ -54,11 +54,11 @@ describe('plugins as options', function () {
             .toJS();
 
         assert.isString(plugin[0].name);
-        assert.equal(plugin[0].init, fn);
+        assert.equal(plugin[0].module.init, fn);
         assert.isTrue(plugin[0].name.length > 0); // random ID generated for this
 
         assert.isString(plugin[1].name);
-        assert.equal(plugin[1].init, fn2);
+        assert.equal(plugin[1].module.init, fn2);
         assert.isTrue(plugin[1].name.length > 0); // random ID generated for this
         assert.isTrue(plugin[1].name !== plugin[0].name); // random ID generated for this
     });
