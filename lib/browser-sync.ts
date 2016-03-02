@@ -36,6 +36,7 @@ export interface BrowserSync {
     connections$: any
     registered$: any
     options$: any
+    options: any
     setOption: (selector:string, fn) => any
     getSocket: (id:string) => any
     setClientOption: (id:string, selector:string, fn) => any
@@ -45,6 +46,8 @@ export interface BrowserSync {
     getExternalSocketConnector: (opts: any) => string
     reload: () => void
     inject: (any) => void
+    watchers?: any
+    watchers$?: any
 }
 
 bs.create = function (userOptions, cb) {

@@ -2,7 +2,6 @@ var bs = require('./');
 
 bs.create({
     strict: false,
-    //proxy: 'http://selco.static/',
     serveStatic: [
         'test/fixtures'
     ],
@@ -137,4 +136,12 @@ bs.create({
     //bs.cleanup();
 
     console.log(bs.options.get('urls').toJS());
+
+    setTimeout(function () {
+        console.log('disabling an item');
+        bs.setOption('watch', function (items) {
+            return items.map(x => x.set('active', false));
+        }).subscribe();
+    }, 5000);
+    //console.log(bs.options.get('watch').toJS());
 });

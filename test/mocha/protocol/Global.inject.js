@@ -1,5 +1,5 @@
 var assert = require('chai').assert;
-var proto  = require('../../../lib/protocol');
+var proto  = require('../../../dist/protocol');
 
 function runOne (arg) {
     return proto.validate('Global.inject', arg);

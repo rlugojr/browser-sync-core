@@ -1,3 +1,4 @@
+import {BrowserSync} from "../browser-sync";
 const Immutable = require('immutable');
 const utils     = require('../utils');
 const Rx        = require('rx');
@@ -5,7 +6,46 @@ const chokidar  = require('chokidar');
 const debug     = require('debug')('bs:watch');
 const OPT_NAME  = 'watch';
 
-var watcherId   = 0;
+export interface ParsedPath {
+    root: string,
+    dir: string,
+    base: string,
+    ext: string,
+    name: string
+}
+
+export interface WatchEvent {
+    event: string
+    item: any
+    path: string
+    namespace: string
+    parsed: ParsedPath
+    ext: string
+    basename: string
+    watcherUID: number
+    options?: any
+    eventUID?: number
+}
+
+export interface WatchEventMerged {
+    event: WatchEvent
+    options: any
+}
+
+var watcherUID   = 0;
+
+export interface WatchItem {
+    match: any
+    options?: any
+    fn?: () => void
+    locator?: () => void, // optional
+    namespace: string,
+    throttle: number,
+    debounce: number,
+    delay: number,
+    active: boolean,
+    watcherUID: number
+}
 
 /**
  * Schema for files option
@@ -22,7 +62,7 @@ const FilesOption = Immutable.Record({
     debounce:  0,
     delay:     0,
     active:    true,
-    id: 0
+    watcherUID: 0
 });
 
 module.exports["plugin:name"] = "Browsersync File Watcher";
@@ -32,7 +72,7 @@ module.exports["plugin:name"] = "Browsersync File Watcher";
  * @param opts
  * @param obs
  */
-module.exports.init = function (bs, opts) {
+module.exports.init = function (bs: BrowserSync) {
     // bail early if no files options provided
     // or if the List is size zero
     if (
@@ -77,19 +117,18 @@ module.exports.init = function (bs, opts) {
         bs.watchers.map(watcher => {
             return watcherAsObservable(
                 watcher.watcher,
-                watcher.item,
-                bs.options
+                watcher.item
             )
         }).toArray()) // Rx.Observable.merge needs a plain array, not a List
-        .withLatestFrom(bs.options$, (event, options) => ({event, options}))
-        .do(x => debug(`${x.event.event}, ${x.event.path}`))
+        .withLatestFrom(bs.options$, (event: WatchEvent, options: any) => ({event, options}))
         /**
          * Add an event id to every file changed
          */
-        .scan((_, x, i) => {
-            x.event._i = i;
-            return x;
+        .scan((_, watchEventMerged: WatchEventMerged, i) => {
+            watchEventMerged.event.eventUID = i;
+            return watchEventMerged;
         }, 0)
+        .do(x => debug(`(${x.event._watchEventCount}) ${x.event.event}, ${x.event.path}`))
         .share();
 
     /**
@@ -103,12 +142,13 @@ module.exports.init = function (bs, opts) {
      * a custom callback function
      */
     const watchers$ = bs.watchers$
-        .filter(x => x.event.item.get('fn') !== undefined)
-        .do(x => {
+        .filter((watchEventMerged: WatchEventMerged) => watchEventMerged.event.item.get('fn') !== undefined)
+        .do((watchEventMerged: WatchEventMerged) => {
+            const event = watchEventMerged.event;
             // call the function provided in the option
             // with the same signature as the chokidar cb
             // fn(eventName, filePath)
-            x.event.item.get('fn').apply(bs, [x.event.event, x.event.path, x.event]);
+            event.item.get('fn').apply(bs, [event.event, event.path, event]);
         }).subscribe();
 
     // core watchers that cause either reloads/injections
@@ -121,17 +161,27 @@ module.exports.init = function (bs, opts) {
          * Check if this watcher is enabled/disabled
          * by looking at the options object with matching id
          */
-        .where(x => {
-            return x.options
+        .where((watchEventMerged: WatchEventMerged) => {
+            const event = watchEventMerged.event;
+            const watcherIsActive = watchEventMerged.options
                 .get(OPT_NAME)
-                .filter(_x => _x.get('id') === x.event.id)
+                .filter(watchOption => watchOption.get('watcherUID') === watchEventMerged.event.watcherUID)
                 .getIn([0, 'active']);
+            
+            if (!watcherIsActive) {
+                debug(`(eventUID:${watchEventMerged.event.eventUID}) ignoring event as this watcher (watcherUID:${watchEventMerged.event.watcherUID}) is disabled`);
+            }
+            return watcherIsActive;
         })
-        .subscribe(x => {
+        .subscribe((watchEventMerged: WatchEventMerged) => {
+
+            const event = watchEventMerged.event;
+
             // If the file that changed has a ext matching
             // one in the injectFileTypes array, attempt an injection
-            if (x.options.get('injectFileTypes').contains(x.event.ext)) {
-                return bs.inject(x.event);
+
+            if (watchEventMerged.options.get('injectFileTypes').contains(event.ext)) {
+                return bs.inject(event);
             }
 
             // Otherwise, simply reload the browser
@@ -172,12 +222,12 @@ function getCoreWatchers (watchers, options) {
     const watchers$ = watchers
         // Filter for core namespace, undefined FN
         // and event name of 'change'
-        .filter((x) =>
-            x.event.namespace  === 'core' &&
-            x.event.item.fn    === undefined &&
+        .filter((watchEventMerged: WatchEventMerged) =>
+            watchEventMerged.event.namespace  === 'core' &&
+            watchEventMerged.event.item.fn    === undefined &&
             (
-                x.event.event  === 'change' ||
-                x.event.event  === 'add'
+                watchEventMerged.event.event  === 'change' ||
+                watchEventMerged.event.event  === 'add'
             )
         );
 
@@ -229,19 +279,20 @@ function applyOperators (source, items, options) {
  * @param {FilesOption} item
  * @returns {Observable<T>|Rx.Observable<T>}
  */
+
 function watcherAsObservable (watcher, item) {
 
     const watcherObservable$ = Rx.Observable.create(function (obs) {
         watcher.on('all', function (event, path) {
-            obs.onNext({
+            obs.onNext(<WatchEvent>{
                 event,
                 item,
                 path,
-                namespace : item.get('namespace'),
-                parsed    : require('path').parse(path),
-                ext       : require('path').extname(path).slice(1),
-                basename  : require('path').basename(path),
-                id        : item.get('id')
+                namespace  : item.get('namespace'),
+                parsed     : require('path').parse(path),
+                ext        : require('path').extname(path).slice(1),
+                basename   : require('path').basename(path),
+                watcherUID : item.get('watcherUID')
             });
         });
     });
@@ -268,7 +319,7 @@ function watcherAsObservable (watcher, item) {
  * @param options
  * @returns {*}
  */
-module.exports.transformOptions = function (options) {
+export function transformOptions (options) {
 
     const PATH    = ['options', OPT_NAME];
     const plugins = options.get('plugins').filter(x => x.hasIn(PATH));
@@ -332,14 +383,14 @@ function createOne (item, namespace) {
         return new FilesOption({namespace})
             .mergeDeep({
                 match: Immutable.List([item]),
-                id: watcherId++
+                watcherUID: watcherUID++
             });
     }
 
     return new FilesOption({namespace})
         .mergeDeep(item
             .update('match', x => Immutable.List([]).concat(x))
-            .update('id', x => watcherId++)
+            .update('watcherUID', x => watcherUID++)
             .update('locator', locator => {
                 if (Immutable.Map.isMap(locator)) {
                     // bail if an object was already given

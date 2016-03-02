@@ -4,7 +4,6 @@
   "description": "Browsersync's Engine",
   "main": "dist/browser-sync.js",
   "scripts": {
-    "lint": "eslint lib test/mocha",
     "unit": "mocha test/mocha/**/*.js",
     "test": "crossbow run build-all && npm run unit",
     "e2e": "protractor test/protractor/config.js",
@@ -24,7 +23,7 @@
     "protocol.json"
   ],
   "engines": {
-    "node": ">= 0.10.0"
+    "node": ">= 4.0.0"
   },
   "author": "Shane Osbourne",
   "license": "Apache 2.0",

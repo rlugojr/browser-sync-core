@@ -1,6 +1,6 @@
 const browserSync = require('../../../');
 const utils       = require('../utils');
-const conf        = require('../../../lib/config');
+const conf        = require('../../../dist/config');
 const assert      = require('chai').assert;
 const Rx          = require('rx');
 const Observable  = Rx.Observable;

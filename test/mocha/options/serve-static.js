@@ -1,7 +1,7 @@
 'use strict';
 
 var assert   = require('chai').assert;
-var ss       = require('../../../lib/opt.serve-static');
+var ss       = require('../../../dist/opt.serve-static');
 var bs       = require('../../../');
 var merge    = require('../utils').optmerge;
 

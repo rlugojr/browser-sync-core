@@ -4,10 +4,10 @@ const assert  = require('chai').assert;
 const bs      = require('../../../');
 const fromJS  = require('immutable').fromJS;
 const List    = require('immutable').List;
-const watcher = require('../../../lib/plugins/watch');
-const plugs   = require('../../../lib/plugins');
-const startup = require('../../../lib/startup');
-const opts    = require('../../../lib/incoming-options');
+const watcher = require('../../../dist/plugins/watch');
+const plugs   = require('../../../dist/plugins');
+const startup = require('../../../dist/startup');
+const opts    = require('../../../dist/incoming-options');
 
 function process(obj) {
     return watcher.transformOptions(startup.process(opts.merge(obj), startup.pipeline));

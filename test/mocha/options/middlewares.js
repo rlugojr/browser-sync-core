@@ -3,8 +3,8 @@
 var bs         = require('../../../');
 var sinon      = require('sinon');
 var assert     = require('chai').assert;
-var plugins    = require('../../../lib/plugins');
-var middleware = require('../../../lib/middleware');
+var plugins    = require('../../../dist/plugins');
+var middleware = require('../../../dist/middleware');
 var merge      = require('../utils').optmerge;
 
 function process(conf) {

@@ -4,9 +4,9 @@ const assert    = require('chai').assert;
 const Immutable = require('immutable');
 const isList    = Immutable.List.isList;
 const isMap     = Immutable.Map.isMap;
-const watcher   = require('../../../lib/plugins/watch');
-const startup   = require('../../../lib/startup');
-const opts      = require('../../../lib/incoming-options');
+const watcher   = require('../../../dist/plugins/watch');
+const startup   = require('../../../dist/startup');
+const opts      = require('../../../dist/incoming-options');
 
 function process(obj) {
     return watcher.transformOptions(startup.process(opts.merge(obj), startup.pipeline));

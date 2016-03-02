@@ -1,6 +1,6 @@
 const utils     = exports;
-const opts      = require('../../lib/incoming-options');
-const transform = require('../../lib/transform-options');
+const opts      = require('../../dist/incoming-options');
+const transform = require('../../dist/transform-options');
 const socket    = require('socket.io-client');
 
 var uniq        = 0;

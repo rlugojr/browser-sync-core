@@ -1,7 +1,7 @@
 const assert = require('chai').assert;
 const bs = require('../../../');
 const Im = require('immutable');
-const watcher = require('../../../lib/plugins/watch');
+const watcher = require('../../../dist/plugins/watch');
 
 describe('Reacting to file-change events', function () {
     it('listens to file watcher events', function (done) {
@@ -29,7 +29,7 @@ describe('Reacting to file-change events', function () {
 
                     assert.equal(x.length, 2);
 
-                    assert.notEqual(x[0].id, x[1].id) // separate IDs
+                    assert.notEqual(x[0].eventUID, x[1].eventUID) // separate IDs
 
                     assert.equal(x[0].namespace, 'core'); // second watcher
                     assert.equal(x[1].namespace, 'core'); // second watcher

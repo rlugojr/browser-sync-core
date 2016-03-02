@@ -1,5 +1,5 @@
 var assert = require('chai').assert;
-var proto  = require('../../../lib/protocol');
+var proto  = require('../../../dist/protocol');
 
 describe('Protocol: Client.register', function () {
     it('can collect missing errors', function () {

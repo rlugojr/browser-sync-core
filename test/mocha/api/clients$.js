@@ -1,6 +1,6 @@
 const browserSync = require('../../../');
 const utils       = require('../utils');
-const conf        = require('../../../lib/config');
+const conf        = require('../../../dist/config');
 const assert      = require('chai').assert;
 
 describe('Client connection stream', function () {

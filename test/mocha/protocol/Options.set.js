@@ -1,5 +1,5 @@
 var assert = require('chai').assert;
-var proto  = require('../../../lib/protocol');
+var proto  = require('../../../dist/protocol');
 
 function runOne (arg1, arg2) {
     return proto.validate('Options.set', arg1, arg2);

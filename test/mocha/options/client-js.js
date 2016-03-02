@@ -3,8 +3,8 @@
 var bs       = require('../../../');
 var Rx       = require('rx');
 var assert   = require('chai').assert;
-var clientJs = require('../../../lib/client-js');
-var plugins  = require('../../../lib/plugins');
+var clientJs = require('../../../dist/client-js');
+var plugins  = require('../../../dist/plugins');
 var merge    = require('../utils').optmerge;
 
 function process(conf) {

@@ -1,4 +1,4 @@
-const proxy = require('../../../lib/plugins/proxy');
+const proxy = require('../../../dist/plugins/proxy');
 const assert = require('chai').assert;
 const utils = require('../utils');
 
