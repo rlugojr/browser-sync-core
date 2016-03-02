@@ -2,10 +2,10 @@ var bs = require('./');
 
 bs.create({
     strict: false,
-    proxy: 'http://selco.static/',
-    //serveStatic: [
-    //    'test/fixtures'
-    //],
+    //proxy: 'http://selco.static/',
+    serveStatic: [
+        'test/fixtures'
+    ],
     middleware: [
         {
             handle: function (req, res, next) {
@@ -16,11 +16,12 @@ bs.create({
             }
         }
     ],
-    files: [
+    reloadDebounce: 2000,
+    watch: [
         {
-            match: 'test/fixtures'
+            match: 'test/fixtures',
+            debounce: 2000
         },
-        'test/fixtures/**/*.css'
         //{
         //{
         //    match: 'test/fixtures/*.html',
@@ -62,9 +63,9 @@ bs.create({
         //},
         //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp', // laptop
         //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp', // laptop
-        './lib/plugins/proxy',
+        //'./lib/plugins/proxy',
         //'./lib/plugins/404',
-        './lib/plugins/watcher'
+        //'./lib/plugins/watcher'
         //'/Users/shakyshane/sites/oss/UI'
     ],
     //middleware: [
