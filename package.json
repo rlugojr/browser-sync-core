@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint lib test/mocha",
     "unit": "mocha test/mocha/**/*.js",
-    "test": "npm run unit",
+    "test": "crossbow run build-all && npm run unit",
     "e2e": "protractor test/protractor/config.js",
     "start": "crossbow watch",
     "build-client": "crossbow run build-client"
