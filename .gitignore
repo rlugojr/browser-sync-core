@@ -1,3 +1,5 @@
 node_modules
 .idea
 client/dist/socket.io.js
+/dist
+/typings

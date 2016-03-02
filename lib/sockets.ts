@@ -6,6 +6,18 @@ const server    = require('./server');
 const Rx        = require('rx');
 const transform = require('./transform-options');
 
+export interface Protocol {
+    send: (path:string, arg:any) => void
+    sendOptionToClient: (client: any, id:string, options:any) => void
+}
+
+export interface Socket {
+    socketServer: any
+    io: any
+    clients: any
+    protocol: Protocol
+}
+
 /**
  * @param {Server} server
  * @param {Map} options

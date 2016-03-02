@@ -1,3 +1,5 @@
+/// <reference path="../typings/main.d.ts" />
+import {Socket} from "./sockets";
 'use strict';
 
 const Immutable = require('immutable');
@@ -20,6 +22,31 @@ const debugCleanup = require('debug')('bs:cleanup');
 const debugPlugins = require('debug')('bs:plugins');
 const bs = exports;
 
+export interface BrowserSync {
+    server: any
+    app: any
+    registerCleanupTask: (fn:any) => void
+    cleanup: (cb?:any) => void
+    config: any
+    utils: any
+    io: any
+    sockets: Socket
+    clients: any
+    clients$: any
+    connections$: any
+    registered$: any
+    options$: any
+    setOption: (selector:string, fn) => any
+    getSocket: (id:string) => any
+    setClientOption: (id:string, selector:string, fn) => any
+    setDefaultClientOption: (selector:string, fn) => any
+    overrideClientOptions: (selector:string, fn) => any
+    getSocketIoScript: () => string
+    getExternalSocketConnector: (opts: any) => string
+    reload: () => void
+    inject: (any) => void
+}
+
 bs.create = function (userOptions, cb) {
 
     startup(userOptions).subscribe(go, err => {
@@ -37,7 +64,7 @@ bs.create = function (userOptions, cb) {
         const opts$    = optSub.share();
         const bsServer = server.create(options);
         const cleanups = [];
-        const bs       = {};
+        const bs       = <BrowserSync>{};
         bs.server      = bsServer.server;
         bs.app         = bsServer.app;
 
@@ -56,6 +83,7 @@ bs.create = function (userOptions, cb) {
          * @type {{io, steward, clients, connections, protocol, pause, resume}}
          */
         const bsSocket = sockets.create(bs, bs.server, options);
+
         const clientsStreams = require('./clients').track(bsSocket, optSub, cleanups);
 
         /**
@@ -78,7 +106,7 @@ bs.create = function (userOptions, cb) {
             fn: function () {
                 bsSocket.socketServer.close()
             }
-        })
+        });
 
         /**
          * These functions are called when the plugin call is 'option:<name>`
@@ -290,10 +318,10 @@ bs.create = function (userOptions, cb) {
 
         bs.options$ = optSub;
 
-        bs.plugin = function () {};
         bs.reload = function () {
             bsSocket.protocol.send('Global.reload', true);
         };
+
         bs.inject = function (obj) {
             bsSocket.protocol.send('Global.inject', obj);
         };

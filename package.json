@@ -2,7 +2,7 @@
   "name": "browser-sync-core",
   "version": "0.0.2",
   "description": "Browsersync's Engine",
-  "main": "lib/browser-sync.js",
+  "main": "dist/browser-sync.js",
   "scripts": {
     "lint": "eslint lib test/mocha",
     "unit": "mocha test/mocha/**/*.js",
@@ -41,7 +41,7 @@
     "browserify-middleware": "^7.0.0",
     "bs-snippet-injector": "^2.0.1",
     "chai": "^3.3.0",
-    "crossbow-cli": "2.1.3",
+    "crossbow-cli": "git://github.com/crossbow-js/crossbow-cli.git#28087ef913bd39369d8ece5df427d1960177879d",
     "eslint": "1.10.3",
     "lodash.merge": "3.3.2",
     "lodash.set": "3.7.4",
