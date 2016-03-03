@@ -1,14 +1,14 @@
 const browserSync = require('../../../');
 const utils       = require('../utils');
-const conf        = require('../../../dist/config');
+const register    = require('../../../dist/clients').ClientEvents.register;
 const assert      = require('chai').assert;
 
 describe('Client connection stream', function () {
     it('does not have duplicates', function (done) {
         browserSync.create({}, function (err, bs) {
             const client = utils.getClientSocket(bs);
-            client.emit(conf.events.CLIENT_REGISTER, utils.getClient('123456'));
-            client.emit(conf.events.CLIENT_REGISTER, utils.getClient('123456'));
+            client.emit(register, utils.getClient('123456'));
+            client.emit(register, utils.getClient('123456'));
             bs.clients$.skip(1)
                 .take(2)
                 .toArray()
@@ -27,8 +27,8 @@ describe('Client connection stream', function () {
     it('allows unique clients', function (done) {
         browserSync.create({}, function (err, bs) {
             const client = utils.getClientSocket(bs);
-            client.emit(conf.events.CLIENT_REGISTER, utils.getClient('xyz'));
-            client.emit(conf.events.CLIENT_REGISTER, utils.getClient('zxy'));
+            client.emit(register, utils.getClient('xyz'));
+            client.emit(register, utils.getClient('zxy'));
             bs.clients$.skip(1)
                 .take(2)
                 .toArray()
@@ -48,7 +48,7 @@ describe('Client connection stream', function () {
     it('allows unique clients (stress)', function (done) {
         browserSync.create({}, function (err, bs) {
             for (var i = 1, n = 51; i < n; i += 1) {
-                utils.getClientSocket(bs).emit(conf.events.CLIENT_REGISTER, utils.getClient('id-' + i));
+                utils.getClientSocket(bs).emit(register, utils.getClient('id-' + i));
             }
             bs.clients$.skip(1)
                 .take(50)

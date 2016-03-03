@@ -1,6 +1,6 @@
 const browserSync = require('../../../');
 const utils       = require('../utils');
-const conf        = require('../../../dist/config');
+const register    = require('../../../dist/clients').ClientEvents.register;
 const assert      = require('chai').assert;
 const Rx          = require('rx');
 const Observable  = Rx.Observable;
@@ -9,7 +9,7 @@ describe('Client options', function () {
     it('creates a new client with default options', function (done) {
         browserSync.create({}, function (err, bs) {
             const client = utils.getClientSocket(bs);
-            client.emit(conf.events.CLIENT_REGISTER, utils.getClient('123456'));
+            client.emit(register, utils.getClient('123456'));
             bs.clients$.take(2).toArray()
                 .subscribe(clients => {
                     const path1 = ['123456', 'options', 'reloadOnRestart'];
@@ -23,7 +23,7 @@ describe('Client options', function () {
         browserSync.create({}, function (err, bs) {
 
             const client = utils.getClientSocket(bs);
-            client.emit(conf.events.CLIENT_REGISTER, utils.getClient('123456'));
+            client.emit(register, utils.getClient('123456'));
 
             bs.clients$.take(3).toArray()
                 .subscribe(clients => {
@@ -40,7 +40,7 @@ describe('Client options', function () {
             bs.registered$.take(1)
                 .flatMap(() => bs.setDefaultClientOption('reloadOnRestart', x => 'shane'))
                 // add a second client, after updating default options
-                .do(x => client.emit(conf.events.CLIENT_REGISTER, utils.getClient('654321')))
+                .do(x => client.emit(register, utils.getClient('654321')))
                 .subscribe();
         });
     });
@@ -48,7 +48,7 @@ describe('Client options', function () {
         browserSync.create({}, function (err, bs) {
 
             const client = utils.getClientSocket(bs);
-            client.emit(conf.events.CLIENT_REGISTER, utils.getClient('123456'));
+            client.emit(register, utils.getClient('123456'));
 
             bs.clients$.take(3).toArray()
                 .subscribe(clients => {
@@ -70,7 +70,7 @@ describe('Client options', function () {
         browserSync.create({}, function (err, bs) {
 
             const client = utils.getClientSocket(bs);
-            client.emit(conf.events.CLIENT_REGISTER, utils.getClient('123456'));
+            client.emit(register, utils.getClient('123456'));
 
             bs.clients$.take(4).toArray()
                 .subscribe(clients => {
