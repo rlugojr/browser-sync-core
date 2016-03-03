@@ -5,8 +5,7 @@ var bs = require('./');
 //
 bs.create({
     proxy: {
-        target: 'http://localhost:3000/',
-        ws: true
+        target: 'http://wearejh.com/'
     },
     plugins: [
         //function (bs, opts, ctx) {
