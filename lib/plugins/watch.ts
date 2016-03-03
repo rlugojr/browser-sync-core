@@ -52,9 +52,7 @@ export interface WatchItem {
  */
 const FilesOption = Immutable.Record({
     match:     Immutable.List([]),
-    options:   Immutable.Map({
-        ignoreInitial: true
-    }),
+    options:   Immutable.Map({}),
     fn:        undefined, // optional
     locator:   undefined, // optional
     namespace: 'core',
@@ -88,7 +86,7 @@ module.exports.init = function (bs: BrowserSync) {
         .map(item => {
             const patterns = item.get('match').toJS();
 
-            debug(`> creating for ${patterns}`);
+            debug(`+ watcherUID:${item.get('watcherUID')} creating for patterns: ${patterns}`);
 
             const watch = chokidar.watch(patterns, item.get('options').toJS());
             /**
@@ -99,7 +97,7 @@ module.exports.init = function (bs: BrowserSync) {
              * long time and should not hinder the startup of servers etc.
              */
             watch.on('ready', function () {
-                debug(`+ ${patterns} now ready`);
+                debug(`✔ watcherUID:${item.get('watcherUID')} now ready`);
                 watch._bsReady = true;
             });
 
@@ -321,9 +319,10 @@ function watcherAsObservable (watcher, item) {
  */
 export function transformOptions (options) {
 
-    const PATH    = ['options', OPT_NAME];
-    const plugins = options.get('plugins').filter(x => x.hasIn(PATH));
-    const core    = options.get(OPT_NAME) || Immutable.List([]);
+    const PATH       = ['options', OPT_NAME];
+    const globalOpts = options.get('watchOptions');
+    const plugins    = options.get('plugins').filter(x => x.hasIn(PATH));
+    const core       = options.get(OPT_NAME) || Immutable.List([]);
 
     /**
      * Bail if `files` option not given in options or
@@ -338,7 +337,7 @@ export function transformOptions (options) {
      * no plugins registered files options
      */
     if (!plugins.size) {
-        return options.set(OPT_NAME, resolveMany(core, 'core'));
+        return options.set(OPT_NAME, resolveMany(core, 'core', globalOpts));
     }
 
     /**
@@ -347,12 +346,13 @@ export function transformOptions (options) {
      * name of the plugin
      */
     const pluginFileOptions = plugins
-        .map(x => resolveMany(x.getIn(['options', OPT_NAME]), x.get('name')).get(0));
+        .map(x => resolveMany(x.getIn(['options', OPT_NAME]), x.get('name'), globalOpts).get(0));
 
     /**
      * Now merge both core & plugins files options
      */
-    const coreFileOptions = resolveMany(options.get(OPT_NAME), 'core');
+    const coreFileOptions = resolveMany(options.get(OPT_NAME), 'core', globalOpts);
+
     return options.set(OPT_NAME, coreFileOptions.concat(pluginFileOptions));
 };
 
@@ -362,15 +362,15 @@ export function transformOptions (options) {
  * @param namespace
  * @returns {*}
  */
-function resolveMany (initialFilesOption, namespace) {
+function resolveMany (initialFilesOption, namespace, globalOpts) {
     if (Immutable.List.isList(initialFilesOption)) {
-        return initialFilesOption.map(x => createOne(x, namespace));
+        return initialFilesOption.map(x => createOne(x, namespace, globalOpts));
     }
     if (Immutable.Map.isMap(initialFilesOption)) {
-        return Immutable.List([createOne(initialFilesOption, namespace)]);
+        return Immutable.List([createOne(initialFilesOption, namespace, globalOpts)]);
     }
     if (typeof initialFilesOption === 'string') {
-        return Immutable.List([createOne(initialFilesOption, namespace)]);
+        return Immutable.List([createOne(initialFilesOption, namespace, globalOpts)]);
     }
 }
 
@@ -378,16 +378,17 @@ function resolveMany (initialFilesOption, namespace) {
  * @param item
  * @returns {Cursor|List<T>|Map<K, V>|Map<string, V>|*}
  */
-function createOne (item, namespace) {
+function createOne (item, namespace, globalOpts) {
     if (typeof item === 'string') {
         return new FilesOption({namespace})
             .mergeDeep({
                 match: Immutable.List([item]),
-                watcherUID: watcherUID++
+                watcherUID: watcherUID++,
+                options: globalOpts
             });
     }
 
-    return new FilesOption({namespace})
+    return new FilesOption({namespace, options: globalOpts})
         .mergeDeep(item
             .update('match', x => Immutable.List([]).concat(x))
             .update('watcherUID', x => watcherUID++)

@@ -3,6 +3,7 @@
   "dependencies": {},
   "devDependencies": {},
   "ambientDependencies": {
+    "chokidar": "github:DefinitelyTyped/DefinitelyTyped/chokidar/chokidar.d.ts#ae81e340a9e897167cfef3122a5a3aed04293814",
     "node": "github:DefinitelyTyped/DefinitelyTyped/node/node.d.ts#48c1e3c1d6baefa4f1a126f188c27c4fefd36bff",
     "socket.io": "github:DefinitelyTyped/DefinitelyTyped/socket.io/socket.io.d.ts#abc2bcfb8524b1e027e6298d3348012b5b06eda5"
   }
