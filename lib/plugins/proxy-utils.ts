@@ -1,7 +1,8 @@
-var utils = exports;
-var url   = require('url');
+var url = require('url');
+import NodeURL  = require('url');
 
-utils.rewriteLinks = function rewriteLinks(userServer) {
+
+export function rewriteLinks (userServer: NodeURL.Url) {
 
     var host   = userServer.hostname;
     var string = host;
@@ -14,7 +15,10 @@ utils.rewriteLinks = function rewriteLinks(userServer) {
     }
 
     return {
-        match: new RegExp('https?://' + string + '(\/)?|(\'|")(https?://|/|\\.)?' + string + '(\/)?(.*?)(?=[ ,\'"\\s])', 'g'),
+        match: new RegExp("https?:\\\\/\\\\/" + string + "|https?://" + string + "(\/)?|('|\")(https?://|/|\\.)?" + string + "(\/)?(.*?)(?=[ ,'\"\\s])", "g"),
+        //match: new RegExp("https?:\\\\?/\\\\?/" + string + "(\/)?|('|\")(https?://|\\\\?/|\\.)?" + string + "(\/)?(.*?)(?=[ ,'\"\\s])", "g"),
+        //match: new RegExp('https?://' + string + '(\/)?|(\'|")(https?://|/|\\.)?' + string + '(\/)?(.*?)(?=[ ,\'"\\s])', 'g'),
+        //match: new RegExp("https?:\\\\/\\\\/" + string, "g"),
         fn:    function (req, res, match) {
 
             var proxyUrl = req.headers['host'];
@@ -82,10 +86,10 @@ utils.rewriteLinks = function rewriteLinks(userServer) {
  * Remove 'domain' from any cookies
  * @param {Object} res
  */
-utils.checkCookies = function checkCookies(res) {
+export function checkCookies (res) {
     if (typeof(res.headers['set-cookie']) !== 'undefined') {
         res.headers['set-cookie'] = res.headers['set-cookie'].map(function (item) {
-            return utils.rewriteCookies(item);
+            return rewriteCookies(item);
         });
     }
 };
@@ -95,7 +99,7 @@ utils.checkCookies = function checkCookies(res) {
  * @param rawCookie
  * @returns {string}
  */
-utils.rewriteCookies = function rewriteCookies(rawCookie) {
+export function rewriteCookies (rawCookie) {
 
     var objCookie = (function () {
         // simple parse function (does not remove quotes)
@@ -130,4 +134,4 @@ utils.rewriteCookies = function rewriteCookies(rawCookie) {
     }
 
     return pairs.join('; ');
-};
+}

@@ -1,10 +1,13 @@
 import * as proxy from "./proxy.d";
 
 const Imm       = require('immutable');
-import utils from '../utils';
-const isString  = utils.isString;
 const debug     = require('debug')('bs:proxy');
 const OPT_NAME  = 'proxy';
+
+import utils from '../utils';
+const isString  = utils.isString;
+
+import * as proxyUtils from './proxy-utils';
 
 /**
  * Initial options used when creating the node http-proxy server
@@ -140,9 +143,9 @@ module.exports.init = function (bs, opts, obs) {
      * add rewrite rules for it.
      */
     const rewriteRules = proxies
-        .filter(x => x.get('rewriteRules'))
+        .filter(x => x.get('rewriteRules') === true)
         .map(x => {
-            return utils.rewriteLinks(x.get('url'));
+            return proxyUtils.rewriteLinks(x.get('url').toJS());
         });
 
     bs.setOption('middleware', mw => mw.concat(middlewares.toJS())).subscribe();
