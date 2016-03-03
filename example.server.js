@@ -2,9 +2,9 @@ var bs = require('./');
 
 bs.create({
     strict: false,
-    serveStatic: [
-        'test/fixtures'
-    ],
+    //serveStatic: [
+    //    'test/fixtures'
+    //],
     middleware: [
         {
             handle: function (req, res, next) {
@@ -18,6 +18,7 @@ bs.create({
     //watchDebounce: 2000,
     //watchDelay: 2000,
     watch: [
+        //"test/fixtures"
         {
             debounce: 2000,
             match: 'test/fixtures'
@@ -32,7 +33,7 @@ bs.create({
         //}
         //}
     ],
-    devMode: true,
+    //devMode: true,
     //clientJs: [
     //    'const s = window.___browserSync___.socket; s.on("connection", (x) => console.log(x))'
     //],
@@ -96,7 +97,7 @@ bs.create({
         bs.setOption('clientJs', function (js) {
             return js.concat({
                 id: 'test',
-                content: 'console.log("navigator" in location)'
+                content: 'console.log("navigator" in location);console.log("shane");'
             });
         }).subscribe();
     }, 1000);
@@ -135,10 +136,11 @@ bs.create({
     //bs.options$.subscribe(x => console.log('change'))
     //bs.cleanup();
 
+
     console.log(bs.options.get('urls').toJS());
 
     setTimeout(function () {
-        console.log('disabling an item');
+        //console.log('disabling an item');
         bs.setOption('watch', function (items) {
             return items.map(x => x.set('active', false));
         }).subscribe();

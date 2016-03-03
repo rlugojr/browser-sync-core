@@ -11,6 +11,14 @@ describe('Transforming proxy option', function () {
         assert.equal(trans[0].target, 'http://bbc.co.uk');
         assert.equal(trans[0].url.href, 'http://bbc.co.uk/');
     });
+    it('accepts a string-only proxy option without http:// prefix', function () {
+        const opts = utils.optmerge({
+            proxy: ['bbc.co.uk']
+        });
+        const trans = proxy.transformOptions(opts).get('proxy').toJS();
+        assert.equal(trans[0].target, 'http://bbc.co.uk');
+        assert.equal(trans[0].url.href, 'http://bbc.co.uk/');
+    });
     it('accepts an array of string only proxy options', function () {
         const opts = utils.optmerge({
             proxy: ['http://www.bbc.co.uk', 'http://app.bbc.co.uk']
@@ -103,7 +111,7 @@ describe('Transforming proxy option', function () {
     it('has cookie options', function () {
         const opts = utils.optmerge({
             proxy: [{
-                target: 'http://some.backend.dev',
+                target: 'http://some.backend.dev'
             }]
         });
         const setOpts = proxy.transformOptions(opts).getIn(['proxy']).toJS();

@@ -2,7 +2,6 @@
 import NodeURL  = require('url');
 import SocketIO = require('socket.io');
 import * as clients from './clients.d';
-import {BrowserSyncOptions} from "./browser-sync.d";
 
 const Rx        = require('rx');
 const Immutable = require('immutable');
@@ -10,10 +9,11 @@ const transform = require('./transform-options');
 const utils     = require('./utils');
 
 import {parse} from 'url';
+import {BrowsersyncOptionsMap} from "./browser-sync.d";
 
 export const ClientEvents = {
     register: "Client.register"
-}
+};
 
 function track(bsSocket, options$, cleanups) {
 
@@ -64,7 +64,7 @@ function track(bsSocket, options$, cleanups) {
         .do(x => {
 
             const client:  SocketIO.Socket = x[0];
-            const options: BrowserSyncOptions = x[1];
+            const options: BrowsersyncOptionsMap = x[1];
 
             options.getIn(['clientOptions', 'events']).forEach(event => {
                 client.on(event, (data) => {
@@ -113,7 +113,7 @@ function track(bsSocket, options$, cleanups) {
      * any re-registrations (ie: browser reloads) will alo be updated each time.
      */
     const sub2 = registered$
-        .withLatestFrom(clients$, options$, (x, clients, options: BrowserSyncOptions) => {
+        .withLatestFrom(clients$, options$, (x, clients, options: BrowsersyncOptionsMap) => {
 
             const client:     SocketIO.Socket = x.client;
             const connection: clients.IncomingClientRegistration = x.connection;

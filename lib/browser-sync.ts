@@ -139,10 +139,10 @@ bs.create = function (userOptions, cb) {
             const clean = cleanups.map(x => {
                 return Rx.Observable.create(obs => {
                     if (x.async) {
-                        debugCleanup(`+ (async) ${x.description}`)
+                        debugCleanup(`+ (async) ${x.description}`);
                         x.fn.call(bs, () => obs.onCompleted());
                     } else {
-                        debugCleanup(`+ (sync) ${x.description}`)
+                        debugCleanup(`+ (sync) ${x.description}`);
                         x.fn.call(bs);
                         obs.onCompleted();
                     }
@@ -358,7 +358,7 @@ bs.create = function (userOptions, cb) {
                 console.log('stack', e.stack);
                 cb(e);
             }, () => {
-                debugPlugins(`= all finished setup`);
+                debugPlugins(`✔ all plugins have finished their setup tasks`);
                 cb(null, bs);
             });
     }

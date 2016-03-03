@@ -9,20 +9,21 @@ bs.create({
         ws: true
     },
     plugins: [
-        function (bs, opts, ctx) {
-            bs.registered$
-                .pluck('connection')
-                .subscribe(x => {
-                    //console.log('REGISTER', x);
-                })
-            bs.clients$
-                .map(x => x.toList().toJS())
-                .subscribe(x => {
-                    //console.log('CLIENTs', x.map(x => x.browser));
-                })
-        }
+        //function (bs, opts, ctx) {
+        //    bs.registered$
+        //        .pluck('connection')
+        //        .subscribe(x => {
+        //            //console.log('REGISTER', x);
+        //        })
+        //    bs.clients$
+        //        .map(x => x.toList().toJS())
+        //        .subscribe(x => {
+        //            //console.log('CLIENTs', x.map(x => x.browser));
+        //        })
+        //}
     ]
 }, function (err, bs) {
+    console.log(bs.options.get('urls'));
     //console.log(err);
     //console.log(bs.options.get('plugins'));
 });

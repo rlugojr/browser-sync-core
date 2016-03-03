@@ -65,7 +65,7 @@ export interface CodeSyncOptions {
 export interface GhostModeOptions {
     clicks: boolean
     scroll: boolean
-    forms: boolean
+    forms: boolean|any
 }
 
 export interface ClientOptions {
