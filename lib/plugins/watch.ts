@@ -1,6 +1,6 @@
 import {BrowserSync} from "../browser-sync";
 const Immutable = require('immutable');
-const utils     = require('../utils');
+import utils from '../utils';
 const Rx        = require('rx');
 const chokidar  = require('chokidar');
 const debug     = require('debug')('bs:watch');

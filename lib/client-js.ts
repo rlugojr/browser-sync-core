@@ -1,6 +1,7 @@
 const Immutable          = require('immutable');
 const clientJs           = exports;
-const isString           = require('./utils').isString;
+
+
 const snippet            = require('./snippet');
 const connectUtils       = require('./connect-utils');
 const fs                 = require('fs');
@@ -9,12 +10,21 @@ const config             = require('./config');
 const OPT_NAME           = 'clientJs';
 const socketIoClient     = fs.readFileSync(path.join(__dirname, '..', config.socketIoScript), 'utf-8');
 
-var   count              = 0;
+import utils from './utils';
+const isString = utils.isString;
+
+var count = 0;
+
+export interface ClientJsOption {
+    via:     string
+    id:      string
+    content: string
+}
 
 /**
  * Schema for a ClientJs item
  */
-const ClientJs = Immutable.Record({
+const ClientJs = Immutable.Record(<ClientJsOption>{
     via:     'Browsersync Core',
     id:      '',
     content: ''
@@ -94,7 +104,7 @@ clientJs.addBuiltIns = function (options) {
                 id: 'browser-sync-client',
                 content: fs.readFileSync(clientJsPath)
             }
-        ].map(x => {
+        ].map((x: ClientJsOption) => {
             x.via = 'Browsersync core';
             return x;
         })).concat(x);

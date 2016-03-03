@@ -1,11 +1,10 @@
 'use strict';
 
-const isString       = require('./utils').isString;
-const isFunction     = require('./utils').isFunction;
 const Immutable      = require('immutable');
-const utils          = require('./utils');
-const defaultOptions = require('./default-options');
 const connectUtils   = require('./connect-utils');
+
+import utils from './utils';
+const isFunction = utils.isFunction;
 
 /**
  * @param options

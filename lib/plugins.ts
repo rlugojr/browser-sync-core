@@ -3,14 +3,16 @@
 const Rx         = require('rx');
 const Observable = Rx.Observable;
 const path       = require('path');
-const isString   = require('./utils').isString;
-const uniqueId   = require('./utils').uniqueId;
 const Imm        = require('immutable');
 const debug      = require('debug')('bs:plugins');
 
 const ASYNC_METHOD = ['module', 'initAsync'];
 const SYNC_METHOD  = ['module', 'init'];
 const NAME_PATH    = ['module', 'plugin:name'];
+
+import utils from './utils';
+const isString   = utils.isString;
+const uniqueId   = utils.uniqueId;
 
 /**
  * Schema for a plugin item

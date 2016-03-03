@@ -2,9 +2,9 @@ var bs = require('./');
 
 bs.create({
     strict: false,
-    //serveStatic: [
-    //    'test/fixtures'
-    //],
+    serveStatic: [
+        'test/fixtures'
+    ],
     middleware: [
         {
             handle: function (req, res, next) {

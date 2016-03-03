@@ -6,7 +6,7 @@ import * as clients from './clients.d';
 const Rx        = require('rx');
 const Immutable = require('immutable');
 const transform = require('./transform-options');
-const utils     = require('./utils');
+import utils from './utils';
 
 import {parse} from 'url';
 import {BrowsersyncOptionsMap} from "./browser-sync.d";

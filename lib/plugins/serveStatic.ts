@@ -1,21 +1,32 @@
+import {ServeStaticOptions} from "./serveStatic.d";
+
+import utils from '../utils';
 const fs = require('fs');
 const config = require('../config');
 const path = require('path');
 const middleware = require('../middleware');
 const connect = require('connect');
 const http = require('http');
-const isString = require('../utils').isString;
 const Immutable = require('immutable');
-const serveStatic  = require('serve-static');
+const serveStatic = require('serve-static');
+
 
 var ssID = 0;
 
 exports['plugin:name'] = 'Browsersync Serve Static';
 
+export interface ServeStaticOption {
+    id: string
+    namespace: string
+    root: string
+    options: ServeStaticOptions // optional serveStatic options
+    autoWatch: boolean
+}
+
 /**
  * Schema for files option
  */
-const ServeStaticOption = Immutable.Record({
+const ServeStaticOption = Immutable.Record(<ServeStaticOption>{
     id: '',
     namespace: '',
     root: '',
@@ -45,10 +56,7 @@ const ServeStaticOption = Immutable.Record({
  * @returns {{root: *, options: *}}
  */
 exports.createOne = function (root, options) {
-    return {
-        root,
-        options
-    }
+    return {root, options}
 };
 
 /**
@@ -127,7 +135,7 @@ function resolveMany (initialOption) {
         }
         return createOne(initialOption, 'core');
     }
-    if (isString('string')) {
+    if (utils.isString('string')) {
         return createOne(initialOption, 'core');
     }
 }
@@ -137,7 +145,7 @@ function resolveMany (initialOption) {
  */
 function createOne (item, namespace, options?) {
 
-    if (isString(item)) {
+    if (utils.isString(item)) {
         return new ServeStaticOption({
             root: item,
             id: 'serve-static-' + String(ssID++),

@@ -6,6 +6,7 @@ const portScanner     = require('portscanner');
 const path            = require('path');
 const UAParser        = require('ua-parser-js');
 const parser          = new UAParser();
+
 var uniqueIdCounter   = 0;
 
 const utils = {
@@ -169,7 +170,7 @@ const utils = {
      * @param url
      * @param name
      */
-    open: function (url, name) {
+    open: function (url, name?) {
         require('opn')(url, name || null);
     },
     /**
@@ -293,7 +294,8 @@ const utils = {
     }
 };
 
-module.exports              = utils;
+export default utils;
+
 module.exports.portscanner  = portScanner;
 module.exports.UAParser     = UAParser;
 module.exports.connect      = require('connect');

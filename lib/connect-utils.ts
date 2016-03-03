@@ -3,13 +3,14 @@
 const fs             = require('fs');
 const path           = require('path');
 const config         = require('./config');
-const template       = require('./utils').template;
 const socketTemplate = fs.readFileSync(config.templates.connector, 'utf-8');
 const scriptTemplate = fs.readFileSync(config.templates.scriptTag, 'utf-8');
 
+import utils from './utils';
+const template = utils.template;
+
 const CONNECTOR_LOCAL    = '"//" + location.host + "{{ns}}"';
 const CONNECTOR_EXTERNAL = '"{{scheme}}://" + location.hostname + ":{{port}}{{ns}}"';
-
 const cu = exports;
 
 /**

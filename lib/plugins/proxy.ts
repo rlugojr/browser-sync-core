@@ -1,18 +1,10 @@
-const Imm         = require('immutable');
-const isString    = require('../utils').isString;
-const debug       = require('debug')('bs:proxy');
+import * as proxy from "./proxy.d";
 
-const OPT_NAME    = 'proxy';
-
-/**
- * Sometimes we need to strip the domain from set-cookie headers
- * to stop the browser trying to set a domain that will fail.
- * This helps login systems such as Magento
- * @type {{stripDomain: boolean}}
- */
-const defaultCookieOptions = {
-    stripDomain: true
-};
+const Imm       = require('immutable');
+import utils from '../utils';
+const isString  = utils.isString;
+const debug     = require('debug')('bs:proxy');
+const OPT_NAME  = 'proxy';
 
 /**
  * Initial options used when creating the node http-proxy server
@@ -20,7 +12,7 @@ const defaultCookieOptions = {
  * see:
  * @type {{changeOrigin: boolean, autoRewrite: boolean, secure: boolean}}
  */
-const defaultProxyOptions = {
+const defaultHttpProxyOptions = <proxy.HttpProxyOptions>{
     changeOrigin: true,
     autoRewrite: true,
     secure: false,
@@ -28,9 +20,19 @@ const defaultProxyOptions = {
 };
 
 /**
+ * Sometimes we need to strip the domain from set-cookie headers
+ * to stop the browser trying to set a domain that will fail.
+ * This helps login systems such as Magento
+ * @type {{stripDomain: boolean}}
+ */
+const defaultCookieOptions = <proxy.CookieOptions>{
+    stripDomain: true
+};
+
+/**
  * Browsersync proxy option
  */
-const ProxyOption = Imm.Record({
+const ProxyOption = Imm.Record(<proxy.ProxyOption>{
     id: '',
     route: '',
     target: '',
@@ -51,7 +53,7 @@ const ProxyOption = Imm.Record({
         console.error(err.stack);
     },
     url:          Imm.Map({}),
-    options:      Imm.Map(defaultProxyOptions),
+    options:      Imm.Map(defaultHttpProxyOptions),
     cookies:      Imm.Map(defaultCookieOptions),
     ws:           false
 });
@@ -166,13 +168,13 @@ module.exports.transformOptions = function (options) {
 
     return options.update(OPT_NAME, initialProxyOption => {
         if (Imm.List.isList(initialProxyOption)) {
-            return initialProxyOption.map(stubIncomingString).map(createOne);
+            return initialProxyOption.map(stubIncomingString).map(createOneProxyOption);
         }
         if (Imm.Map.isMap(initialProxyOption)) {
-            return Imm.List([createOne(initialProxyOption)]);
+            return Imm.List([createOneProxyOption(initialProxyOption)]);
         }
         if (isString(initialProxyOption)) {
-            return Imm.List([createOne(stubIncomingString(initialProxyOption))])
+            return Imm.List([createOneProxyOption(stubIncomingString(initialProxyOption))])
         }
     });
 };
@@ -200,7 +202,7 @@ function stubIncomingString (item) {
  */
 var count = 0;
 
-function createOne (item) {
+function createOneProxyOption (item) {
     return new ProxyOption()
         .mergeDeep(item.mergeDeep({
             id: `Browsersync Proxy (${count += 1})`,

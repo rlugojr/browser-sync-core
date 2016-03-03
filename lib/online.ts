@@ -3,7 +3,8 @@
 const Rx       = require('rx');
 const just     = Rx.Observable.just;
 const online   = Rx.Observable.fromNodeCallback(require('dns').resolve);
-const isUndefined = require('./utils').isUndefined;
+
+import utils from './utils';
 
 /**
  * @param {Map} options
@@ -11,7 +12,7 @@ const isUndefined = require('./utils').isUndefined;
  */
 module.exports.fn = function isOnline(options) {
     const opt = options.get('online');
-    if (isUndefined(opt)) {
+    if (utils.isUndefined(opt)) {
         return online('www.google.com')
             .flatMap(just(true))
             .catch(just(false));
