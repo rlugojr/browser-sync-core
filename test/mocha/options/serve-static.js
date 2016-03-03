@@ -1,12 +1,12 @@
 'use strict';
 
 var assert   = require('chai').assert;
-var ss       = require('../../../dist/opt.serve-static');
+var ss       = require('../../../dist/plugins/serveStatic');
 var bs       = require('../../../');
 var merge    = require('../utils').optmerge;
 
 function process(conf) {
-    return ss.transformOptions(ss.merge(merge(conf)));
+    return ss.transformOptions(merge(conf));
 }
 
 describe('serveStatic as options', function () {
