@@ -1,10 +1,19 @@
-'use strict';
+/// <reference path="../typings/main.d.ts" />
+import NodeURL  = require('url');
+import SocketIO = require('socket.io');
+import * as clients from './clients.d';
+import {BrowserSyncOptions} from "./browser-sync.d";
 
 const Rx        = require('rx');
 const Immutable = require('immutable');
 const transform = require('./transform-options');
 const utils     = require('./utils');
-//Rx.config.longStackSupport = true;
+
+import {parse} from 'url';
+
+export const ClientEvents = {
+    register: "Client.register"
+}
 
 function track(bsSocket, options$, cleanups) {
 
@@ -28,15 +37,18 @@ function track(bsSocket, options$, cleanups) {
     });
 
     /**
-     * Available Clients
+     * Every 6 seconds, look at the array of clients that socket.io maintains.
+     * Use this to filter our clients$ stream so that it is cleaned of dead clients.
+     * This is done because socket.io has a very accurate way of tracking connections,
+     * but we store/think about clients in a very different way (tab sessions persisting)
      */
     const int = Rx.Observable
         .interval(6000)
         .map(x => bsSocket.clients.sockets.map(x => x.id))
         //.do(x => console.log('Filtering clients'))
         .withLatestFrom(clients$, (sockets, clients) => {
-            return clients.filter(x => {
-                return sockets.indexOf(x.getIn(['socketId'])) > -1;
+            return clients.filter(client => {
+                return sockets.indexOf(client.getIn(['socketId'])) > -1;
             });
         })
         .subscribe(clients$);
@@ -48,14 +60,16 @@ function track(bsSocket, options$, cleanups) {
      * Add client sharing event such as scroll click etc
      */
     const sub1 = connections$
-        .withLatestFrom(options$, (client, opts) => {
-            return {client: client, options: opts};
-        })
+        .withLatestFrom(options$)
         .do(x => {
-            x.options.getIn(['clientOptions', 'events']).forEach(event => {
-                x.client.on(event, (data) => {
-                    if (steward.valid(x.client.id)) {
-                        x.client.broadcast.emit(event, data);
+
+            const client:  SocketIO.Socket = x[0];
+            const options: BrowserSyncOptions = x[1];
+
+            options.getIn(['clientOptions', 'events']).forEach(event => {
+                client.on(event, (data) => {
+                    if (steward.valid(client.id)) {
+                        client.broadcast.emit(event, data);
                     }
                 });
             });
@@ -65,26 +79,48 @@ function track(bsSocket, options$, cleanups) {
         })
         .subscribe();
 
+
     /**
-     * With every connection
+     * With every incoming connection, add a listener
+     * for the Client.register event that each browser
+     * will emit once initialized. Note: this is very different
+     * from a socket CONNECTION as these registrations are uniqeue
+     * and persisted across tab sessions.
+     *
+     * This creates a new stream that pairs the socket.io client
+     * with the incoming client registration
      */
     const registered$ = connections$
-        .flatMap(client => {
+        .flatMap((client: SocketIO.Socket) => {
             return Rx.Observable.create(obs => {
-                client.on('Client.register', connection => {
-                    obs.onNext({client, connection});
+                client.on(ClientEvents.register, (connection: clients.IncomingClientRegistration) => {
+                    obs.onNext({
+                        client,
+                        connection
+                    });
                 });
                 client.on('disconnect', () => {
                     obs.onCompleted();
                 });
             });
-        })
-        .share();
+        }).share();
 
+    /**
+     * This looks at the registered$ stream (see above)
+     * for each event it updates the clients$ array with updated timestamps/data
+     * that is derived from calling createClient.
+     *
+     * This means that newly registered clients will be persisted, but also
+     * any re-registrations (ie: browser reloads) will alo be updated each time.
+     */
     const sub2 = registered$
-        .withLatestFrom(clients$, options$, (x, clients, options) => {
-            return clients.updateIn([x.connection.client.id], () => {
-                return createClient(x.client, x.connection, options.get('clientOptions'));
+        .withLatestFrom(clients$, options$, (x, clients, options: BrowserSyncOptions) => {
+
+            const client:     SocketIO.Socket = x.client;
+            const connection: clients.IncomingClientRegistration = x.connection;
+
+            return clients.updateIn([connection.client.id], () => {
+                return createClient(client, connection, options.get('clientOptions'));
             });
         })
         .subscribe(clients$);
@@ -106,23 +142,16 @@ function track(bsSocket, options$, cleanups) {
     };
 }
 
-/**
- * @param {Socket.io} client socket io client instance
- * @param {{client: {id: string}, data: object}} incoming
- * @param {Immutable.Map} clientOptions
- * @returns {Map<K, V>|Map<string, V>}
- */
-function createClient (client, incoming, clientOptions) {
+function createClient (client: SocketIO.Socket, incoming: clients.IncomingClientRegistration, clientOptions) {
 
     const ua  = client.handshake.headers['user-agent'];
     const referer = client.handshake.headers['referer'];
 
-    const newClient = {
+    const newClient = <clients.Client>{
         ua: ua,
         id: incoming.client.id,
         heartbeat: new Date().getTime(),
         location: {},
-        url: {},
         browser: {
             type: utils.getUaString(ua)
         },
@@ -132,7 +161,7 @@ function createClient (client, incoming, clientOptions) {
 
     if (referer) {
         newClient.location.referer  = referer;
-        newClient.location.url      = require('url').parse(referer);
+        newClient.location.url      = parse(referer);
         newClient.location.fullPath = newClient.location.url.path + incoming.data.hash;
         newClient.location.fullUrl  = newClient.location.url.href + incoming.data.hash;
     }

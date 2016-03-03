@@ -23,6 +23,13 @@ const debugPlugins = require('debug')('bs:plugins');
 const bs = exports;
 
 export interface BrowserSync {
+
+    connections$: any
+    registered$: any
+    options$: any
+    watchers$?: any
+    clients$: any
+
     server: any
     app: any
     registerCleanupTask: (fn:any) => void
@@ -32,10 +39,6 @@ export interface BrowserSync {
     io: any
     sockets: Socket
     clients: any
-    clients$: any
-    connections$: any
-    registered$: any
-    options$: any
     options: any
     setOption: (selector:string, fn) => any
     getSocket: (id:string) => any
@@ -47,7 +50,6 @@ export interface BrowserSync {
     reload: () => void
     inject: (any) => void
     watchers?: any
-    watchers$?: any
 }
 
 bs.create = function (userOptions, cb) {
