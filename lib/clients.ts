@@ -73,9 +73,8 @@ function track(bsSocket, options$, cleanups) {
                     }
                 });
             });
-        })
-        .do(x => {
-            x.client.emit('connection', x.options.get('clientOptions'));
+
+            client.emit('connection', options.get('clientOptions'));
         })
         .subscribe();
 
