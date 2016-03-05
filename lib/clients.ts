@@ -4,6 +4,8 @@ import SocketIO = require('socket.io');
 import * as clients from './clients.d';
 
 const Rx        = require('rx');
+const just      = Rx.Observable.just;
+const empty     = Rx.Observable.empty;
 const Immutable = require('immutable');
 const transform = require('./transform-options');
 import utils from './utils';
@@ -19,22 +21,25 @@ function track(bsSocket, options$, cleanups) {
 
     const connections$ = Rx.Observable.fromEvent(bsSocket.clients, 'connection');
     const events       = require('events');
-    const Steward      = require('emitter-steward');
-    const emitter      = new events.EventEmitter();
-    const steward      = new Steward(emitter);
     const clients$     = new Rx.BehaviorSubject(Immutable.OrderedMap());
 
-    /**
-     * todo: remove emitter steward
-     */
-    cleanups.push({
-        description: `Destroying event emitters for emitter steward`,
-        async: false,
-        fn: function () {
-            emitter.removeAllListeners();
-            steward.destroy();
-        }
-    });
+
+    var incoming       = new Rx.BehaviorSubject('');
+    var controller     = new Rx.BehaviorSubject({locked: false, id: ''});
+    var controller$    = controller.share();
+    var controllerInt  = Rx.Observable.interval(1000);
+
+    controllerInt.withLatestFrom(incoming, controller)
+        .flatMap(x => {
+            const incoming = x[1];
+            const current  = x[2];
+            if (current.locked) {
+                return empty();
+            }
+            return just({locked: false, id: incoming});
+        })
+        .distinctUntilChanged()
+        .subscribe(controller);
 
     /**
      * Every 6 seconds, look at the array of clients that socket.io maintains.
@@ -61,20 +66,31 @@ function track(bsSocket, options$, cleanups) {
      */
     const sub1 = connections$
         .withLatestFrom(options$)
-        .do(x => {
+        .flatMap(x => {
 
             const client:  SocketIO.Socket = x[0];
             const options: BrowsersyncOptionsMap = x[1];
 
-            options.getIn(['clientOptions', 'events']).forEach(event => {
-                client.on(event, (data) => {
-                    if (steward.valid(client.id)) {
-                        client.broadcast.emit(event, data);
-                    }
+            client.emit('connection', options.get('clientOptions'));
+
+            return Rx.Observable.create(function (obs) {
+                options.getIn(['clientOptions', 'events']).forEach(event => {
+                    client.on(event, (data) => {
+                        incoming.onNext(client.id);
+                        obs.onNext({client, event, data});
+                    });
                 });
             });
 
-            client.emit('connection', options.get('clientOptions'));
+        })
+        .withLatestFrom(controller)
+        .do(x => {
+            const incoming   = x[0];
+            const controller = x[1];
+
+            if (incoming.client.id === controller.id) {
+                incoming.client.broadcast.emit(incoming.event, incoming.data);
+            }
         })
         .subscribe();
 

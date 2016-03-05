@@ -5,16 +5,16 @@ bs.create({
     serveStatic: [
         'test/fixtures'
     ],
-    middleware: [
-        {
-            handle: function (req, res, next) {
-                if (req.url === '/shane') {
-                    return res.end('<html>shane is cool</html>');
-                }
-                next();
-            }
-        }
-    ],
+    //middleware: [
+    //    {
+    //        handle: function (req, res, next) {
+    //            if (req.url === '/shane') {
+    //                return res.end('<html>shane is cool</html>');
+    //            }
+    //            next();
+    //        }
+    //    }
+    //],
     //watchDebounce: 2000,
     //watchDelay: 2000,
     watch: [
@@ -81,69 +81,6 @@ bs.create({
         //clientJs: '/Users/shakyshane/sites/oss/browser-sync-client/' // home imac
     //}
     //minify: false
-}, function (err, bs) {
-    //console.log('err', err);
-    if (err) {
-        return;
-    }
-
-    setTimeout(function () {
-        //bs.setOption(['files'], function (f) {
-        //    return f.map(x => x.set('active', true));
-        //}).subscribe(x => {
-        //    console.log('updateing');
-        //    console.log(x);
-        //});
-        bs.setOption('clientJs', function (js) {
-            return js.concat({
-                id: 'test',
-                content: 'console.log("navigator" in location);console.log("shane");'
-            });
-        }).subscribe();
-    }, 1000);
-
-    //bs.setOption('middleware', function (cli) {
-    //    //console.log(cli[0]);
-    //    return cli.concat(function (res, res, next) {
-    //        console.log('cats');
-    //        next();
-    //    });
-    //}).subscribe(x => {
-    //    console.log(x.get('middleware'));
-    //});
-
-    //setTimeout(function () {
-    //    bs.setOption('middleware', function (mw) {
-    //        return mw.concat({id: 'shane', handle: function (req, res, next) {
-    //            next();
-    //        }});
-    //    }).subscribe();
-    //}, 2000);
-    //
-    //setTimeout(function () {
-    //    bs.setOption('middleware', function (mw) {
-    //        return mw.filter(x => x.id !== 'shane');
-    //    }).subscribe();
-    //}, 4000);
-
-    //
-    //setTimeout(function () {
-    //    bs.setOption('clientJs', function (cli) {
-    //        //console.log(cli[0]);
-    //        return cli.filter(x => x.id !== 'shane');
-    //    }).subscribe();
-    //}, 10000);
-    //bs.options$.subscribe(x => console.log('change'))
-    //bs.cleanup();
-
-
-    console.log(bs.options.get('urls').toJS());
-
-    setTimeout(function () {
-        //console.log('disabling an item');
-        bs.setOption('watch', function (items) {
-            return items.map(x => x.set('active', false));
-        }).subscribe();
-    }, 5000);
-    //console.log(bs.options.get('watch').toJS());
+}).subscribe(x => {
+    console.log(x.options.get('urls'));
 });
