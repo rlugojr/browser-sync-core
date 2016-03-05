@@ -20,25 +20,49 @@ export const ClientEvents = {
 function track(bsSocket, options$, cleanups) {
 
     const connections$ = Rx.Observable.fromEvent(bsSocket.clients, 'connection');
-    const events       = require('events');
     const clients$     = new Rx.BehaviorSubject(Immutable.OrderedMap());
-
 
     var incoming       = new Rx.BehaviorSubject('');
     var controller     = new Rx.BehaviorSubject({locked: false, id: ''});
     var controller$    = controller.share();
     var controllerInt  = Rx.Observable.interval(1000);
 
-    controllerInt.withLatestFrom(incoming, controller)
-        .flatMap(x => {
+    controllerInt
+        .withLatestFrom(incoming, controller, clients$)
+        .flatMap((x, i) => {
             const incoming = x[1];
             const current  = x[2];
+            const clients  = x[3];
+            const match    = clients.toList().filter(x => x.get('socketId') === incoming);
+
+            /**
+             * If the incoming socket ID matches an existing client,
+             * just update the controller with the updated socket.io client id
+             */
+            if (match.size) {
+                if (match.getIn([0, 'id']) === current.id) {
+                    return just({locked: current.locked, id: match.getIn([0, 'id']), socketId: incoming});
+                }
+            }
+
+            /**
+             * If the controller is locked, and the incoming socket.io did not match above
+             * bail early
+             */
             if (current.locked) {
                 return empty();
             }
-            return just({locked: false, id: incoming});
+
+            if (match.size) {
+                return just({locked: false, id: match.getIn([0, 'id']), socketId: match.getIn([0, 'socketId'])});
+            } else {
+                return just({locked: false, id: incoming});
+            }
         })
-        .distinctUntilChanged()
+        .distinctUntilChanged(function (val) {
+        	return val.id;
+        })
+        //.do(x => console.log('setting controller', x))
         .subscribe(controller);
 
     /**
@@ -81,16 +105,20 @@ function track(bsSocket, options$, cleanups) {
                     });
                 });
             });
-
         })
         .withLatestFrom(controller)
-        .do(x => {
+        .map((x, i) => {
             const incoming   = x[0];
             const controller = x[1];
-
-            if (incoming.client.id === controller.id) {
+            if (incoming.client.id === controller.socketId) {
                 incoming.client.broadcast.emit(incoming.event, incoming.data);
             }
+        })
+        .do(x => {
+            //
+            ///**
+            // * If the controller is not set
+            // */
         })
         .subscribe();
 
@@ -119,6 +147,13 @@ function track(bsSocket, options$, cleanups) {
                 });
             });
         }).share();
+
+    //registered$.first().subscribe(x => {
+    //    controller.onNext({locked: true, id: x.connection.client.id, socketId: x.client.id});
+    //    //controller.onNext({locked: true, id: x[0].connection.client.id, socketId: x[0].connection.data.socketId});
+    //    //console.log(x[0].connection);
+    //    //console.log(x[1].connection);
+    //})
 
     /**
      * This looks at the registered$ stream (see above)
