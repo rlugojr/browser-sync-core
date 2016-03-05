@@ -69,7 +69,7 @@ module.exports.namePlugins = function (options) {
             });
 
         output.forEach(x => {
-            debug(`✔ loaded (${x.get('name')})`);
+            debug(`✔ autoloaded (${x.get('name')})`);
             debug(`└─ via (${x.get('via')})`);
         });
 

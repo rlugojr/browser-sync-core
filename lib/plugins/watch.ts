@@ -126,7 +126,7 @@ module.exports.init = function (bs: BrowserSync) {
             watchEventMerged.event.eventUID = i;
             return watchEventMerged;
         }, 0)
-        .do(x => debug(`(${x.event._watchEventCount}) ${x.event.event}, ${x.event.path}`))
+        .do((x: WatchEventMerged) => debug(`WUID:${x.event.watcherUID} EUID:${x.event.eventUID} ${x.event.event}, ${x.event.path}`))
         .share();
 
     /**
@@ -154,7 +154,7 @@ module.exports.init = function (bs: BrowserSync) {
 
     // Listen to all changes and perform either a reload/injection
     // depending on the file type (ext)
-    const core$ = core
+    const core$ = bs.coreWatchers$ = core
         /**
          * Check if this watcher is enabled/disabled
          * by looking at the options object with matching id
@@ -165,26 +165,27 @@ module.exports.init = function (bs: BrowserSync) {
                 .get(OPT_NAME)
                 .filter(watchOption => watchOption.get('watcherUID') === watchEventMerged.event.watcherUID)
                 .getIn([0, 'active']);
-            
+
             if (!watcherIsActive) {
                 debug(`(eventUID:${watchEventMerged.event.eventUID}) ignoring event as this watcher (watcherUID:${watchEventMerged.event.watcherUID}) is disabled`);
             }
             return watcherIsActive;
-        })
-        .subscribe((watchEventMerged: WatchEventMerged) => {
-
-            const event = watchEventMerged.event;
-
-            // If the file that changed has a ext matching
-            // one in the injectFileTypes array, attempt an injection
-
-            if (watchEventMerged.options.get('injectFileTypes').contains(event.ext)) {
-                return bs.inject(event);
-            }
-
-            // Otherwise, simply reload the browser
-            bs.reload();
         });
+
+    core$.subscribe((watchEventMerged: WatchEventMerged) => {
+
+        const event = watchEventMerged.event;
+
+        // If the file that changed has a ext matching
+        // one in the injectFileTypes array, attempt an injection
+
+        if (watchEventMerged.options.get('injectFileTypes').contains(event.ext)) {
+            return bs.inject(event);
+        }
+
+        // Otherwise, simply reload the browser
+        bs.reload();
+    });
 
     const closeWatchers = () => bs.watchers.forEach(w => w.watcher.close());
     const getReadyCount = () => bs.watchers.reduce((a, w) => w.watcher._bsReady ? a + 1 : a, 0);

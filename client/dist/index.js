@@ -3150,8 +3150,8 @@ function isObjectLike(value) {
 module.exports = isArguments;
 
 },{}],32:[function(require,module,exports){
-arguments[4][22][0].apply(exports,arguments)
-},{"dup":22}],33:[function(require,module,exports){
+module.exports=require(22)
+},{"/Users/shakyshane/code/browser-sync-core-rewrite/node_modules/lodash.get/node_modules/lodash._topath/node_modules/lodash.isarray/index.js":22}],33:[function(require,module,exports){
 /**
  * lodash 3.2.0 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -4044,7 +4044,7 @@ function set(object, path, value) {
 module.exports = set;
 
 },{"lodash._topath":41,"lodash.isarray":42}],41:[function(require,module,exports){
-arguments[4][21][0].apply(exports,arguments)
-},{"dup":21,"lodash.isarray":42}],42:[function(require,module,exports){
-arguments[4][22][0].apply(exports,arguments)
-},{"dup":22}]},{},[15]);
+module.exports=require(21)
+},{"/Users/shakyshane/code/browser-sync-core-rewrite/node_modules/lodash.get/node_modules/lodash._topath/index.js":21,"lodash.isarray":42}],42:[function(require,module,exports){
+module.exports=require(22)
+},{"/Users/shakyshane/code/browser-sync-core-rewrite/node_modules/lodash.get/node_modules/lodash._topath/node_modules/lodash.isarray/index.js":22}]},{},[15]);

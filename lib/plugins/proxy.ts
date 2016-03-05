@@ -132,7 +132,13 @@ module.exports.init = function (bs, opts, obs) {
         return {
             route: x.get('route'),
             id: x.get('id'),
-            handle: function handlePath(req, res) {
+            handle: function handleBrowsersyncProxy(req, res) {
+
+                // todo: Is the following a real usecase?
+
+                // eg: proxy: {route: "/api"}
+                // ->  Add /api to proxy calls?
+
                 proxy.web(req, res, {target: target});
             }
         }

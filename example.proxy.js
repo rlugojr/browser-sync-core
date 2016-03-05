@@ -1,61 +1,35 @@
 var bs = require('./');
-//var m = require('meow');
+var con = require('connect');
+var http = require('http');
 
-//console.log(m().flags);
-//
-bs.create({
-    proxy: {
-        target: 'http://wearejh.com/'
-    },
-    plugins: [
-        //function (bs, opts, ctx) {
-        //    bs.registered$
-        //        .pluck('connection')
-        //        .subscribe(x => {
-        //            //console.log('REGISTER', x);
-        //        })
-        //    bs.clients$
-        //        .map(x => x.toList().toJS())
-        //        .subscribe(x => {
-        //            //console.log('CLIENTs', x.map(x => x.browser));
-        //        })
-        //}
-    ]
-}, function (err, bs) {
-    console.log(bs.options.get('urls'));
-    //console.log(err);
-    //console.log(bs.options.get('plugins'));
+var app = con();
+app.use('/api/shane', function (req, res, next) {
+	res.end('shane');
 });
-    //strict: false,
-    //proxy: {
-//        target: 'http://localhost:3000/',
-//        ws: true
-//    },
-//    watch: [
-//        '*.js',
-//        'test/fixtures'
-//    ],
-//    //devMode: true,
-//    //rewriteRules: [
-//    //    {
-//    //        match: "http://static.bbci.co.uk/frameworks/barlesque/3.7.3/orb/4/style/orb.min.css",
-//    //        replace:
-//    //    }
-//    //]
-//    plugins: [
-//        //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp', // laptop
-//        //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp', // laptop
-//        //'/Users/shakyshane/sites/oss/UI'
-//    ]
-//}, function (err, bs) {
-//    //console.log('err', err);
-//    if (err) {
-//        return;
-//    }
-//    //setTimeout(() => {
-//    //    bs.cleanup(function () {
-//    //
-//    //    });
-//    //}, 4000);
-//    console.log(bs.options.get('urls').toJS());
-//});
+
+var server = http.createServer(app);
+server.listen();
+var addr = server.address();
+var url = 'http://localhost:' + addr.port;
+
+bs.create({
+    serveStatic: ['test/fixtures', '.'],
+    watch: 'test/fixtures',
+    watchDebounce: 4000,
+    proxy: {
+        route: '/api',
+        target: url
+    }
+}).subscribe(bs => {
+    //console.log(opts.options.get('urls'));
+    //console.log(opts.get('urls'));
+    //bs.connections$.subscribe(x => console.log('CONNECTION', x.id));
+    //bs.registered$.subscribe(x => console.log('Registration', x.connection));
+
+    bs.watchers$.pluck('event').subscribe(x => console.log('File changed', x.event, x.path));
+    bs.coreWatchers$.pluck('event').subscribe(x => console.log('File changed', x.event, x.path));
+    //console.log(bs.options.get('urls').toJS());
+    //console.log(bs.options.get('middleware').toJS());
+});
+
+

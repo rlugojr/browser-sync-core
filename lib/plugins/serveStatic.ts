@@ -10,8 +10,7 @@ const http = require('http');
 const Immutable = require('immutable');
 const serveStatic = require('serve-static');
 
-
-var ssID = 0;
+var ssID = 1;
 
 exports['plugin:name'] = 'Browsersync Serve Static';
 
@@ -92,6 +91,7 @@ exports.transformOptions = function (options) {
  * @returns {*}
  */
 function generateMw (originalMw, transformed) {
+
     if (!transformed.size) {
         return originalMw
     }
@@ -142,13 +142,15 @@ function resolveMany (initialOption) {
 
 /**
  * @param item
+ * @param namespace
+ * @param options
  */
 function createOne (item, namespace, options?) {
 
     if (utils.isString(item)) {
         return new ServeStaticOption({
             root: item,
-            id: 'serve-static-' + String(ssID++),
+            id: getServeStaticId(ssID++),
             namespace: namespace || 'core'
         })
             .update('options', (opt) => opt.mergeDeep(options))
@@ -156,8 +158,12 @@ function createOne (item, namespace, options?) {
 
     return new ServeStaticOption({
         namespace,
-        id: 'serve-static-' + String(ssID++)
+        id: getServeStaticId(ssID++)
     })
         .mergeDeep(item)
         .update('options', (opt) => opt.mergeDeep(options));
+}
+
+function getServeStaticId (num) {
+    return `Browsersync Serve Static (${num})`;
 }
