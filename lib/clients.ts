@@ -3,11 +3,12 @@ import NodeURL  = require('url');
 import SocketIO = require('socket.io');
 import * as clients from './clients.d';
 
-const Rx        = require('rx');
-const just      = Rx.Observable.just;
-const empty     = Rx.Observable.empty;
-const Immutable = require('immutable');
-const transform = require('./transform-options');
+const Rx         = require('rx');
+const just       = Rx.Observable.just;
+const empty      = Rx.Observable.empty;
+const Immutable  = require('immutable');
+const debug      = require('debug')('bs:clients');
+const transform  = require('./transform-options');
 import utils from './utils';
 
 import {parse} from 'url';
@@ -41,7 +42,13 @@ function track(bsSocket, options$, cleanups) {
              */
             if (match.size) {
                 if (match.getIn([0, 'id']) === current.id) {
-                    return just({locked: current.locked, id: match.getIn([0, 'id']), socketId: incoming});
+                    if (incoming === match.getIn([0, 'socketId'])) {
+                        console.log('%s, same controller, same socket, not changing', i);
+                        return empty();
+                    } else {
+                        console.log('%s, same controller, but need to change socket.id', i);
+                        return just({locked: current.locked, id: match.getIn([0, 'id']), socketId: incoming});
+                    }
                 }
             }
 
@@ -54,8 +61,10 @@ function track(bsSocket, options$, cleanups) {
             }
 
             if (match.size) {
+                console.log('%s, setting new controller (%s)', i, match.getIn([0, 'id']));
                 return just({locked: false, id: match.getIn([0, 'id']), socketId: match.getIn([0, 'socketId'])});
             } else {
+                console.log('%s, setting new controller (%s)', i, match.getIn([0, 'id']));
                 return just({locked: false, id: incoming});
             }
         })
@@ -88,7 +97,7 @@ function track(bsSocket, options$, cleanups) {
      * when a client reconnects
      * Add client sharing event such as scroll click etc
      */
-    const sub1 = connections$
+    const allClientEvents$ = connections$
         .withLatestFrom(options$)
         .flatMap(x => {
 
@@ -100,25 +109,32 @@ function track(bsSocket, options$, cleanups) {
             return Rx.Observable.create(function (obs) {
                 options.getIn(['clientOptions', 'events']).forEach(event => {
                     client.on(event, (data) => {
-                        incoming.onNext(client.id);
                         obs.onNext({client, event, data});
                     });
                 });
             });
-        })
+        }).share();
+
+    /**
+     * Pump anything coming from the client events
+     * stream directly into the incoming stream.
+     *
+     * eg: scroll, click events etc
+     */
+    allClientEvents$.pluck('client', 'id').subscribe(incoming);
+
+    /**
+     * Take all incoming client events, along with the current
+     * 'controller' and decide if this event should be broadcask
+     */
+    allClientEvents$
         .withLatestFrom(controller)
-        .map((x, i) => {
+        .do((x) => {
             const incoming   = x[0];
             const controller = x[1];
             if (incoming.client.id === controller.socketId) {
                 incoming.client.broadcast.emit(incoming.event, incoming.data);
             }
-        })
-        .do(x => {
-            //
-            ///**
-            // * If the controller is not set
-            // */
         })
         .subscribe();
 
@@ -148,13 +164,6 @@ function track(bsSocket, options$, cleanups) {
             });
         }).share();
 
-    //registered$.first().subscribe(x => {
-    //    controller.onNext({locked: true, id: x.connection.client.id, socketId: x.client.id});
-    //    //controller.onNext({locked: true, id: x[0].connection.client.id, socketId: x[0].connection.data.socketId});
-    //    //console.log(x[0].connection);
-    //    //console.log(x[1].connection);
-    //})
-
     /**
      * This looks at the registered$ stream (see above)
      * for each event it updates the clients$ array with updated timestamps/data
@@ -165,10 +174,8 @@ function track(bsSocket, options$, cleanups) {
      */
     const sub2 = registered$
         .withLatestFrom(clients$, options$, (x, clients, options: BrowsersyncOptionsMap) => {
-
             const client:     SocketIO.Socket = x.client;
             const connection: clients.IncomingClientRegistration = x.connection;
-
             return clients.updateIn([connection.client.id], () => {
                 return createClient(client, connection, options.get('clientOptions'));
             });
@@ -180,7 +187,7 @@ function track(bsSocket, options$, cleanups) {
         async: false,
         fn: function () {
             int.dispose();
-            sub1.dispose();
+            allClientEvents$.dispose();
             sub2.dispose();
         }
     });
@@ -220,3 +227,13 @@ function createClient (client: SocketIO.Socket, incoming: clients.IncomingClient
 }
 
 module.exports.track = track;
+
+function getSocket (clients, id, bsSocket): SocketIO.Socket {
+    const match = clients.filter(x => x.get('id') === id).toList().get(0);
+    if (match) {
+        return bsSocket.clients.sockets.filter(x => {
+            return x.id === match.get('socketId');
+        })[0];
+    }
+    return false;
+}
