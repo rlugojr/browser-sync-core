@@ -26,8 +26,15 @@ tasks:
       client/lib/index.js -o client/dist/index.js
       -t [ babelify --presets [ es2015 ] ]
 
-    uglify: "@npm uglifyjs client/dist/index.js > client/dist/index.min.js"
-    socketio: "@npm uglifyjs public/socket.io.js > client/dist/socket.io.min.js"
+    uglify: >
+      @npm uglifyjs
+      client/dist/index.js >
+      client/dist/index.min.js
+
+    socketio: >
+      @npm uglifyjs
+      public/socket.io.js >
+      client/dist/socket.io.min.js
 
     compile: >
        @npm tsc

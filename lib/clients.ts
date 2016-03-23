@@ -24,55 +24,93 @@ function track(bsSocket, options$, cleanups) {
     const clients$     = new Rx.BehaviorSubject(Immutable.OrderedMap());
 
     var incoming       = new Rx.BehaviorSubject('');
-    var controller     = new Rx.BehaviorSubject({locked: false, id: ''});
-    var controller$    = controller.share();
+    const blank        = {locked: false, id: '', socketId: ''};
+    var controller     = new Rx.BehaviorSubject(blank);
     var controllerInt  = Rx.Observable.interval(1000);
 
-    controllerInt
-        .withLatestFrom(incoming, controller, clients$)
-        .flatMap((x, i) => {
-            const incoming = x[1];
-            const current  = x[2];
-            const clients  = x[3];
-            const match    = clients.toList().filter(x => x.get('socketId') === incoming);
+    /**
+     * Listen for incoming connections that occur
+     * every time the browser page is reloaded or
+     * when a client reconnects
+     * Add client sharing event such as scroll click etc
+     */
+    const evs = connections$
+        .withLatestFrom(options$)
+        .flatMap(x => {
+            const client:  SocketIO.Socket = x[0];
+            const options: BrowsersyncOptionsMap = x[1];
 
-            /**
-             * If the incoming socket ID matches an existing client,
-             * just update the controller with the updated socket.io client id
-             */
+            client.emit('connection', options.get('clientOptions'));
+
+            return Rx.Observable.create(function (obs) {
+                options.getIn(['clientOptions', 'events']).forEach(event => {
+                    client.on(event, (data) => {
+                        obs.onNext({client, event, data});
+                    });
+                });
+            });
+        }).share();
+
+    const evtStream$ = evs
+        .withLatestFrom(clients$)
+        .flatMap((obj) => {
+            const evt     = obj[0];
+            const clients = obj[1];
+            let match   = clients.filter(x => x.get('socketId') === evt.client.id);
             if (match.size) {
-                if (match.getIn([0, 'id']) === current.id) {
-                    if (incoming === match.getIn([0, 'socketId'])) {
-                        console.log('%s, same controller, same socket, not changing', i);
-                        return empty();
-                    } else {
-                        console.log('%s, same controller, but need to change socket.id', i);
-                        return just({locked: current.locked, id: match.getIn([0, 'id']), socketId: incoming});
-                    }
-                }
+                match = match.toList();
+                return just({
+                    id:       match.toList().getIn([0, 'id']),
+                    socketId: match.toList().getIn([0, 'socketId']),
+                    event:    evt.event,
+                    data:     evt.data,
+                    client:   evt.client
+                });
             }
+            return empty();
+        }).share();
 
-            /**
-             * If the controller is locked, and the incoming socket.io did not match above
-             * bail early
-             */
-            if (current.locked) {
-                return empty();
-            }
+    /**
+     * Select the currently emitting socket and set it
+     * as the controller
+     */
+    trackController(evtStream$, controller)
+        .do(controller)
+        .subscribe();
 
-            if (match.size) {
-                console.log('%s, setting new controller (%s)', i, match.getIn([0, 'id']));
-                return just({locked: false, id: match.getIn([0, 'id']), socketId: match.getIn([0, 'socketId'])});
-            } else {
-                console.log('%s, setting new controller (%s)', i, match.getIn([0, 'id']));
-                return just({locked: false, id: incoming});
-            }
-        })
-        .distinctUntilChanged(function (val) {
-        	return val.id;
-        })
-        //.do(x => console.log('setting controller', x))
+    /**
+     * Every 2 seconds, reset the controller
+     */
+    Rx.Observable
+        .interval(1000)
+        .map(x => blank)
         .subscribe(controller);
+
+    evtStream$
+        .withLatestFrom(controller)
+        .flatMap(function (x) {
+            var evt  = x[0];
+            var ctrl = x[1];
+            if (ctrl.id === '') {
+                debug('✔  ALLOW EVENT, CONTROLLER NOT SET');
+                debug('└─ ', evt);
+                return just(evt);
+            } else if (ctrl.id === evt.id) {
+                debug('✔ ALLOW EVENT, CTRL ID === EVENT ID');
+                debug('└─ ', evt);
+                return just(evt);
+            } else {
+                debug('PROBS IGNORE EVENT id:', evt.id, 'CTRL id:', ctrl.id);
+            }
+            return empty();
+        }).subscribe(x => {
+            x.client.broadcast.emit(x.event, x.data);
+        });
+
+
+    // ------------------------------------------------------
+    // CLIENT REGISTRATIONS
+    // ------------------------------------------------------
 
     /**
      * Every 6 seconds, look at the array of clients that socket.io maintains.
@@ -90,54 +128,6 @@ function track(bsSocket, options$, cleanups) {
             });
         })
         .subscribe(clients$);
-
-    /**
-     * Listen for incoming connections that occur
-     * every time the browser page is reloaded or
-     * when a client reconnects
-     * Add client sharing event such as scroll click etc
-     */
-    const allClientEvents$ = connections$
-        .withLatestFrom(options$)
-        .flatMap(x => {
-
-            const client:  SocketIO.Socket = x[0];
-            const options: BrowsersyncOptionsMap = x[1];
-
-            client.emit('connection', options.get('clientOptions'));
-
-            return Rx.Observable.create(function (obs) {
-                options.getIn(['clientOptions', 'events']).forEach(event => {
-                    client.on(event, (data) => {
-                        obs.onNext({client, event, data});
-                    });
-                });
-            });
-        }).share();
-
-    /**
-     * Pump anything coming from the client events
-     * stream directly into the incoming stream.
-     *
-     * eg: scroll, click events etc
-     */
-    allClientEvents$.pluck('client', 'id').subscribe(incoming);
-
-    /**
-     * Take all incoming client events, along with the current
-     * 'controller' and decide if this event should be broadcask
-     */
-    allClientEvents$
-        .withLatestFrom(controller)
-        .do((x) => {
-            const incoming   = x[0];
-            const controller = x[1];
-            if (incoming.client.id === controller.socketId) {
-                incoming.client.broadcast.emit(incoming.event, incoming.data);
-            }
-        })
-        .subscribe();
-
 
     /**
      * With every incoming connection, add a listener
@@ -187,7 +177,7 @@ function track(bsSocket, options$, cleanups) {
         async: false,
         fn: function () {
             int.dispose();
-            allClientEvents$.dispose();
+            // allClientEvents$.dispose();
             sub2.dispose();
         }
     });
@@ -236,4 +226,46 @@ function getSocket (clients, id, bsSocket): SocketIO.Socket {
         })[0];
     }
     return false;
+}
+
+/**
+ * Take a stream of incoming actionSync events + the current controller
+ * and use the controller to determine if the current event is valid
+ * (ie: it's from the same browser)
+ */
+function trackController (incoming, controller) {
+    return incoming
+        .withLatestFrom(controller)
+        .flatMap(x => {
+
+            const incomingEvent     = x[0];
+            const currentController = x[1];
+            // console.log(incomingEvent.socketId, currentController.id);
+
+            /**
+             * Controller has not been set, therefore we allow this event
+             * through (as this will in turn cause the controller to be set)
+             */
+            if (currentController.id === '') {
+                return just({locked: false, id: incomingEvent.id, socketId: incomingEvent.socketId});
+            }
+
+            /**
+             * If the controller ID matches the incoming event ID
+             * we return the controller, but re-set the socketId
+             * as this could change (ie: every time the browser reloads)
+             */
+            if (currentController.id === incomingEvent.id) {
+                return just(Object.assign(currentController, {socketId: incomingEvent.socketId}));
+            }
+
+            /**
+             * If we reach here, the controller was set, but the
+             * controller.id didn't match the incoming event.id. So we bail here
+             * and don't pass any value through. This is how we essentially
+             * ignore all events from any browser that is not currently deemed
+             * the controller.
+             */
+            return empty();
+        });
 }

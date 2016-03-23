@@ -5,41 +5,32 @@ const onNext        = Rx.ReactiveTest.onNext;
 const just          = Observable.just;
 const empty         = Observable.empty;
 const scheduler     = new TestScheduler();
-const Immutable     = require('immutable');
 const assert        = require('assert');
 const debug         = require('debug')('example');
-const blank         = () => ({locked: false, id: '', socketId: ''});
-const controller    = new Rx.BehaviorSubject(blank());
+const blank         = {locked: false, id: '', socketId: ''};
+const controller    = new Rx.BehaviorSubject(blank);
 
-const clients$      = new Rx.BehaviorSubject(Immutable.OrderedMap({
-    "01": {
+const clients$      = new Rx.BehaviorSubject([
+    {
         id: '01',
         socketId: 'a'
     },
-    "02": {
+    {
         id: '02',
         socketId: 'b'
     },
-    "03": {
-        id: '03',
+    {
+        id: '02',
         socketId: 'c'
     }
-}));
+]);
 
 function wrap (obj, id) {
     return {
         test: obj,
         result: Object.assign({}, obj, {id: id})
     }
-}
-
-function getInterval (time, scheduler, limit) {
-    const obs = Observable.interval(time, scheduler || null);
-    if (!limit) {
-        return obs;
-    }
-    return obs.take(limit);
-}
+};
 
 var evt1 = wrap({event: 'scroll', data: {x: 0, y:0},   socketId: 'a'}, '01');
 var evt2 = wrap({event: 'scroll', data: {x: 0, y:1},   socketId: 'a'}, '01');
@@ -55,7 +46,7 @@ var evt7 = wrap({event: 'scroll', data: {x: 0, y:202}, socketId: 'b'}, '02');
 var evt8 = wrap({event: 'scroll', data: {x: 0, y:300}, socketId: 'a'}, '01');
 var evt9 = wrap({event: 'scroll', data: {x: 0, y:0},   socketId: 'a'}, '01');
 
-var clientEvents = scheduler.createHotObservable(
+var evs = scheduler.createHotObservable(
     onNext(200,  evt1.test), // a ok
     onNext(201,  evt2.test), // a ok
 
@@ -74,7 +65,7 @@ var clientEvents = scheduler.createHotObservable(
     onNext(4010, evt9.test)  // a ok
 );
 
-var expectedEvents = [
+var validEvents = [
     onNext(200,  evt1.result), // a ok
     onNext(201,  evt2.result), // a ok
     onNext(203,  evt4.result), // a ok
@@ -131,14 +122,14 @@ var results = scheduler.startScheduler(function () {
     /**
      * Add Browsersync ID to incoming socket events
      */
-    const evtStream$ = clientEvents.withLatestFrom(clients$)
+    const evtStream$ = evs.withLatestFrom(clients$)
         .flatMap((obj) => {
             const evt     = obj[0];
             const clients = obj[1];
-            var match     = clients.filter(x => x.get('socketId') === evt.socketId);
+            var match     = clients.filter(x => x.socketId === evt.socketId);
 
-            if (match.size) {
-                return just(Object.assign(evt, {id: match.getIn([0, 'id'])}));
+            if (match.length) {
+                return just(Object.assign(evt, {id: match[0].id}));
             }
 
             return empty();
@@ -148,18 +139,23 @@ var results = scheduler.startScheduler(function () {
      * Select the currently emitting socket and set it
      * as the controller
      */
-    trackController(evtStream$, controller, scheduler).subscribe(controller);
+    trackController(evtStream$, controller, scheduler)
+        .do(controller)
+        .subscribe();
 
     /**
      * Every 2 seconds, reset the controller
      */
-    getInterval(2000, scheduler, 2).map(blank).subscribe(controller);
+    Observable
+        .interval(2000, scheduler || null).take(100)
+        .map(x => blank)
+        .subscribe(controller);
 
     return evtStream$
         .withLatestFrom(controller)
         .flatMap(function (x) {
-        	var evt  = x[0];
-        	var ctrl = x[1];
+            var evt  = x[0];
+            var ctrl = x[1];
             if (ctrl.id === '') {
                 debug('✔  ALLOW EVENT, CONTROLLER NOT SET');
                 debug('└─ ', evt);
@@ -169,12 +165,11 @@ var results = scheduler.startScheduler(function () {
                 debug('└─ ', evt);
                 return just(evt);
             } else {
-                debug('x IGNORE EVENT id:', evt.id, 'CTRL id:', ctrl.id);
+                debug('PROBS IGNORE EVENT id:', evt.id, 'CTRL id:', ctrl.id);
             }
             return empty();
         });
 
 }, {created: 0, subscribed: 0, disposed: 5000});
 
-console.log(results.messages);
-//assert.deepEqual(expectedEvents, results.messages);
+assert.deepEqual(validEvents, results.messages);
