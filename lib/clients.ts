@@ -18,15 +18,21 @@ export const ClientEvents = {
     register: "Client.register"
 };
 
+interface ClientSocketEvent {
+    id: string
+    socketId: string
+    event: string
+    data: any
+    client: SocketIO.Socket
+}
+
 function track(bsSocket, options$, cleanups) {
 
     const connections$ = Rx.Observable.fromEvent(bsSocket.clients, 'connection');
     const clients$     = new Rx.BehaviorSubject(Immutable.OrderedMap());
 
-    var incoming       = new Rx.BehaviorSubject('');
     const blank        = {locked: false, id: '', socketId: ''};
     var controller     = new Rx.BehaviorSubject(blank);
-    var controllerInt  = Rx.Observable.interval(1000);
 
     /**
      * Listen for incoming connections that occur
@@ -34,7 +40,7 @@ function track(bsSocket, options$, cleanups) {
      * when a client reconnects
      * Add client sharing event such as scroll click etc
      */
-    const evs = connections$
+    const evs$ = connections$
         .withLatestFrom(options$)
         .flatMap(x => {
             const client:  SocketIO.Socket = x[0];
@@ -49,9 +55,7 @@ function track(bsSocket, options$, cleanups) {
                     });
                 });
             });
-        }).share();
-
-    const evtStream$ = evs
+        })
         .withLatestFrom(clients$)
         .flatMap((obj) => {
             const evt     = obj[0];
@@ -59,7 +63,7 @@ function track(bsSocket, options$, cleanups) {
             let match   = clients.filter(x => x.get('socketId') === evt.client.id);
             if (match.size) {
                 match = match.toList();
-                return just({
+                return just(<ClientSocketEvent>{
                     id:       match.toList().getIn([0, 'id']),
                     socketId: match.toList().getIn([0, 'socketId']),
                     event:    evt.event,
@@ -74,7 +78,7 @@ function track(bsSocket, options$, cleanups) {
      * Select the currently emitting socket and set it
      * as the controller
      */
-    trackController(evtStream$, controller)
+    trackController(evs$, controller)
         .do(controller)
         .subscribe();
 
@@ -86,11 +90,11 @@ function track(bsSocket, options$, cleanups) {
         .map(x => blank)
         .subscribe(controller);
 
-    evtStream$
+    evs$
         .withLatestFrom(controller)
         .flatMap(function (x) {
-            var evt  = x[0];
-            var ctrl = x[1];
+            const evt: ClientSocketEvent = x[0];
+            const ctrl = x[1];
             if (ctrl.id === '') {
                 debug('✔  ALLOW EVENT, CONTROLLER NOT SET');
                 debug('└─ ', evt);
@@ -218,15 +222,6 @@ function createClient (client: SocketIO.Socket, incoming: clients.IncomingClient
 
 module.exports.track = track;
 
-function getSocket (clients, id, bsSocket): SocketIO.Socket {
-    const match = clients.filter(x => x.get('id') === id).toList().get(0);
-    if (match) {
-        return bsSocket.clients.sockets.filter(x => {
-            return x.id === match.get('socketId');
-        })[0];
-    }
-    return false;
-}
 
 /**
  * Take a stream of incoming actionSync events + the current controller
