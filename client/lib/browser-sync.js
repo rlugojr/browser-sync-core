@@ -75,7 +75,7 @@ BrowserSync.prototype.register = function () {
         data: {
             hash: utils.getWindow().location.hash,
             sessionId: options.sessionId,
-            socketId:  bs.socket.socket.id,
+            socketId:  bs.socket.socket.nsp + '#' + bs.socket.socket.id,
             browser: {
                 scroll: utils.getBrowserScrollPosition(),
                 dimensions: {

@@ -252,9 +252,7 @@ function go(options, observer) {
     bs.getSocket = function (id) {
         const match = clientsStreams.clients$.getValue().filter(x => x.get('id') === id).toList().get(0);
         if (match) {
-            return bsSocket.clients.sockets.filter(x => {
-                return x.id === match.get('socketId');
-            })[0];
+            return bsSocket.clients.sockets[match.get('socketId')];
         }
         return false;
     };

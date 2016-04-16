@@ -7,6 +7,7 @@ const Rx         = require('rx');
 const just       = Rx.Observable.just;
 const empty      = Rx.Observable.empty;
 const Immutable  = require('immutable');
+const assign     = require('object-assign');
 const debug      = require('debug')('bs:clients');
 const transform  = require('./transform-options');
 import utils from './utils';
@@ -124,7 +125,7 @@ function track(bsSocket, options$, cleanups) {
      */
     const int = Rx.Observable
         .interval(6000)
-        .map(x => bsSocket.clients.sockets.map(x => x.id))
+        .map(x => Object.keys(bsSocket.clients.sockets))
         //.do(x => console.log('Filtering clients'))
         .withLatestFrom(clients$, (sockets, clients) => {
             return clients.filter(client => {
@@ -137,7 +138,7 @@ function track(bsSocket, options$, cleanups) {
      * With every incoming connection, add a listener
      * for the Client.register event that each browser
      * will emit once initialized. Note: this is very different
-     * from a socket CONNECTION as these registrations are uniqeue
+     * from a socket CONNECTION as these registrations are unique
      * and persisted across tab sessions.
      *
      * This creates a new stream that pairs the socket.io client
@@ -251,7 +252,7 @@ function trackController (incoming, controller) {
              * as this could change (ie: every time the browser reloads)
              */
             if (currentController.id === incomingEvent.id) {
-                return just(Object.assign(currentController, {socketId: incomingEvent.socketId}));
+                return just(assign(currentController, {socketId: incomingEvent.socketId}));
             }
 
             /**
