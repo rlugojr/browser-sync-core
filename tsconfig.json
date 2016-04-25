@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es5",
+        "noImplicitAny": false,
+        "sourceMap": false,
+        "outDir": "dist",
+        "allowJs": true,
+        "moduleResolution": "node"
+    },
+    "exclude": [
+        "node_modules",
+        "typings",
+        "server",
+        "test",
+        "cli.js",
+        "client",
+        "public",
+        "example.js",
+        "example.server.js",
+        "example.proxy.js",
+        "dev.js"
+    ]
+}

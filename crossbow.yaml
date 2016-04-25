@@ -1,13 +1,24 @@
 watch:
-    tasks:
-        client:
-            "before": ['compile']
-            "lib": ['compile']
+  client:
+    before:
+      - 'compile'
+    watchers:
+      - patterns: 'lib'
+        tasks: 'compile'
 
 tasks:
 
-    build-client: ['browserify', 'uglify', 'socketio']
-    build-all: ['build-client', 'compile']
+    build-server:
+      - '@shell rm -rf dist'
+      - '@npm tsc'
+
+    build-client:
+      - browserify
+      - uglify
+
+    build-all:
+      - build-server
+      - build-client
 
     nodemon: >
       @bgShell nodemon
@@ -35,11 +46,3 @@ tasks:
       @npm uglifyjs
       public/socket.io.js >
       client/dist/socket.io.min.js
-
-    compile: >
-       @npm tsc
-       lib/*.ts lib/*.js lib/plugins/*
-       --module commonjs
-       --outDir dist
-       --allowJs
-       --moduleResolution node
