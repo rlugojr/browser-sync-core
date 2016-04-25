@@ -1,51 +1,17 @@
+/// <reference path="./watch.d.ts" />
 import {BrowserSync} from "../browser-sync";
-const Immutable = require('immutable');
 import utils from '../utils';
-const Rx        = require('rx');
-const chokidar  = require('chokidar');
-const debug     = require('debug')('bs:watch');
-const OPT_NAME  = 'watch';
+import {WatchEventMerged, WatchEvent, WatchItem} from "./watch.d";
+import {FSWatcher} from "fs";
 
-export interface ParsedPath {
-    root: string,
-    dir: string,
-    base: string,
-    ext: string,
-    name: string
-}
+import Immutable = require('immutable');
+import Rx        = require('rx');
 
-export interface WatchEvent {
-    event: string
-    item: any
-    path: string
-    namespace: string
-    parsed: ParsedPath
-    ext: string
-    basename: string
-    watcherUID: number
-    options?: any
-    eventUID?: number
-}
+const chokidar   = require('chokidar');
+const debug      = require('debug')('bs:watch');
 
-export interface WatchEventMerged {
-    event: WatchEvent
-    options: any
-}
-
-var watcherUID   = 0;
-
-export interface WatchItem {
-    match: any
-    options?: any
-    fn?: () => void
-    locator?: () => void, // optional
-    namespace: string,
-    throttle: number,
-    debounce: number,
-    delay: number,
-    active: boolean,
-    watcherUID: number
-}
+const OPT_NAME   = 'watch';
+let watcherUID   = 0;
 
 /**
  * Schema for files option
@@ -67,10 +33,8 @@ module.exports["plugin:name"] = "Browsersync File Watcher";
 
 /**
  * @param bs
- * @param opts
- * @param obs
  */
-module.exports.init = function (bs: BrowserSync) {
+export function init (bs: BrowserSync) {
     // bail early if no files options provided
     // or if the List is size zero
     if (
@@ -83,7 +47,7 @@ module.exports.init = function (bs: BrowserSync) {
         /**
          * For each file option, create a separate watcher (chokidar) instance
          */
-        .map(item => {
+        .map((item): {watcher: FSWatcher, item: WatchItem} => {
             const patterns = item.get('match').toJS();
 
             debug(`+ watcherUID:${item.get('watcherUID')} creating for patterns: ${patterns}`);
@@ -122,10 +86,10 @@ module.exports.init = function (bs: BrowserSync) {
         /**
          * Add an event id to every file changed
          */
-        .scan((_, watchEventMerged: WatchEventMerged, i) => {
+        .map((watchEventMerged: WatchEventMerged, i) => {
             watchEventMerged.event.eventUID = i;
             return watchEventMerged;
-        }, 0)
+        })
         .do((x: WatchEventMerged) => debug(`WUID:${x.event.watcherUID} EUID:${x.event.eventUID} ${x.event.event}, ${x.event.path}`))
         .share();
 
@@ -209,7 +173,7 @@ module.exports.init = function (bs: BrowserSync) {
             }, 10);
         }
     }
-};
+}
 
 /**
  * @param watchers
@@ -274,16 +238,12 @@ function applyOperators (source, items, options) {
 
 /**
  * Create a single Observable sequence from a files option
- * @param {FSEventsWatchers} watcher
- * @param {FilesOption} item
- * @returns {Observable<T>|Rx.Observable<T>}
  */
+function watcherAsObservable (watcher: FSWatcher, item) {
 
-function watcherAsObservable (watcher, item) {
-
-    const watcherObservable$ = Rx.Observable.create(function (obs) {
+    const watcherObservable$ = Rx.Observable.create(function (obs: Rx.Observer<WatchEvent>) {
         watcher.on('all', function (event, path) {
-            obs.onNext(<WatchEvent>{
+            obs.onNext({
                 event,
                 item,
                 path,
@@ -355,15 +315,12 @@ export function transformOptions (options) {
     const coreFileOptions = resolveMany(options.get(OPT_NAME), 'core', globalOpts);
 
     return options.set(OPT_NAME, coreFileOptions.concat(pluginFileOptions));
-};
+}
 
 /**
  * Resolve 1 or many files options depending on type
- * @param initialFilesOption
- * @param namespace
- * @returns {*}
  */
-function resolveMany (initialFilesOption, namespace, globalOpts) {
+function resolveMany (initialFilesOption: Immutable.Map<any, any>, namespace: string, globalOpts) {
     if (Immutable.List.isList(initialFilesOption)) {
         return initialFilesOption.map(x => createOne(x, namespace, globalOpts));
     }
@@ -376,8 +333,7 @@ function resolveMany (initialFilesOption, namespace, globalOpts) {
 }
 
 /**
- * @param item
- * @returns {Cursor|List<T>|Map<K, V>|Map<string, V>|*}
+ * @returns {Immutable.Record}
  */
 function createOne (item, namespace, globalOpts) {
     if (typeof item === 'string') {

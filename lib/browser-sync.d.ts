@@ -309,3 +309,9 @@ interface SnippetOptions {
     blacklist: string[]
     rule: SnippetRule
 }
+
+export interface Cleanup {
+    description: string
+    async: boolean
+    fn: () => void
+}

@@ -6,14 +6,15 @@ import * as clients from './clients.d';
 const Rx         = require('rx');
 const just       = Rx.Observable.just;
 const empty      = Rx.Observable.empty;
-const Immutable  = require('immutable');
 const assign     = require('object-assign');
 const debug      = require('debug')('bs:clients');
 const transform  = require('./transform-options');
-import utils from './utils';
+
+import utils      from './utils';
+import Immutable = require('immutable');
 
 import {parse} from 'url';
-import {BrowsersyncOptionsMap} from "./browser-sync.d";
+import {BrowsersyncOptionsMap, Cleanup} from "./browser-sync.d";
 
 export const ClientEvents = {
     register: "Client.register"
@@ -27,7 +28,7 @@ interface ClientSocketEvent {
     client: SocketIO.Socket
 }
 
-function track(bsSocket, options$, cleanups) {
+function track(bsSocket, options$, cleanups: Cleanup[]) {
 
     const connections$ = Rx.Observable.fromEvent(bsSocket.clients, 'connection');
     const clients$     = new Rx.BehaviorSubject(Immutable.OrderedMap());
@@ -41,7 +42,7 @@ function track(bsSocket, options$, cleanups) {
      * when a client reconnects
      * Add client sharing event such as scroll click etc
      */
-    const evs$ = connections$
+    const clientEvents$ = connections$
         .withLatestFrom(options$)
         .flatMap(x => {
             const client:  SocketIO.Socket = x[0];
@@ -79,19 +80,28 @@ function track(bsSocket, options$, cleanups) {
      * Select the currently emitting socket and set it
      * as the controller
      */
-    trackController(evs$, controller)
+    trackController(clientEvents$, controller)
         .do(controller)
         .subscribe();
 
+    // ------------------------------------------------------
+    // Controller resets
+    // ------------------------------------------------------
+
     /**
-     * Every 2 seconds, reset the controller
+     * Every second, wipe the current controller by setting
+     * it to the blank default
      */
     Rx.Observable
         .interval(1000)
         .map(x => blank)
         .subscribe(controller);
 
-    evs$
+    /**
+     * Only broadcast events when the event origin
+     * was the current controller
+     */
+    clientEvents$
         .withLatestFrom(controller)
         .flatMap(function (x) {
             const evt: ClientSocketEvent = x[0];
@@ -182,7 +192,6 @@ function track(bsSocket, options$, cleanups) {
         async: false,
         fn: function () {
             int.dispose();
-            // allClientEvents$.dispose();
             sub2.dispose();
         }
     });
@@ -196,7 +205,7 @@ function track(bsSocket, options$, cleanups) {
 
 function createClient (client: SocketIO.Socket, incoming: clients.IncomingClientRegistration, clientOptions) {
 
-    const ua  = client.handshake.headers['user-agent'];
+    const ua      = client.handshake.headers['user-agent'];
     const referer = client.handshake.headers['referer'];
 
     const newClient = <clients.Client>{

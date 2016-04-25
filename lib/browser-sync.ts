@@ -77,7 +77,7 @@ function go(options, observer) {
      * @param {function} fn
      */
     bs.registerCleanupTask = fn => {
-        cleanups.push(fn); // todo: is this needed?
+        cleanups.push(fn); // todo: is there another way to model 
     };
 
     /** -----------
@@ -87,7 +87,7 @@ function go(options, observer) {
      * @type {{io, steward, clients, connections, protocol, pause, resume}}
      */
     const bsSocket = sockets.create(bs, bs.server, options);
-
+    
     const clientsStreams = require('./clients').track(bsSocket, optSub, cleanups);
 
     /**
@@ -101,7 +101,6 @@ function go(options, observer) {
         fn: function () {
             bsServer.server.close();
         }
-
     });
 
     cleanups.push({
