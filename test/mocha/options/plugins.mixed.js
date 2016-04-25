@@ -36,7 +36,7 @@ describe('async & sync mixed plugin resolution in correct order', function () {
                     }}
                 },
             ]
-        }, function (err, bs) {
+        }).subscribe(function (bs) {
 
             var plugins = bs.options
                 .get('plugins')

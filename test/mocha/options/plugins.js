@@ -106,7 +106,7 @@ describe('plugins as options', function () {
         assert.ok(plugin.via.match(/test\/fixtures\/plugin1\.js$/));
     });
     it('accepts no plugins ', function (done) {
-        bs.create({}, function (err, bs) {
+        bs.create({}).subscribe(function (bs) {
             assert.equal(Object.keys(bs.options.get('plugins').toJS()).length, 0);
             bs.cleanup();
             done();

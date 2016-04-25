@@ -5,8 +5,7 @@
         "noImplicitAny": false,
         "sourceMap": false,
         "outDir": "dist",
-        "allowJs": true,
-        "moduleResolution": "node"
+        "allowJs": true
     },
     "exclude": [
         "node_modules",
@@ -19,6 +18,7 @@
         "example.js",
         "example.server.js",
         "example.proxy.js",
-        "dev.js"
+        "dev.js",
+        "dist"
     ]
 }

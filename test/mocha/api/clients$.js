@@ -5,7 +5,7 @@ const assert      = require('chai').assert;
 
 describe('Client connection stream', function () {
     it('does not have duplicates', function (done) {
-        browserSync.create({}, function (err, bs) {
+        browserSync.create({}).subscribe(function (bs) {
             const client = utils.getClientSocket(bs);
             client.emit(register, utils.getClient('123456'));
             client.emit(register, utils.getClient('123456'));
@@ -25,7 +25,7 @@ describe('Client connection stream', function () {
         });
     });
     it('allows unique clients', function (done) {
-        browserSync.create({}, function (err, bs) {
+        browserSync.create({}).subscribe(function (bs) {
             const client = utils.getClientSocket(bs);
             client.emit(register, utils.getClient('xyz'));
             client.emit(register, utils.getClient('zxy'));
@@ -46,7 +46,7 @@ describe('Client connection stream', function () {
         });
     });
     it('allows unique clients (stress)', function (done) {
-        browserSync.create({}, function (err, bs) {
+        browserSync.create({}).subscribe(function (bs) {
             for (var i = 1, n = 51; i < n; i += 1) {
                 utils.getClientSocket(bs).emit(register, utils.getClient('id-' + i));
             }

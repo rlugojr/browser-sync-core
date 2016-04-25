@@ -34,7 +34,7 @@ describe('async plugin resolution', function () {
                     }
                 }
             ]
-        }, function (err, bs) {
+        }).subscribe(function (bs) {
 
             var plugin = bs.options
                 .get('plugins')

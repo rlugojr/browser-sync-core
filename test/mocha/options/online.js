@@ -6,21 +6,23 @@ var bs         = require('../../../');
 var stubOnline = require('../../utils').stubOnline;
 
 describe('init with online option', function () {
-    it('can be offline', function () {
-        bs.create({online: false}, function (err, bs) {
+    it('can be offline', function (done) {
+        bs.create({online: false}).subscribe(function (bs) {
             assert.equal(bs.options.get('online'), false);
             bs.cleanup();
+            done();
         });
     });
-    it('can be online', function () {
-        bs.create({online: true}, function (err, bs) {
+    it('can be online', function (done) {
+        bs.create({online: true}).subscribe(function (bs) {
             assert.equal(bs.options.get('online'), true);
             bs.cleanup();
+            done();
         });
     });
     it('can resolve online', function (done) {
         var stub = stubOnline(false);
-        bs.create({}, function (err, bs) {
+        bs.create({}).subscribe(function (bs) {
             assert.equal(bs.options.get('online'), false);
             stub.restore();
             bs.cleanup();
@@ -29,7 +31,7 @@ describe('init with online option', function () {
     });
     it('can resolve offline', function (done) {
         var stub = stubOnline(true);
-        bs.create({}, function (err, bs) {
+        bs.create({}).subscribe(function (bs) {
             assert.equal(bs.options.get('online'), true);
             stub.restore();
 

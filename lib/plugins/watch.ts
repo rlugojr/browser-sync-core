@@ -172,7 +172,7 @@ module.exports.init = function (bs: BrowserSync) {
             return watcherIsActive;
         });
 
-    core$.subscribe((watchEventMerged: WatchEventMerged) => {
+    const coreSubscription$ = core$.subscribe((watchEventMerged: WatchEventMerged) => {
 
         const event = watchEventMerged.event;
 
@@ -193,7 +193,7 @@ module.exports.init = function (bs: BrowserSync) {
     // Return async cleanup function
     return (cb) => {
 
-        core$.dispose();
+        coreSubscription$.dispose();
         watchers$.dispose();
 
         if (getReadyCount() === bs.watchers.size) {

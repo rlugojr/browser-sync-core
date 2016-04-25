@@ -46,7 +46,7 @@ utils.proxye2e = (resp, done) => {
 
     bs.create({
         proxy: url
-    }, function (err, bs) {
+    }).subscribe(function (bs) {
         var bsUrl = bs.options.getIn(['urls', 'local']);
         var bsPort = bs.options.getIn(['port']);
         var snippet = bs.options.get('snippet');

@@ -14,7 +14,7 @@ describe('sync plugin resolution', function () {
                 {module: {init: fn1}},
                 {module: {init: fn2}}
             ]
-        }, function (err, bs) {
+        }).subscribe(function (bs) {
 
             var plugins = bs.options
                 .get('plugins')
