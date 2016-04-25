@@ -1,6 +1,6 @@
 const objPath = require('lodash.get');
 
-module.exports.initAsync = function (bs, opts, obs) {
+export function initAsync (bs, opts, obs) {
     /**
      * Set a middleware, on all routes
      * that will run if the current route is
@@ -24,7 +24,7 @@ module.exports.initAsync = function (bs, opts, obs) {
     }).subscribe(function () {
         obs.done();
     });
-};
+}
 
 /**
  * Take the Browsersync urls and generate
@@ -78,6 +78,6 @@ function template(string, data) {
  * @param {string} [path]
  * @returns {string}
  */
-function read (path) {
+function read (path?: string) {
     return require('fs').readFileSync(path || __dirname + '/../templates/404.html', 'utf8');
 }

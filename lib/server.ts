@@ -5,7 +5,7 @@ const connect    = require('connect');
 const http       = require('http');
 const https      = require('https');
 
-module.exports.create = function (options) {
+export function create (options) {
 
     const app = connect();
     const mw  = middleware.getMiddleware(options);
@@ -13,19 +13,21 @@ module.exports.create = function (options) {
     app.stack = mw.middleware;
 
     const output       = getServer(app, options);
-    output.snippetMw = mw.snippetMw;
+    output.snippetMw   = mw.snippetMw;
 
     return output;
-};
+}
 
 /**
  * @param app
  * @param options
  * @returns {{server: HttpServer, app: function}}
  */
-function getServer (app, options) {
+export function getServer (app, options) {
 
     return {
+        // todo - fix the need for this
+        snippetMw: undefined,
         server: (function () {
             if (options.get('scheme') === 'https') {
                 const pfxPath = options.getIn(['https', 'pfx']);
@@ -38,8 +40,6 @@ function getServer (app, options) {
         app: app
     };
 }
-
-module.exports.getServer = getServer;
 
 /**
  * @param options

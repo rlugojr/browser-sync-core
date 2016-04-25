@@ -24,7 +24,7 @@ function getPort (start, strict, name) {
         });
 }
 
-module.exports.fn = function getPorts(options) {
+export function getPorts(options) {
 
     const strict = options.get('strict');
     const port1  = options.get('port');
@@ -55,4 +55,4 @@ module.exports.fn = function getPorts(options) {
                 };
             });
         });
-};
+}

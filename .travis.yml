@@ -4,6 +4,5 @@ git:
 language: node_js
 node_js:
   - node
-#  - '0.10' // todo: transpile down to es5 for older node envs ?
-#  - '0.12'
-# after_script: npm run cover
+  - '0.10'
+  - '0.12'

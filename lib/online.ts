@@ -10,7 +10,7 @@ import utils from './utils';
  * @param {Map} options
  * @returns {Observable}
  */
-module.exports.fn = function isOnline(options) {
+export function isOnline (options) {
     const opt = options.get('online');
     if (utils.isUndefined(opt)) {
         return online('www.google.com')
@@ -18,4 +18,4 @@ module.exports.fn = function isOnline(options) {
             .catch(just(false));
     }
     return just(opt);
-};
+}

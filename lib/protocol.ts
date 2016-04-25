@@ -1,8 +1,8 @@
 const p = exports;
 const proto = require('../protocol.json');
 
-p.validate = function (path) {
-    var args = Array.from(arguments).slice(1);
+p.validate = function (path): {errors:any[], payload:any} {
+    var args = Array.prototype.slice.call(arguments).slice(1);
     path = path.split('.');
     var payloadArgs = {};
     var domains = proto.domains;
@@ -63,7 +63,7 @@ function verifyParameters(coll, args) {
  * @param {string} [parent]
  * @returns {*}
  */
-function verifySingleParameter(item, param, parent) {
+function verifySingleParameter(item, param, parent?) {
     parent = parent ? [parent, param.name].join('.') : param.name;
     if (param.type === 'object' && param.properties) {
         return verifyProperties(item, param.properties, parent);

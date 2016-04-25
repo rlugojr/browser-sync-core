@@ -1,10 +1,10 @@
-module.exports.rules = function (options) {
+export function rules (options) {
     return {
         rules: [snippetRegex(options)].concat(options.get('rewriteRules').toJS()),
         blacklist: options.getIn(['snippetOptions', 'blacklist']).toJS(),
         whitelist: options.getIn(['snippetOptions', 'whitelist']).toJS()
     };
-};
+}
 
 function snippetRegex (options) {
     var fn = options.getIn(['snippetOptions', 'rule', 'fn']);

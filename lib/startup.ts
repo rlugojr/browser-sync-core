@@ -8,12 +8,13 @@ const just = Rx.Observable.just;
 const opts = require('./incoming-options');
 const transform = require('./transform-options');
 const clientJs = require('./client-js');
-const getPorts = require('./ports');
 const middleware = require('./middleware');
-const isOnline = require('./online');
 const ips = require('./ips');
 const plugins = require('./plugins');
 const rewriteRules = require('./rewrite-rules');
+
+import {getPorts} from './ports';
+import {isOnline} from './online';
 
 const pipeline = [
 
@@ -46,8 +47,8 @@ const pipeline = [
 module.exports = function (userOptions) {
 
     const options = opts.merge(userOptions);
-    const ports   = getPorts.fn(options);
-    const online  = isOnline.fn(options);
+    const ports   = getPorts(options);
+    const online  = isOnline(options);
 
     return zip(just(options.set('version', '3.0.0')), ports, online, function (options, ports, isOnline) {
         return options

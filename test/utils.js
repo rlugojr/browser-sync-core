@@ -27,5 +27,5 @@ utils.getFromPath = function (bs, path, cb) {
 
 utils.stubOnline = function (status) {
     var isOnline = require('../dist/online');
-    return sinon.stub(isOnline, 'fn').returns(Rx.Observable.just(status));
+    return sinon.stub(isOnline, 'isOnline').returns(Rx.Observable.just(status));
 };

@@ -1,8 +1,8 @@
 /// <reference path="../typings/main.d.ts" />
 import {Socket} from "./sockets";
+
 'use strict';
 
-const Immutable = require('immutable');
 const Rx = require('rx');
 const Observable = Rx.Observable;
 const startup = require('./startup');

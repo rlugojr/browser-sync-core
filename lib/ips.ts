@@ -1,7 +1,7 @@
 'use strict';
 
-module.exports.resolve = function (options) {
+export function resolve (options) {
     return options.mergeDeep({
         externalIps: require('dev-ip')()
     });
-};
+}
