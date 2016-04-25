@@ -7,7 +7,7 @@ const Observable  = Rx.Observable;
 
 describe('Client options', function () {
     it('creates a new client with default options', function (done) {
-        browserSync.create({}, function (err, bs) {
+        browserSync.create({}).subscribe(function (bs) {
             const client = utils.getClientSocket(bs);
             client.emit(register, utils.getClient('123456'));
             bs.clients$.take(2).toArray()
@@ -20,7 +20,7 @@ describe('Client options', function () {
         });
     });
     it('creates a new client with default options, then a second with updated', function (done) {
-        browserSync.create({}, function (err, bs) {
+        browserSync.create({}).subscribe(function (bs) {
 
             const client = utils.getClientSocket(bs);
             client.emit(register, utils.getClient('123456'));
@@ -45,7 +45,7 @@ describe('Client options', function () {
         });
     });
     it('sets a single option on a client', function (done) {
-        browserSync.create({}, function (err, bs) {
+        browserSync.create({}).subscribe(function (bs) {
 
             const client = utils.getClientSocket(bs);
             client.emit(register, utils.getClient('123456'));
@@ -67,7 +67,7 @@ describe('Client options', function () {
         });
     });
     it('overrides a previously set client option with an override', function (done) {
-        browserSync.create({}, function (err, bs) {
+        browserSync.create({}).subscribe(function (bs) {
 
             const client = utils.getClientSocket(bs);
             client.emit(register, utils.getClient('123456'));

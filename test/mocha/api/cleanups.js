@@ -21,7 +21,7 @@ describe('Process cleanups', function () {
             ]
         };
 
-        browserSync.create(config, function (err, bs) {
+        browserSync.create(config).subscribe(function (bs) {
             bs.cleanup(function () {
             	assert.deepEqual(calls, 1);
                 done();
@@ -48,7 +48,7 @@ describe('Process cleanups', function () {
             ]
         };
 
-        browserSync.create(config, function (err, bs) {
+        browserSync.create(config).subscribe(function (bs) {
             bs.cleanup(function () {
             	assert.deepEqual(calls, 1);
                 done();

@@ -7,15 +7,16 @@ describe('urls option', function () {
     it('init with urls option', function (done) {
         bs.create({
             serveStatic: './test/fixtures'
-        }, function (err, bs) {
+        }).subscribe(function (bs) {
             var urls = bs.options.get('urls').toJS();
             var port = bs.options.get('port');
             assert.equal(urls.local,    'http://localhost:' + port);
             if (bs.options.get('online')) {
                 assert.ok(urls.external.match(new RegExp(port + '$')));
             }
-            bs.cleanup();
-            done();
+            bs.cleanup(function () {
+                done();
+            });
         });
     })
 });

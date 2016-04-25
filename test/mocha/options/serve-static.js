@@ -10,8 +10,8 @@ function process(conf) {
 }
 
 describe('serveStatic as options', function () {
-    it('doesn\'t blow up if optoin missing', function (done) {
-        bs.create({}, function (err, bs) {
+    it('doesn\'t blow up if option missing', function (done) {
+        bs.create({}).subscribe(function (bs) {
             bs.cleanup(() => done());
         });
     });
@@ -19,7 +19,7 @@ describe('serveStatic as options', function () {
 
         bs.create({
             serveStatic: './css'
-        }, function (err, bs) {
+        }).subscribe(function (bs) {
 
             var result = bs.options
                 .get('serveStatic')

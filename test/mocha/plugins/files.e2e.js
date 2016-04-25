@@ -7,7 +7,7 @@ describe('Reacting to file-change events', function () {
     it('listens to file watcher events', function (done) {
         bs.create({
             watch: 'test/fixtures/index.html'
-        }, function (err, bs) {
+        }).subscribe(function (bs) {
             assert.isTrue(Im.List.isList(bs.watchers), 'bs.watchers is a List');
             assert.equal(bs.watchers.size, 1, 'bs.watchers has size 1');
             bs.cleanup(x => done());
@@ -19,7 +19,7 @@ describe('Reacting to file-change events', function () {
                 'test/fixtures/index.html',
                 'test/fixtures/css/*.css'
             ]
-        }, function (err, bs) {
+        }).subscribe(function (bs) {
 
             const s = bs.watchers$
                 .pluck('event')
@@ -59,7 +59,7 @@ describe('Reacting to file-change events', function () {
             watch: [
                 'test/fixtures/index.html'
             ]
-        }, function (err, bs) {
+        }).subscribe(function (bs) {
 
             const s = bs.watchers$
                 .pluck('event')
