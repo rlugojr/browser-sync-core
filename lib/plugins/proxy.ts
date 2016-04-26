@@ -74,6 +74,18 @@ module.exports.init = function (bs, opts, obs) {
     const proxies     = bs.options.getIn([OPT_NAME]);
 
     /**
+     * Listen for option updates to the proxy
+     */
+    bs.options$
+        .distinctUntilChanged(null, function (a, b) {
+            return Imm.is(a.get('proxy'), b.get('proxy'));
+        })
+        .skip(1)
+        .subscribe(x => {
+            // If we reach here then the proxy option has be
+        });
+
+    /**
      * For each proxy given, create a separate http-proxy server
      * middleware in the Browsersync format
      * with the options provided.
