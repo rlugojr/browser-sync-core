@@ -237,7 +237,7 @@ function go(options, observer) {
         .do(x => optSub.onNext(x)) // pump new options value into opts subject
         .do(applyMw) // re-apply middleware stack;
         .take(1); // only allow a single subscription
-    }
+    };
 
     /**
      * Retrieve a socket.io client from a Browsersync client id.

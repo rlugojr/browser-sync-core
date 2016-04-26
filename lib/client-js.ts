@@ -102,7 +102,7 @@ clientJs.addBuiltIns = function (options) {
             },
             {
                 id: 'browser-sync-client',
-                content: fs.readFileSync(clientJsPath)
+                content: fs.readFileSync(clientJsPath, 'utf8')
             }
         ].map((x: ClientJsOption) => {
             x.via = 'Browsersync core';
