@@ -1,6 +1,7 @@
+import {BrowserSync} from "../browser-sync";
 const objPath = require('lodash.get');
 
-export function initAsync (bs, opts, obs) {
+export function initAsync (bs: BrowserSync, opts: any, obs) {
     /**
      * Set a middleware, on all routes
      * that will run if the current route is
