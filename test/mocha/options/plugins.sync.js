@@ -18,9 +18,9 @@ describe('sync plugin resolution', function () {
 
             var plugins = bs.options
                 .get('plugins')
-                .toJS();
+                .filter(x => !x.get('internal'));
 
-            assert.equal(plugins.length, 2);
+            assert.equal(plugins.size, 2);
             assert.equal(calls[0], '1');
             assert.equal(calls[1], '2');
             bs.cleanup();

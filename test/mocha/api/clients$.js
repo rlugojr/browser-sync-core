@@ -1,6 +1,6 @@
 const browserSync = require('../../../');
 const utils       = require('../utils');
-const register    = require('../../../dist/clients').ClientEvents.register;
+const register    = require('../../../dist/plugins/clients').ClientEvents.register;
 const assert      = require('chai').assert;
 
 describe('Client connection stream', function () {

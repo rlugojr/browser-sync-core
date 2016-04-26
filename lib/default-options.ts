@@ -7,6 +7,7 @@ module.exports = <BrowsersyncOptions>{
     watchOptions: {
         ignoreInitial: true
     },
+    clients: true,
     port: 3000,
     strict: false,
     middleware: [],

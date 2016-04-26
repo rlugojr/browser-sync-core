@@ -14,7 +14,8 @@ describe('async & sync mixed plugin resolution in correct order', function () {
         bs.create({
             plugins: [
                 {
-                    module: {init: fn1}
+                    module: {init: fn1},
+                    active: true
                 },
                 {
                     module: {initAsync: (bs, opts, cb) => {
@@ -34,15 +35,15 @@ describe('async & sync mixed plugin resolution in correct order', function () {
                             cb.done()
                         }, 200);
                     }}
-                },
+                }
             ]
         }).subscribe(function (bs) {
 
             var plugins = bs.options
                 .get('plugins')
-                .toJS();
+                .filter(x => !x.get('internal'));
 
-            assert.equal(plugins.length, 4);
+            assert.equal(plugins.size, 4);
             assert.equal(calls[0], '1');
             assert.equal(calls[1], '2');
             assert.equal(calls[2], '3');

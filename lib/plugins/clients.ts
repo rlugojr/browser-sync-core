@@ -1,20 +1,21 @@
-/// <reference path="../typings/main.d.ts" />
+/// <reference path="../../typings/main.d.ts" />
 import NodeURL  = require('url');
 import SocketIO = require('socket.io');
 import * as clients from './clients.d';
 
 const Rx         = require('rx');
+const Observable = Rx.Observable;
 const just       = Rx.Observable.just;
 const empty      = Rx.Observable.empty;
 const assign     = require('object-assign');
 const debug      = require('debug')('bs:clients');
-const transform  = require('./transform-options');
 
-import utils      from './utils';
+import utils      from '../utils';
 import Immutable = require('immutable');
 
 import {parse} from 'url';
-import {BrowsersyncOptionsMap, Cleanup} from "./browser-sync.d";
+import {BrowsersyncOptionsMap} from "../browser-sync.d";
+import {BrowserSync} from "../browser-sync";
 
 export const ClientEvents = {
     register: "Client.register"
@@ -28,9 +29,11 @@ interface ClientSocketEvent {
     client: SocketIO.Socket
 }
 
-function track(bsSocket, options$, cleanups: Cleanup[]) {
+module.exports['plugin:name'] = "Browsersync Clients";
 
-    const connections$ = Rx.Observable.fromEvent(bsSocket.clients, 'connection');
+export function init (bs: BrowserSync) {
+
+    const connections$ = Rx.Observable.fromEvent(bs.bsSocket.clients, 'connection');
     const clients$     = new Rx.BehaviorSubject(Immutable.OrderedMap());
 
     const blank        = {locked: false, id: '', socketId: ''};
@@ -43,7 +46,7 @@ function track(bsSocket, options$, cleanups: Cleanup[]) {
      * Add client sharing event such as scroll click etc
      */
     const clientEvents$ = connections$
-        .withLatestFrom(options$)
+        .withLatestFrom(bs.options$)
         .flatMap(x => {
             const client:  SocketIO.Socket = x[0];
             const options: BrowsersyncOptionsMap = x[1];
@@ -119,8 +122,8 @@ function track(bsSocket, options$, cleanups: Cleanup[]) {
             }
             return empty();
         }).subscribe(x => {
-            x.client.broadcast.emit(x.event, x.data);
-        });
+        x.client.broadcast.emit(x.event, x.data);
+    });
 
 
     // ------------------------------------------------------
@@ -135,7 +138,7 @@ function track(bsSocket, options$, cleanups: Cleanup[]) {
      */
     const int = Rx.Observable
         .interval(6000)
-        .map(x => Object.keys(bsSocket.clients.sockets))
+        .map(x => Object.keys(bs.bsSocket.clients.sockets))
         //.do(x => console.log('Filtering clients'))
         .withLatestFrom(clients$, (sockets, clients) => {
             return clients.filter(client => {
@@ -178,7 +181,7 @@ function track(bsSocket, options$, cleanups: Cleanup[]) {
      * any re-registrations (ie: browser reloads) will alo be updated each time.
      */
     const sub2 = registered$
-        .withLatestFrom(clients$, options$, (x, clients, options: BrowsersyncOptionsMap) => {
+        .withLatestFrom(clients$, bs.options$, (x, clients, options: BrowsersyncOptionsMap) => {
             const client:     SocketIO.Socket = x.client;
             const connection: clients.IncomingClientRegistration = x.connection;
             return clients.updateIn([connection.client.id], () => {
@@ -187,20 +190,64 @@ function track(bsSocket, options$, cleanups: Cleanup[]) {
         })
         .subscribe(clients$);
 
-    cleanups.push({
-        description: `Removing Observable subscriptions related to clients`,
-        async: false,
-        fn: function () {
-            int.dispose();
-            sub2.dispose();
-        }
-    });
+    bs.clients$     = clients$;
+    bs.connections$ = connections$;
+    bs.registered$  = registered$;
 
-    return {
-        clients$,
-        connections$,
-        registered$
+    /**
+     * Retrieve a socket.io client from a Browsersync client id.
+     * Browsersync client ID's persist and survive a refresh
+     * so consumers can use that ID to retrieve the socket.io
+     * client which allow them to target events to a single
+     * client.
+     * @param {string} id - Browsersync client ID (Note: this is different from the socket.io id)
+     * @returns {Socket|Boolean}
+     */
+    bs.getSocket = function (id) {
+        const match = clients$.getValue().filter(x => x.get('id') === id).toList().get(0);
+        if (match) {
+            return bs.bsSocket.clients.sockets[match.get('socketId')];
+        }
+        return false;
     };
+
+    /**
+     * Set individual client options
+     * @param {String} id - either a bs-client ID (not a socket.io id) or 'default'
+     * @param {Array|String} selector - option selector, eg: ['ghostMode', 'clicks']
+     * @param {Function} fn - transform function will be called with current value
+     * @returns {Observable}
+     */
+    bs.setClientOption = function (id, selector, fn) {
+        return Observable
+            .just(clients$.getValue())
+            .map(clients => {
+                return clients.updateIn([id, 'options'].concat(selector), fn);
+            })
+            .do(clients$.onNext.bind(clients$));
+    };
+
+    /**
+     * Set an option for all clients, overriding any previously set items
+     * @param {Array|String} selector
+     * @param {function} fn - transformation function will be called with current value
+     * @returns {Rx.Observable}
+     */
+    bs.overrideClientOptions = function (selector, fn) {
+        return Observable
+            .just(clients$.getValue())
+            .map(clients => {
+                return clients.map(client => {
+                    return client.updateIn(['options'].concat(selector), fn);
+                });
+            })
+            .do(clients$.onNext.bind(clients$));
+    };
+
+    return () => {
+        int.dispose();
+        sub2.dispose();
+    }
 }
 
 function createClient (client: SocketIO.Socket, incoming: clients.IncomingClientRegistration, clientOptions) {
@@ -229,8 +276,6 @@ function createClient (client: SocketIO.Socket, incoming: clients.IncomingClient
 
     return Immutable.fromJS(newClient).mergeDeep(incoming.data);
 }
-
-module.exports.track = track;
 
 
 /**

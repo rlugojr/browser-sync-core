@@ -105,9 +105,10 @@ describe('plugins as options', function () {
         assert.equal(plugin.options.name, 'shane');
         assert.ok(plugin.via.match(/test\/fixtures\/plugin1\.js$/));
     });
-    it('accepts no plugins ', function (done) {
+    it('accepts no user plugins', function (done) {
         bs.create({}).subscribe(function (bs) {
-            assert.equal(Object.keys(bs.options.get('plugins').toJS()).length, 0);
+            const userPlugins = bs.options.get('plugins').filter(x => !x.get('internal'));
+            assert.equal(userPlugins.size, 0);
             bs.cleanup();
             done();
         });

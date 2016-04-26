@@ -9,6 +9,11 @@ const debug      = require('debug')('bs:plugins');
 const ASYNC_METHOD = ['module', 'initAsync'];
 const SYNC_METHOD  = ['module', 'init'];
 const NAME_PATH    = ['module', 'plugin:name'];
+/**
+ * Define the name of options that can cause
+ * auto loading
+ */
+const autoList     = ['watch', 'proxy', '404', 'serveStatic', 'clients'];
 
 import utils from './utils';
 const isString   = utils.isString;
@@ -25,7 +30,8 @@ const Plugin = Imm.Record({
     via:     'inline',
     dir:     process.cwd(),
     initAsync: undefined,
-    init: undefined
+    init: undefined,
+    internal: false
 });
 
 /**
@@ -42,7 +48,7 @@ module.exports.resolve = function resolve(options) {
      * For each plugin, return an object
      * in the correct format
      */
-    return options.update('plugins', x => {
+    const outOptions = options.update('plugins', x => {
 
         if (isString(x)) {
             return Imm.List([resolveOne(x)]);
@@ -52,6 +58,8 @@ module.exports.resolve = function resolve(options) {
 
         return output;
     });
+
+    return outOptions;
 };
 
 /**
@@ -61,20 +69,17 @@ module.exports.resolve = function resolve(options) {
  */
 module.exports.namePlugins = function (options) {
 
-    return options.update('plugins', plugins => {
+    const outOptions = options.update('plugins', plugins => {
         const output = plugins
             .map(setName)
             .map(x => {
                 return x.set('name', x.getIn(NAME_PATH));
             });
 
-        output.forEach(x => {
-            debug(`✔ autoloaded (${x.get('name')})`);
-            debug(`└─ via (${x.get('via')})`);
-        });
-
         return output;
     });
+
+    return outOptions;
 };
 
 /**
@@ -142,8 +147,7 @@ module.exports.transformOptions = function (options) {
  * @returns {*}
  */
 module.exports.autoLoad = function (options) {
-    const autoList = ['watch', 'proxy', '404', 'serveStatic'];
-    return options
+    const outOptions = options
         .update('plugins', (x) => {
             // Ensure next transformation is always dealing with a List
             if (!Imm.List.isList(x)) {
@@ -151,19 +155,28 @@ module.exports.autoLoad = function (options) {
             }
             return x;
         })
-        .update('plugins', function (x) {
-            /**
-             * For any option that matches a name the autoList array,
-             * load the relevant plugin
-             */
-            return autoList.reduce((a, x) => {
-                if (options.get(x)) {
-                    debug(`+ autoload (${x})`);
-                    return a.concat(require('path').resolve(__dirname, 'plugins', x));
+
+        /**
+         * Here we check if an option matching the plugin name was set
+         * eg: watch: ['*.html'] - if it was, we construct a path to the relevant
+         * plugin and add it to the plugins array so that it will be loaded latest
+         */
+        .update('plugins', function (plugins) {
+            return autoList.reduce((a, plugin) => {
+                if (options.get(plugin) !== undefined) {
+                    debug(`+ autoload (${plugin})`);
+                    const requirePath = require('path').resolve(__dirname, 'plugins', plugin);
+                    debug(`└─ via (${requirePath})`);
+                    return a.push(Imm.Map({
+                        module: requirePath,
+                        internal: true
+                    }));
                 }
                 return a;
-            }, x);
+            }, plugins);
         });
+
+    return outOptions;
 };
 
 /**
@@ -209,8 +222,7 @@ function resolveOne (item) {
      * eg: plugins: [{module: './lib/plugin', options: {name: 'shane}}}]
      */
     if (isString(item.get('module'))) {
-        return item
-            .mergeDeep(resolvePluginFromString(item.get('module')));
+        return resolvePluginFromString(item.get('module')).mergeDeep(item.delete('module'));
     }
 
     if (Imm.Map.isMap(item.get('module'))) {
@@ -289,16 +301,16 @@ function asyncCb(obs) {
 }
 
 /**
- * @param item
+ * @param pluginName
  * @returns {{module: *, options: {}, via: String}}
  */
-function resolvePluginFromString(item) {
-    if (item.charAt(0) === '.') {
-        item = path.join(process.cwd(), item);
+function resolvePluginFromString(pluginName: string) {
+    if (pluginName.charAt(0) === '.') {
+        pluginName = path.join(process.cwd(), pluginName);
     }
-    const via = require.resolve(item);
+    const via = require.resolve(pluginName);
     return new Plugin({
-        module: Imm.fromJS(require(item)),
+        module: Imm.fromJS(require(pluginName)),
         via:    via,
         dir:    path.dirname(via)
     });

@@ -2,19 +2,17 @@ var bs = require('./');
 
 bs.create({
     strict: false,
-    serveStatic: [
-        'test/fixtures'
+    // serveStatic: [
+    //     'test/fixtures'
+    // ],
+    middleware: [
+       {
+           route: "/shane",
+           handle: function (req, res) {
+               return res.end('<html>shane is cool</html>');
+           }
+       }
     ],
-    //middleware: [
-    //    {
-    //        handle: function (req, res, next) {
-    //            if (req.url === '/shane') {
-    //                return res.end('<html>shane is cool</html>');
-    //            }
-    //            next();
-    //        }
-    //    }
-    //],
     //watchDebounce: 2000,
     //watchDelay: 2000,
     watch: [
@@ -33,14 +31,9 @@ bs.create({
         //}
         //}
     ],
-    //devMode: true,
-    //clientJs: [
-    //    'const s = window.___browserSync___.socket; s.on("connection", (x) => console.log(x))'
-    //],
-    //files:       [],
-    //proxy: {
-    //    target: 'http://www.bbc.co.uk'
-    //},
+    proxy: {
+       target: 'http://www.bbc.co.uk'
+    },
     //scheme: 'https',
     //rewriteRules: [
         //{
@@ -66,21 +59,16 @@ bs.create({
         //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp', // laptop
         //'./lib/plugins/proxy',
         //'./lib/plugins/404',
-        //'./lib/plugins/watcher'
+        // './test/fixtures/plugins/awesome.js'
         //'/Users/shakyshane/sites/oss/UI'
     ],
-    //middleware: [
-    //    {
-    //        route: '/js',
-    //        handle: require('browserify-middleware')('test/fixtures/js/app.js')
-    //    }
-    //],
     //externals: {
         //clientJs: __dirname + '/client/'
         //clientJs: '/Users/shakyshane/code/bs-client' // laptop
         //clientJs: '/Users/shakyshane/sites/oss/browser-sync-client/' // home imac
     //}
     //minify: false
-}).subscribe(x => {
-    console.log(x.options.get('urls'));
+}).subscribe(bs => {
+    console.log(bs.options.get('urls'));
+    // console.log(bs.options.get('plugins').toJS());
 });

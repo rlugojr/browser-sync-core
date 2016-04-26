@@ -32,6 +32,7 @@ export interface BrowserSync {
     clients$: any
 
     server: any
+    bsSocket: any
     app: any
     registerCleanupTask: (fn:any) => void
     cleanup: (cb?:any) => void
@@ -86,10 +87,8 @@ function go(options, observer) {
      *
      * @type {{io, steward, clients, connections, protocol, pause, resume}}
      */
-    const bsSocket = sockets.create(bs, bs.server, options);
+    bs.bsSocket = sockets.create(bs, bs.server, options);
     
-    const clientsStreams = require('./clients').track(bsSocket, optSub, cleanups);
-
     /**
      * Run the server
      */
@@ -107,7 +106,7 @@ function go(options, observer) {
         description: 'Closing websocket server',
         async: false,
         fn: function () {
-            bsSocket.socketServer.close()
+            bs.bsSocket.socketServer.close()
         }
     });
 
@@ -172,15 +171,12 @@ function go(options, observer) {
     /**
      * Expose socket.io instance
      */
-    bs.io = bsSocket.io;
+    bs.io = bs.bsSocket.io;
     /**
      * Expose all socket properties
      */
-    bs.sockets      = bsSocket;
-    bs.clients      = bsSocket.clients;
-    bs.clients$     = clientsStreams.clients$;
-    bs.connections$ = clientsStreams.connections$;
-    bs.registered$  = clientsStreams.registered$;
+    bs.sockets      = bs.bsSocket;
+    bs.clients      = bs.bsSocket.clients;
 
     /**
      * Get a file-watcher for a specific namespace
@@ -240,38 +236,6 @@ function go(options, observer) {
     };
 
     /**
-     * Retrieve a socket.io client from a Browsersync client id.
-     * Browsersync client ID's persist and survive a refresh
-     * so consumers can use that ID to retrieve the socket.io
-     * client which allow them to target events to a single
-     * client.
-     * @param {string} id - Browsersync client ID (Note: this is different from the socket.io id)
-     * @returns {Socket|Boolean}
-     */
-    bs.getSocket = function (id) {
-        const match = clientsStreams.clients$.getValue().filter(x => x.get('id') === id).toList().get(0);
-        if (match) {
-            return bsSocket.clients.sockets[match.get('socketId')];
-        }
-        return false;
-    };
-
-    /**
-     * Set individual client options
-     * @param {String} id - either a bs-client ID (not a socket.io id) or 'default'
-     * @param {Array|String} selector - option selector, eg: ['ghostMode', 'clicks']
-     * @param {Function} fn - transform function will be called with current value
-     * @returns {Observable}
-     */
-    bs.setClientOption = function (id, selector, fn) {
-        return Observable
-            .just(clientsStreams.clients$.getValue())
-            .map(clients => {
-                return clients.updateIn([id, 'options'].concat(selector), fn);
-            })
-            .do(clientsStreams.clients$.onNext.bind(clientsStreams.clients$));
-    };
-    /**
      * Set a default option for newly connected clients.
      * Note: This will not affect any current clients
      * @param {Array|String} selector
@@ -284,25 +248,7 @@ function go(options, observer) {
             .map(x => x.updateIn(['clientOptions'].concat(selector), fn))
             .do(optSub.onNext.bind(optSub))
     };
-    /**
-     * Set an option for all clients, overriding any previously set items
-     * @param {Array|String} selector
-     * @param {function} fn - transformation function will be called with current value
-     * @returns {Rx.Observable}
-     */
-    bs.overrideClientOptions = function (selector, fn) {
-        return Observable
-            .just(clientsStreams.clients$.getValue())
-            .map(clients => {
-                return clients.map(client => {
-                    return client.updateIn(['options'].concat(selector), fn);
-                });
-            })
-            .do(clientsStreams.clients$.onNext.bind(clientsStreams.clients$));
-    };
-    //getClients: function () {
-    //    return optSub.getValue().get('clientOptions');
-    //},
+    
     /**
      * Allow plugins to also load the same socket.io script
      * used by Browsersync
@@ -320,11 +266,11 @@ function go(options, observer) {
     bs.options$ = optSub;
 
     bs.reload = function () {
-        bsSocket.protocol.send('Global.reload', true);
+        bs.bsSocket.protocol.send('Global.reload', true);
     };
 
     bs.inject = function (obj) {
-        bsSocket.protocol.send('Global.inject', obj);
+        bs.bsSocket.protocol.send('Global.inject', obj);
     };
 
     Object.defineProperty(bs, 'options', {

@@ -1,5 +1,5 @@
 import chokidar = require('chokidar');
-import {ClientOptions} from "./clients.d";
+import {ClientOptions} from "./plugins/clients.d.ts";
 
 export interface BrowsersyncOptionsMap {
     get: (path: string) => any
@@ -56,6 +56,13 @@ export interface BrowsersyncOptions {
      * @default false
      */
     proxy?: string|string[]
+
+    /**
+     * Should clients be tracked? Almost always this should be true
+     * but in some cases you may just want the Browsersync server
+     * without any sync stuff.
+     */
+    clients: boolean
 
     /**
      * @property port
