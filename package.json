@@ -4,11 +4,8 @@
   "description": "Browsersync's Engine",
   "main": "dist/browser-sync.js",
   "scripts": {
-    "unit": "mocha test/mocha/**/*.js",
-    "test": "crossbow run build-all && npm run unit",
-    "e2e": "protractor test/protractor/config.js",
+    "test": "crossbow run build-all unit",
     "start": "crossbow watch",
-    "build-client": "crossbow run build-client",
     "pre-publish": "crossbow run build-all"
   },
   "repository": "Browsersync/browser-sync-core",

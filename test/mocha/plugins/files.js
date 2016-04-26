@@ -111,8 +111,9 @@ describe('uses file-watcher plugin', function () {
         });
 
         const first  = actual.getIn(['watch', 0]);
-        const plug1  = actual.getIn(['plugins', 0]);
-        const plug2  = actual.getIn(['plugins', 1]);
+        const plugs  = actual.getIn(['plugins']).filter(function (x) {
+            return !x.get('internal');
+        });
 
         //console.log(
         assert.equal(first.getIn(['match', 0]),  '*.html');
@@ -125,7 +126,7 @@ describe('uses file-watcher plugin', function () {
 
         assert.equal(third.getIn(['match', 0]),  '*.css');
         assert.equal(third.getIn(['match', 1]),  '*.jade');
-        assert.equal(second.get('namespace'), plug1.get('name'));
-        assert.equal(third.get('namespace'), plug2.get('name'));
+        assert.equal(second.get('namespace'), plugs.get(0).get('name'));
+        assert.equal(third.get('namespace'), plugs.get(1).get('name'));
     });
 });

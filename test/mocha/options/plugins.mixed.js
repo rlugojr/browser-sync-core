@@ -53,4 +53,18 @@ describe('async & sync mixed plugin resolution in correct order', function () {
             done();
         });
     });
+    it('always loads core plugins before user plugins', function (done) {
+        bs.create({
+            watch: 'test',
+            serveStatic: 'test/fixtures',
+            plugins: [
+                function (bs) {
+                    assert.ok(bs.setClientOption);
+                }
+            ]
+        }).subscribe(function (bs) {
+            bs.cleanup();
+            done();
+        });
+    });
 });

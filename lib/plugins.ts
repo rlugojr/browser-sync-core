@@ -9,9 +9,12 @@ const debug      = require('debug')('bs:plugins');
 const ASYNC_METHOD = ['module', 'initAsync'];
 const SYNC_METHOD  = ['module', 'init'];
 const NAME_PATH    = ['module', 'plugin:name'];
+
 /**
  * Define the name of options that can cause
- * auto loading
+ * auto loading. These are in reverse order, so 
+ * clients will ALWAYS be the first core plugin and watch 
+ * would always be the last.
  */
 const autoList     = ['watch', 'proxy', '404', 'serveStatic', 'clients'];
 
@@ -162,12 +165,13 @@ module.exports.autoLoad = function (options) {
          * plugin and add it to the plugins array so that it will be loaded latest
          */
         .update('plugins', function (plugins) {
+
             return autoList.reduce((a, plugin) => {
                 if (options.get(plugin) !== undefined) {
                     debug(`+ autoload (${plugin})`);
                     const requirePath = require('path').resolve(__dirname, 'plugins', plugin);
                     debug(`└─ via (${requirePath})`);
-                    return a.push(Imm.Map({
+                    return a.unshift(Imm.Map({
                         module: requirePath,
                         internal: true
                     }));

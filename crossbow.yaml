@@ -8,6 +8,9 @@ watch:
 
 tasks:
 
+    unit:
+      - '@npm mocha test/mocha/**/*.js'
+
     build-server:
       - '@shell rm -rf dist'
       - '@npm tsc'
@@ -16,7 +19,7 @@ tasks:
       - browserify
       - uglify
 
-    build-all:
+    build-all@p:
       - build-server
       - build-client
 
