@@ -79,5 +79,5 @@ function template(string, data) {
  * @returns {string}
  */
 function read (path?: string) {
-    return require('fs').readFileSync(path || __dirname + '/../templates/404.html', 'utf8');
+    return require('fs').readFileSync(path || __dirname + '/../../templates/404.html', 'utf8');
 }
