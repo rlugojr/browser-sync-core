@@ -1,7 +1,7 @@
 module.exports = {
     initAsync: function (bs, opts, done) {
         bs.pluginUpdates('Plugin1')
-            .do(x => console.log(x))
+            .do(function() {console.log(x)})
             .subscribe();
 
         //var optStream = bs.plugin('option:middleware', function (mw) {

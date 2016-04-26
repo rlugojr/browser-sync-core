@@ -1,10 +1,10 @@
 'use strict';
 
-var bs       = require('../../../');
-var sinon    = require('sinon');
-var assert   = require('chai').assert;
-var plugins  = require('../../../dist/plugins');
-var merge    = require('../utils').optmerge;
+var bs = require('../../../');
+var sinon = require('sinon');
+var assert = require('chai').assert;
+var plugins = require('../../../dist/plugins');
+var merge = require('../utils').optmerge;
 
 function process(conf) {
     return [merge(conf)]
@@ -31,12 +31,12 @@ describe('plugins as options', function () {
         assert.ok(out.get(0).name.match(/bs-plugin-\d{1,2}/));
     });
     it('init with plugin option as fn only', function () {
-        const fn = function (bs) {
+        var fn = function (bs) {
             console.log(bs.options.get('urls'));
         };
         var plugin = process({
-                plugins: [fn]
-            })
+            plugins: [fn]
+        })
             .getIn(['plugins', 0])
             .toJS();
 
@@ -45,11 +45,15 @@ describe('plugins as options', function () {
         assert.isTrue(plugin.name.length > 0); // random ID generated for this
     });
     it('multiple simple plugins as fns', function () {
-        const fn = (bs) => console.log(bs.options.get('urls'));
-        const fn2 = (bs) => console.log(bs.options.get('urls2'));
+        var fn = function (bs) {
+            console.log(bs.options.get('urls'))
+        };
+        var fn2 = function (bs) {
+            console.log(bs.options.get('urls2'))
+        };
         var plugin = process({
-                plugins: [fn, fn2]
-            })
+            plugins: [fn, fn2]
+        })
             .getIn(['plugins'])
             .toJS();
 
@@ -64,8 +68,8 @@ describe('plugins as options', function () {
     });
     it('init with plugin option as string only', function () {
         var plugin = process({
-                plugins: './test/fixtures/plugin2.js'
-            })
+            plugins: './test/fixtures/plugin2.js'
+        })
             .getIn(['plugins', 0])
             .toJS();
 
@@ -77,9 +81,12 @@ describe('plugins as options', function () {
         var plugin = process({
             plugins: [
                 './test/fixtures/plugin1.js'
-            ]})
+            ]
+        })
             .get('plugins')
-            .filter(x => x.get('name') === 'Plugin1')
+            .filter(function (x) {
+                return x.get('name') === 'Plugin1'
+            })
             .get(0)
             .toJS();
 
@@ -96,9 +103,12 @@ describe('plugins as options', function () {
                         name: 'shane'
                     }
                 }
-            ]})
+            ]
+        })
             .get('plugins')
-            .filter(x => x.get('name') === 'Plugin1')
+            .filter(function (x) {
+                return x.get('name') === 'Plugin1'
+            })
             .get(0)
             .toJS();
 
@@ -107,7 +117,9 @@ describe('plugins as options', function () {
     });
     it('accepts no user plugins', function (done) {
         bs.create({}).subscribe(function (bs) {
-            const userPlugins = bs.options.get('plugins').filter(x => !x.get('internal'));
+            var userPlugins = bs.options.get('plugins').filter(function (x) {
+                return !x.get('internal')
+            });
             assert.equal(userPlugins.size, 0);
             bs.cleanup();
             done();

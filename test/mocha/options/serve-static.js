@@ -1,9 +1,9 @@
 'use strict';
 
-var assert   = require('chai').assert;
-var ss       = require('../../../dist/plugins/serveStatic');
-var bs       = require('../../../');
-var merge    = require('../utils').optmerge;
+var assert = require('chai').assert;
+var ss = require('../../../dist/plugins/serveStatic');
+var bs = require('../../../');
+var merge = require('../utils').optmerge;
 
 function process(conf) {
     return ss.transformOptions(merge(conf));
@@ -12,7 +12,9 @@ function process(conf) {
 describe('serveStatic as options', function () {
     it('doesn\'t blow up if option missing', function (done) {
         bs.create({}).subscribe(function (bs) {
-            bs.cleanup(() => done());
+            bs.cleanup(function () {
+                done();
+            });
         });
     });
     it('accepts a single string', function (done) {
@@ -28,7 +30,9 @@ describe('serveStatic as options', function () {
             assert.equal(result.length, 1);
             assert.equal(result[0].root, './css');
 
-            bs.cleanup(() => done());
+            bs.cleanup(function () {
+                done();
+            });
         });
 
     });

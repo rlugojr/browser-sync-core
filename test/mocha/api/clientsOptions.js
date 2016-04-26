@@ -1,9 +1,9 @@
 const browserSync = require('../../../');
-const utils       = require('../utils');
-const register    = require('../../../dist/plugins/clients').ClientEvents.register;
-const assert      = require('chai').assert;
-const Rx          = require('rx');
-const Observable  = Rx.Observable;
+const utils = require('../utils');
+const register = require('../../../dist/plugins/clients').ClientEvents.register;
+const assert = require('chai').assert;
+const Rx = require('rx');
+const Observable = Rx.Observable;
 
 describe('Client options', function () {
     it('creates a new client with default options', function (done) {
@@ -11,7 +11,7 @@ describe('Client options', function () {
             const client = utils.getClientSocket(bs);
             client.emit(register, utils.getClient('123456'));
             bs.clients$.take(2).toArray()
-                .subscribe(clients => {
+                .subscribe(function (clients) {
                     const path1 = ['123456', 'options', 'reloadOnRestart'];
                     assert.equal(clients[1].getIn(path1), false);
                     bs.cleanup();
@@ -26,7 +26,7 @@ describe('Client options', function () {
             client.emit(register, utils.getClient('123456'));
 
             bs.clients$.take(3).toArray()
-                .subscribe(clients => {
+                .subscribe(function (clients) {
                     assert.equal(clients[1].size, 1);
                     assert.equal(clients[2].size, 2);
                     assert.equal(clients[2].getIn(['123456', 'id']), '123456');
@@ -38,9 +38,15 @@ describe('Client options', function () {
                 });
 
             bs.registered$.take(1)
-                .flatMap(() => bs.setDefaultClientOption('reloadOnRestart', x => 'shane'))
+                .flatMap(function () {
+                    return bs.setDefaultClientOption('reloadOnRestart', function () {
+                        return 'shane';
+                    });
+                })
                 // add a second client, after updating default options
-                .do(x => client.emit(register, utils.getClient('654321')))
+                .do(function (x) {
+                    client.emit(register, utils.getClient('654321'))
+                })
                 .subscribe();
         });
     });
@@ -51,7 +57,7 @@ describe('Client options', function () {
             client.emit(register, utils.getClient('123456'));
 
             bs.clients$.take(3).toArray()
-                .subscribe(clients => {
+                .subscribe(function (clients) {
                     const path1 = ['123456', 'options', 'reloadOnRestart'];
                     assert.equal(clients[1].getIn(path1), false); // default
                     assert.equal(clients[2].getIn(path1), 'shane');
@@ -59,9 +65,11 @@ describe('Client options', function () {
                     done();
                 });
 
-            bs.registered$.take(1).flatMap(x => {
+            bs.registered$.take(1).flatMap(function () {
                 return Observable.concat([
-                    bs.setClientOption('123456', 'reloadOnRestart', x => 'shane')
+                    bs.setClientOption('123456', 'reloadOnRestart', function () {
+                        return 'shane'
+                    })
                 ])
             }).subscribe();
         });
@@ -73,7 +81,7 @@ describe('Client options', function () {
             client.emit(register, utils.getClient('123456'));
 
             bs.clients$.take(4).toArray()
-                .subscribe(clients => {
+                .subscribe(function (clients) {
                     const path = ['123456', 'options', 'notify'];
                     assert.equal(clients[1].getIn(path), true);
                     assert.equal(clients[2].getIn(path), 'shane');
@@ -82,10 +90,14 @@ describe('Client options', function () {
                     done();
                 });
 
-            bs.registered$.take(1).flatMap(x => {
+            bs.registered$.take(1).flatMap(function (x) {
                 return Observable.concat([
-                    bs.setClientOption('123456', ['notify'], x => 'shane'),
-                    bs.overrideClientOptions(['notify'], x => 'kittie')
+                    bs.setClientOption('123456', ['notify'], function () {
+                        return 'shane'
+                    }),
+                    bs.overrideClientOptions(['notify'], function () {
+                        return 'kittie'
+                    })
                 ])
             }).subscribe();
         });

@@ -38,7 +38,7 @@ describe('async plugin resolution', function () {
 
             var plugin = bs.options
                 .get('plugins')
-                .filter(x => x.get('name') === 'My Awesome Plugin')
+                .filter(function(x) {return x.get('name') === 'My Awesome Plugin'})
                 .get(0)
                 .toJS();
 

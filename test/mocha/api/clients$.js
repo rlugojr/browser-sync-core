@@ -21,7 +21,7 @@ describe('Client connection stream', function () {
                     assert.equal(jsClients2[0].id, '123456');
                     bs.cleanup();
                     done();
-                }, err => done(err));
+                }, function (err) {done(err)});
         });
     });
     it('allows unique clients', function (done) {
@@ -42,7 +42,7 @@ describe('Client connection stream', function () {
                     assert.equal(jsClients2[1].id, 'zxy');
                     bs.cleanup();
                     done();
-                }, err => done(err));
+                }, function(err) { done(err) });
         });
     });
     it('allows unique clients (stress)', function (done) {
@@ -59,7 +59,7 @@ describe('Client connection stream', function () {
                     assert.equal(clients[49].get('id-40').get('id'), 'id-40');
                     bs.cleanup();
                     done();
-                }, err => done(err));
+                }, function(err) { done(err) });
         });
     });
 });

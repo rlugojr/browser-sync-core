@@ -7,8 +7,8 @@ var assert   = require('chai').assert;
 describe('sync plugin resolution', function () {
     it('accepts a plugin that has a sync init method', function (done) {
         var calls = [];
-        const fn1 = () => calls.push(1);
-        const fn2 = () => calls.push(2);
+        var fn1 = function() { calls.push(1) };
+        var fn2 = function() { calls.push(2) };
         bs.create({
             plugins: [
                 {module: {init: fn1}},
@@ -18,7 +18,7 @@ describe('sync plugin resolution', function () {
 
             var plugins = bs.options
                 .get('plugins')
-                .filter(x => !x.get('internal'));
+                .filter(function(x) {return !x.get('internal') });
 
             assert.equal(plugins.size, 2);
             assert.equal(calls[0], '1');

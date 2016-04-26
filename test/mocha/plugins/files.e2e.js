@@ -10,7 +10,7 @@ describe('Reacting to file-change events', function () {
         }).subscribe(function (bs) {
             assert.isTrue(Im.List.isList(bs.watchers), 'bs.watchers is a List');
             assert.equal(bs.watchers.size, 1, 'bs.watchers has size 1');
-            bs.cleanup(x => done());
+            bs.cleanup(function () {done()});
         });
     });
     it('listens to file watcher events in core namespace', function (done) {
@@ -25,7 +25,7 @@ describe('Reacting to file-change events', function () {
                 .pluck('event')
                 .take(2)
                 .toArray()
-                .subscribe(x => {
+                .subscribe(function (x) {
 
                     assert.equal(x.length, 2);
 
@@ -34,10 +34,12 @@ describe('Reacting to file-change events', function () {
                     assert.equal(x[0].namespace, 'core'); // second watcher
                     assert.equal(x[1].namespace, 'core'); // second watcher
 
-                }, e => {}, () => bs.cleanup(x => {
-                    s.dispose();
-                    done();
-                }));
+                }, function() {}, function() {
+                    bs.cleanup(function() {
+                        s.dispose();
+                        done();
+                    });
+                });
 
             bs.watchers.get(0).watcher._events.all('change', 'test/fixtures/index.html');
             bs.watchers.get(1).watcher._events.all('change', 'test/fixtures/css/style.css');
@@ -48,7 +50,7 @@ describe('Reacting to file-change events', function () {
             plugins: [
                 {
                     module: {
-                        init: () => {},
+                        init: function (){},
                         'plugin:name': 'my plugin'
                     },
                     options: {
@@ -65,15 +67,17 @@ describe('Reacting to file-change events', function () {
                 .pluck('event')
                 .take(2)
                 .toArray()
-                .subscribe(x => {
+                .subscribe(function(x) {
 
                     assert.equal(x[0].namespace, 'core'); // second watcher
                     assert.equal(x[1].namespace, 'my plugin'); // second watcher
 
-                }, e => {}, () => bs.cleanup(x => {
-                    s.dispose();
-                    done();
-                }));
+                }, function(){}, function(){
+                    bs.cleanup(function () {
+                        s.dispose();
+                        done();
+                    });
+                });
 
             bs.watchers.get(0).watcher._events.all('change', 'test/fixtures/index.html');
             bs.watchers.get(1).watcher._events.all('change', 'test/fixtures/css/style.css');

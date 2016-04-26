@@ -10,9 +10,9 @@ describe('Process cleanups', function () {
             plugins: [
                 {
                     module: {
-                        initAsync: (bs, opts, obs) => {
+                        initAsync: function (bs, opts, obs) {
                             obs.done();
-                            return () => {
+                            return function () {
                                 calls += 1;
                             }
                         }
@@ -34,9 +34,9 @@ describe('Process cleanups', function () {
             plugins: [
                 {
                     module: {
-                        initAsync: (bs, opts, obs) => {
+                        initAsync: function (bs, opts, obs) {
                             obs.done();
-                            return (done) => {
+                            return function (done) {
                                 setTimeout(function () {
                                     calls += 1;
                                     done();

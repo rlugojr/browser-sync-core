@@ -32,12 +32,12 @@ utils.getClient = function (id, data) {
     };
 };
 
-utils.proxye2e = (resp, done) => {
+utils.proxye2e = function (resp, done) {
     var app = connect();
     var server = http.createServer(app);
     server.listen();
     var add = server.address();
-    var url = `http://localhost:${add.port}`;
+    var url = 'http://localhost:' + add.port;
     var respIn = utils[resp](url);
 
     app.use('/', function (req, res) {
@@ -61,7 +61,7 @@ utils.proxye2e = (resp, done) => {
                         return done(err);
                     });
                 }
-                assert.equal(res.text, utils[resp](`//localhost:${bsPort}`) + snippet);
+                assert.equal(res.text, utils[resp]('//localhost:' + bsPort) + snippet);
                 bs.cleanup(function () {
                     server.close();
                     done();
@@ -70,15 +70,6 @@ utils.proxye2e = (resp, done) => {
     });
 };
 
-utils.resp1 = (host) =>
-    `<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Document</title>
-    <link rel="stylesheet" href="${host}/css/core.css">
-</head>
-<body>
-
-</body>
-</html>`;
+utils.resp1 = function (host) {
+    return '<!doctype html><html lang="en"><head><meta charset="UTF-8"><title>Document</title><link rel="stylesheet" href="'+host+'/css/core.css"></head><body></body></html>';
+};

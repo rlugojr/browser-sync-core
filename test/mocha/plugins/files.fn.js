@@ -10,8 +10,8 @@ function process(obj) {
 
 describe('uses file-watcher plugin with custom fn', function () {
     it('accepts array of objects', function () {
-        const fn1 = () => {};
-        const fn2 = () => {};
+        const fn1 = function() {};
+        const fn2 = function() {};
         const actual = process({
             watch: [
                 {
@@ -34,7 +34,7 @@ describe('uses file-watcher plugin with custom fn', function () {
         assert.equal(second.get('fn'), fn2);
     });
     it('accepts single string with custom fn', function () {
-        const fn1 = () => {};
+        const fn1 = function() {};
         const actual = process({
             watch: {
                 match: '*.html',
@@ -46,7 +46,7 @@ describe('uses file-watcher plugin with custom fn', function () {
         assert.equal(first.get('fn'), fn1);
     });
     it('accepts single Object with match as string', function () {
-        const fn1 = () => {};
+        const fn1 = function() {};
         const actual = process({
             watch: {
                 match: '*.html',
@@ -62,7 +62,7 @@ describe('uses file-watcher plugin with custom fn', function () {
         assert.equal(first.get('fn'), fn1);
     });
     it('accepts single Object with array of strings', function () {
-        const fn1 = () => {};
+        const fn1 = function() {};
         const actual = process({
             watch: {
                 match: ['*.html', '*.css'],

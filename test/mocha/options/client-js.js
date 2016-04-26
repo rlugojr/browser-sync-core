@@ -43,7 +43,7 @@ describe('client js as options', function () {
         })
             .get('clientJs')
             .toJS()
-            .filter(x => x.via !== 'Browsersync core');
+            .filter(function(x) { return x.via !== 'Browsersync core'});
 
         // Plugin JS goes before any user-provided!
         assert.equal(input[0].content, client3);
@@ -79,7 +79,7 @@ describe('client js as options', function () {
 
         var idsJs = ids
             .toJS()
-            .reduce((prev, curr) => prev.concat(curr), [])
+            .reduce(function(prev, curr) { return prev.concat(curr) }, [])
             .reverse(null, -3)
             .slice(0, 3)
             .reverse();
@@ -89,7 +89,7 @@ describe('client js as options', function () {
         assert.equal(idsJs[2].id, 'My second inline');
     });
     it('has expected built-ins', function () {
-        const items = process({}).get('clientJs').toJS();
+        var items = process({}).get('clientJs').toJS();
         assert.equal(items[0].via, 'Browsersync core');
         assert.equal(items[0].id, 'bs-no-conflict');
         assert.equal(items[1].id, 'bs-socket-io');
