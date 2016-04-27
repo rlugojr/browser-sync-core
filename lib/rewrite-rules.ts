@@ -1,8 +1,16 @@
-const Immutable    = require('immutable');
+import Immutable   = require('immutable');
 const mergeOpts    = require('./transform-options').mergeOptionsWithPlugins;
 const config       = require('./config');
+const OPT_NAME     = 'rewriteRules';
+let count          = 0;
 
-var count          = 0;
+export interface RewriteRule {
+    match: string|RegExp
+    fn?: (req:any, res:any, match:string) => string | string
+    replace?: (req:any, res:any, match:string) => string | string
+    via?: string
+    id?: string
+}
 
 /**
  * Pull server:middleware hooks from plugins
@@ -30,10 +38,6 @@ export function createOne (item) {
     }).mergeDeep(item);
 }
 
-/**
- *
- */
-export function fromJS (coll) {
-    return Immutable.fromJS(coll.map(createOne));
+export function fromJS(modified: RewriteRule[], options: Immutable.Map<string, any>) {
+    return options.set(OPT_NAME, Immutable.fromJS(modified.map(createOne)));
 }
-

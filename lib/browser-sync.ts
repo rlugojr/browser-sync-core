@@ -222,14 +222,9 @@ function go(options, observer) {
         }
 
         return input.withLatestFrom(optSub, (x, opts) => {
-            return opts.updateIn( // update a current value
-                x.selector.split('.'), // make selector an array always
-                (prev) => {
-                    // call an internal function to transform what the user
-                    // has provided into the correct internal type
-                    return bs.optionUpdaters[x.selector].call(null, x.fn.call(null, prev.toJS()))
-                }
-            );
+            const prev = opts.getIn(x.selector.split('.')).toJS();
+            const modified = x.fn.call(null, prev);
+            return bs.optionUpdaters[x.selector].call(null, modified, opts);
         })
         .do(x => optSub.onNext(x)) // pump new options value into opts subject
         .do(applyMw) // re-apply middleware stack;

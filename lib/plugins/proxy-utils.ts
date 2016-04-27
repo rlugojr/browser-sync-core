@@ -1,12 +1,6 @@
-var url = require('url');
-import NodeURL  = require('url');
-
-export interface RewriteRule {
-    match: string|RegExp
-    fn?: (req:any, res:any, match:string) => string | string
-    replace?: (req:any, res:any, match:string) => string | string
-    via?: string
-}
+import {RewriteRule} from "../rewrite-rules";
+import NodeURL = require('url');
+const url = require('url');
 
 export function rewriteLinks (userServer: NodeURL.Url): RewriteRule {
 

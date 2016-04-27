@@ -8,7 +8,7 @@ import utils from '../utils';
 const isString  = utils.isString;
 
 import * as proxyUtils from './proxy-utils';
-import {RewriteRule} from "./proxy-utils";
+import {RewriteRule} from "../rewrite-rules";
 
 /**
  * Initial options used when creating the node http-proxy server

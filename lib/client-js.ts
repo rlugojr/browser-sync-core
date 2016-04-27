@@ -1,7 +1,5 @@
-const Immutable          = require('immutable');
+import Immutable = require('immutable');
 const clientJs           = exports;
-
-
 const snippet            = require('./snippet');
 const connectUtils       = require('./connect-utils');
 const fs                 = require('fs');
@@ -105,8 +103,7 @@ clientJs.addBuiltIns = function (options) {
                 content: fs.readFileSync(clientJsPath, 'utf8')
             }
         ].map((x: ClientJsOption) => {
-            x.via = 'Browsersync core';
-            return x;
+            return new ClientJs(x);
         })).concat(x);
     });
 };
@@ -186,11 +183,10 @@ ${x.get('content')}
 clientJs.createOne = createOne;
 
 /**
- * @param coll
- * @returns {*}
+ *
  */
-clientJs.fromJS = function (coll) {
-    return Immutable.fromJS(coll.map(x => createOne('inline-plugin', x)));
+clientJs.fromJS = function (modified: ClientJsOption[], options: Immutable.Map<string, any>) {
+    return options.set(OPT_NAME, Immutable.fromJS(modified.map(x => createOne('inline-plugin', x))));
 };
 
 /**
