@@ -46,7 +46,7 @@ module.exports = <BrowsersyncOptions>{
         whitelist: [],
         blacklist: [],
         rule: {
-            match: /$/,
+            match: /<body[^>]*>/i,
             fn: function (snippet, req, res, match) {
                 return match + snippet;
             }

@@ -1,8 +1,14 @@
 var url = require('url');
 import NodeURL  = require('url');
 
+export interface RewriteRule {
+    match: string|RegExp
+    fn?: (req:any, res:any, match:string) => string | string
+    replace?: (req:any, res:any, match:string) => string | string
+    via?: string
+}
 
-export function rewriteLinks (userServer: NodeURL.Url) {
+export function rewriteLinks (userServer: NodeURL.Url): RewriteRule {
 
     var host   = userServer.hostname;
     var string = host;
@@ -19,7 +25,7 @@ export function rewriteLinks (userServer: NodeURL.Url) {
         //match: new RegExp("https?:\\\\?/\\\\?/" + string + "(\/)?|('|\")(https?://|\\\\?/|\\.)?" + string + "(\/)?(.*?)(?=[ ,'\"\\s])", "g"),
         //match: new RegExp('https?://' + string + '(\/)?|(\'|")(https?://|/|\\.)?' + string + '(\/)?(.*?)(?=[ ,\'"\\s])', 'g'),
         //match: new RegExp("https?:\\\\/\\\\/" + string, "g"),
-        fn:    function (req, res, match) {
+        fn: function (req, res, match) {
 
             var proxyUrl = req.headers['host'];
 

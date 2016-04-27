@@ -8,6 +8,7 @@ import utils from '../utils';
 const isString  = utils.isString;
 
 import * as proxyUtils from './proxy-utils';
+import {RewriteRule} from "./proxy-utils";
 
 /**
  * Initial options used when creating the node http-proxy server
@@ -61,7 +62,8 @@ const ProxyOption = Imm.Record(<proxy.ProxyOption>{
     ws:           false
 });
 
-module.exports["plugin:name"] = "Browsersync Proxy";
+const pluginName = "Browsersync Proxy";
+module.exports["plugin:name"] = pluginName;
 module.exports.init = function (bs, opts, obs) {
 
     /** Bail early if plugin loaded, but not used **/
@@ -73,101 +75,109 @@ module.exports.init = function (bs, opts, obs) {
     const httpProxy   = require('http-proxy');
     const proxies     = bs.options.getIn([OPT_NAME]);
 
-    /**
-     * Listen for option updates to the proxy
-     */
-    bs.options$
-        .distinctUntilChanged(null, function (a, b) {
-            return Imm.is(a.get('proxy'), b.get('proxy'));
-        })
-        .skip(1)
-        .subscribe(x => {
-            // If we reach here then the proxy option has be
-        });
+    applyProxies(proxies);
 
-    /**
-     * For each proxy given, create a separate http-proxy server
-     * middleware in the Browsersync format
-     * with the options provided.
-     */
-    const middlewares = proxies.map((x) => {
-        const proxy       = httpProxy.createProxyServer(x.get('options').toJS());
-        const proxyReqFns = [].concat(x.get('proxyReq').toJS());
-        const proxyResFns = [].concat(x.get('proxyRes').toJS());
-        const target      = x.get('target');
-
-        debug(`+ target: ${target}`);
+    function applyProxies (proxies) {
 
         /**
-         * proxy websockets if proxy.ws: true
+         * For each proxy given, create a separate http-proxy server
+         * middleware in the Browsersync format
+         * with the options provided.
          */
-        if (x.get('ws')) {
-            debug(`+ ws upgrade for: ${x.get('target')}`);
-            bs.server.on('upgrade', function (req, socket, head) {
-                proxy.ws(req, socket, head);
-            });
-        }
+        const middlewares = proxies.map((x) => {
+            const proxy       = httpProxy.createProxyServer(x.get('options').toJS());
+            const proxyReqFns = [].concat(x.get('proxyReq').toJS());
+            const proxyResFns = [].concat(x.get('proxyRes').toJS());
+            const target      = x.get('target');
 
-        /**
-         * if cookies.stripDomain: true, parse & strip the
-         * domain from any cookie
-         */
-        if (x.getIn(['cookies', 'stripDomain'])) {
-            proxyResFns.push(utils.checkCookies);
-        }
+            debug(`+ target: ${target}`);
 
-        /**
-         * Add any user provided functions for proxyReq and proxyRes
-         */
-        applyFns('proxyReq', proxyReqFns);
-        applyFns('proxyRes', proxyResFns);
-
-        /**
-         * Handle Proxy errors
-         */
-        proxy.on('error', x.get('proxyErr'));
-
-        /**
-         * Apply functions to proxy events
-         * @param {string} name - the name of the http-proxy event
-         * @param {Array} fns - functions to call on each event
-         */
-        function applyFns (name, fns) {
-            proxy.on(name, function () {
-                const args = arguments;
-                fns.forEach(fn => {
-                    fn.apply(null, args);
+            /**
+             * proxy websockets if proxy.ws: true
+             */
+            if (x.get('ws')) {
+                debug(`+ ws upgrade for: ${x.get('target')}`);
+                bs.server.on('upgrade', function (req, socket, head) {
+                    proxy.ws(req, socket, head);
                 });
-            });
-        }
-
-        return {
-            route: x.get('route'),
-            id: x.get('id'),
-            handle: function handleBrowsersyncProxy(req, res) {
-
-                // todo: Is the following a real usecase?
-
-                // eg: proxy: {route: "/api"}
-                // ->  Add /api to proxy calls?
-
-                proxy.web(req, res, {target: target});
             }
-        }
-    });
 
-    /**
-     * For any proxy that has rewriteRules: true,
-     * add rewrite rules for it.
-     */
-    const rewriteRules = proxies
-        .filter(x => x.get('rewriteRules') === true)
-        .map(x => {
-            return proxyUtils.rewriteLinks(x.get('url').toJS());
+            /**
+             * if cookies.stripDomain: true, parse & strip the
+             * domain from any cookie
+             */
+            if (x.getIn(['cookies', 'stripDomain'])) {
+                proxyResFns.push(utils.checkCookies);
+            }
+
+            /**
+             * Add any user provided functions for proxyReq and proxyRes
+             */
+            applyFns('proxyReq', proxyReqFns);
+            applyFns('proxyRes', proxyResFns);
+
+            /**
+             * Handle Proxy errors
+             */
+            proxy.on('error', x.get('proxyErr'));
+
+            /**
+             * Apply functions to proxy events
+             * @param {string} name - the name of the http-proxy event
+             * @param {Array} fns - functions to call on each event
+             */
+            function applyFns (name, fns) {
+                proxy.on(name, function () {
+                    const args = arguments;
+                    fns.forEach(fn => {
+                        fn.apply(null, args);
+                    });
+                });
+            }
+
+            return {
+                route: x.get('route'),
+                id: x.get('id'),
+                via: pluginName,
+                handle: function handleBrowsersyncProxy(req, res) {
+
+                    // todo: Is the following a real usecase?
+
+                    // eg: proxy: {route: "/api"}
+                    // ->  Add /api to proxy calls?
+
+                    proxy.web(req, res, {target: target});
+                }
+            }
         });
 
-    bs.setOption('middleware', mw => mw.concat(middlewares.toJS())).subscribe();
-    bs.setOption('rewriteRules', rr => rr.concat(rewriteRules.toJS())).subscribe();
+        /**
+         * For any proxy that has rewriteRules: true,
+         * add rewrite rules for it.
+         */
+        const rewriteRules = proxies
+            .filter(x => x.get('rewriteRules') === true)
+            .map(x => {
+                const rule = proxyUtils.rewriteLinks(x.get('url').toJS());
+                rule.via   = pluginName;
+                return rule;
+            });
+
+        /**
+         * Add middleware for proxies
+         */
+        bs.setOption('middleware', mw => {
+            return mw.concat(middlewares.toJS())
+        }).subscribe();
+
+        /**
+         * Add rewrite rules for proxies
+         */
+        bs.setOption('rewriteRules', rr => {
+            return rr.concat(rewriteRules.toJS());
+        }).subscribe();
+    }
+
 };
 
 /**
@@ -186,19 +196,21 @@ module.exports.init = function (bs, opts, obs) {
  * @param {Immutable.Map} options
  */
 module.exports.transformOptions = function (options) {
-
-    return options.update(OPT_NAME, initialProxyOption => {
-        if (Imm.List.isList(initialProxyOption)) {
-            return initialProxyOption.map(stubIncomingString).map(createOneProxyOption);
-        }
-        if (Imm.Map.isMap(initialProxyOption)) {
-            return Imm.List([createOneProxyOption(initialProxyOption)]);
-        }
-        if (isString(initialProxyOption)) {
-            return Imm.List([createOneProxyOption(stubIncomingString(initialProxyOption))])
-        }
-    });
+    return options.update(OPT_NAME, handleIncoming);
 };
+
+function handleIncoming (initialProxyOption) {
+    if (isString(initialProxyOption)) {
+        return Imm.List([createOneProxyOption(stubIncomingString(initialProxyOption))])
+    }
+    const asImmutable = Imm.fromJS(initialProxyOption);
+    if (Imm.List.isList(asImmutable)) {
+        return asImmutable.map(stubIncomingString).map(createOneProxyOption);
+    }
+    if (Imm.Map.isMap(asImmutable)) {
+        return Imm.List([createOneProxyOption(asImmutable)]);
+    }
+}
 
 /**
  * @param item
@@ -224,6 +236,7 @@ function stubIncomingString (item) {
 var count = 0;
 
 function createOneProxyOption (item) {
+
     return new ProxyOption()
         .mergeDeep(item.mergeDeep({
             id: `Browsersync Proxy (${count += 1})`,

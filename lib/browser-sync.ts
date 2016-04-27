@@ -1,5 +1,6 @@
 /// <reference path="../typings/main.d.ts" />
 import {Socket} from "./sockets";
+import Immutable = require("immutable");
 
 'use strict';
 
@@ -51,6 +52,7 @@ export interface BrowserSync {
     getExternalSocketConnector: (opts: any) => string
     reload: () => void
     inject: (any) => void
+    applyMw: (options: Immutable.Map<any, any>) => void
     watchers?: any
 }
 
@@ -282,9 +284,12 @@ function go(options, observer) {
         }
     });
 
+
     function applyMw(options) {
         bsServer.app.stack = middleware.getMiddleware(options).middleware;
     }
+
+    bs.applyMw = applyMw;
 
     /**
      * Resolve all async plugin init/initAsync functions

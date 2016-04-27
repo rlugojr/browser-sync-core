@@ -1,4 +1,4 @@
-const Immutable    = require('immutable');
+import Immutable = require('immutable');
 const mw           = exports;
 import utils from './utils';
 const isFunction   = utils.isFunction;
@@ -8,13 +8,21 @@ const respMod      = require('resp-modifier');
 const mergeOpts    = require('./transform-options').mergeOptionsWithPlugins;
 var   count        = 0;
 
+export interface MiddlewareItem {
+    id: string
+    route: string
+    handle: () => void
+    via?: string
+}
+
 /**
  * Middleware option schema
  */
-const MiddlewareOption = Immutable.Record({
+const MiddlewareOption = Immutable.Record(<MiddlewareItem>{
     id: '',
     route: '',
-    handle: undefined
+    via: '',
+    handle: () => {}
 });
 
 /**
@@ -83,12 +91,14 @@ mw.getMiddleware = function (options) {
             {
                 route: options.get('scriptPath'),
                 id: 'bs-client',
-                handle: clientJsHandle
+                handle: clientJsHandle,
+                via: 'Browsersync Core'
             },
             {
                 route: '',
                 id: 'bs-rewrite-rules',
-                handle: snippetMw.middleware
+                handle: snippetMw.middleware,
+                via: 'Browsersync Core'
             }
         ]
         .concat(options.get('middleware').toJS())
