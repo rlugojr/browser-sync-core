@@ -64,6 +64,7 @@ const ProxyOption = Imm.Record(<proxy.ProxyOption>{
 
 const pluginName = "Browsersync Proxy";
 module.exports["plugin:name"] = pluginName;
+
 module.exports.init = function (bs, opts, obs) {
 
     /** Bail early if plugin loaded, but not used **/
@@ -74,6 +75,15 @@ module.exports.init = function (bs, opts, obs) {
     const utils       = require('./proxy-utils');
     const httpProxy   = require('http-proxy');
     const proxies     = bs.options.getIn([OPT_NAME]);
+    
+    bs.options$
+        .distinctUntilChanged(null, (a, b) => {
+            return Imm.is(a.get('proxy'), b.get('proxy'));
+        })
+        .skip(1)
+        .subscribe(function (x) {
+            // get new proxy options here
+        });
 
     applyProxies(proxies);
 
@@ -140,9 +150,7 @@ module.exports.init = function (bs, opts, obs) {
                 id: x.get('id'),
                 via: pluginName,
                 handle: function handleBrowsersyncProxy(req, res) {
-
                     // todo: Is the following a real usecase?
-
                     // eg: proxy: {route: "/api"}
                     // ->  Add /api to proxy calls?
 
@@ -176,8 +184,16 @@ module.exports.init = function (bs, opts, obs) {
         bs.setOption('rewriteRules', rr => {
             return rr.concat(rewriteRules.toJS());
         }).subscribe();
-    }
 
+        /**
+         * Add an option updater interceptor
+         * @param coll
+         * @returns {any}
+         */
+        bs.optionUpdaters['proxy'] = function (incoming) {
+            return handleIncoming(Imm.fromJS(incoming));
+        }
+    }
 };
 
 /**
@@ -203,12 +219,11 @@ function handleIncoming (initialProxyOption) {
     if (isString(initialProxyOption)) {
         return Imm.List([createOneProxyOption(stubIncomingString(initialProxyOption))])
     }
-    const asImmutable = Imm.fromJS(initialProxyOption);
-    if (Imm.List.isList(asImmutable)) {
-        return asImmutable.map(stubIncomingString).map(createOneProxyOption);
+    if (Imm.List.isList(initialProxyOption)) {
+        return initialProxyOption.map(stubIncomingString).map(createOneProxyOption);
     }
-    if (Imm.Map.isMap(asImmutable)) {
-        return Imm.List([createOneProxyOption(asImmutable)]);
+    if (Imm.Map.isMap(initialProxyOption)) {
+        return Imm.List([createOneProxyOption(initialProxyOption)]);
     }
 }
 

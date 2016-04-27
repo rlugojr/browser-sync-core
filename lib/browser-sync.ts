@@ -54,6 +54,7 @@ export interface BrowserSync {
     inject: (any) => void
     applyMw: (options: Immutable.Map<any, any>) => void
     watchers?: any
+    optionUpdaters: any
 }
 
 bs.create = function (userOptions) {
@@ -119,13 +120,11 @@ function go(options, observer) {
      * normally occur when setting an option
      * @type {{clientJs: Function, rewriteRules: Function, middleware: Function}}
      */
-    const optionUpdaters = {
+    bs.optionUpdaters = {
         clientJs: clientJs.fromJS,
         middleware: middleware.fromJS,
         rewriteRules: rewriteRules.fromJS
     };
-
-    const updatableOptions = Object.keys(optionUpdaters);
 
     /**
      * Quite servers, remove event listeners, kill timers, stop
@@ -210,7 +209,7 @@ function go(options, observer) {
 
         const input = Rx.Observable.just({selector, fn});
 
-        if (updatableOptions.indexOf(selector) === -1) {
+        if (Object.keys(bs.optionUpdaters).indexOf(selector) === -1) {
             return input
                 .withLatestFrom(optSub, (x, opts) => {
                     return opts.updateIn( // update a current value
