@@ -6,12 +6,12 @@ bs.create({
     //     'test/fixtures'
     // ],
     middleware: [
-       {
-           route: "/shane",
-           handle: function (req, res) {
-               return res.end('<html>shane is cool</html>');
-           }
-       }
+        {
+            route: "/shane",
+            handle: function (req, res) {
+                return res.end('<html>shane is cool</html>');
+            }
+        }
     ],
     //watchDebounce: 2000,
     //watchDelay: 2000,
@@ -32,43 +32,48 @@ bs.create({
         //}
     ],
     proxy: {
-       target: 'http://www.bbc.co.uk'
+        target: 'http://www.bbc.co.uk',
+        id: 'Shane Proxy'
     },
-    //scheme: 'https',
-    //rewriteRules: [
-        //{
-            //match: /info\.sunspel\.dev/g,
-            //fn: function (req, res, match) {
-            //    return 'http://' + req.headers['host'];
-            //}
-        //}
-    //],
-    plugins: [
-        //{
-        //    module: {
-        //        initAsync: function (bs, opts, cb) {
-        //            bs.getWatcher()
-        //        }
-        //    },
-        //    name: 'my plugin',
-        //    options: {
-        //        files: "test/fixtures/*.html"
-        //    }
-        //},
-        //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp', // laptop
-        //'/Users/shakyshane/Sites/browser-sync-modules/browser-sync-cp', // laptop
-        //'./lib/plugins/proxy',
-        //'./lib/plugins/404',
-        // './test/fixtures/plugins/awesome.js'
-        //'/Users/shakyshane/sites/oss/UI'
-    ],
-    //externals: {
-        //clientJs: __dirname + '/client/'
-        //clientJs: '/Users/shakyshane/code/bs-client' // laptop
-        //clientJs: '/Users/shakyshane/sites/oss/browser-sync-client/' // home imac
-    //}
-    //minify: false
+    plugins: []
 }).subscribe(bs => {
+
     console.log(bs.options.get('urls'));
-    // console.log(bs.options.get('plugins').toJS());
+
+    bs.setOption('proxy', function (proxies) {
+        return 'http://wearejh.com';
+    }).subscribe();
+
+    setTimeout(function () {
+        bs.setOption('proxy', function (proxies) {
+            return 'http://www.bbc.co.uk';
+        }).subscribe();
+    }, 5000);
+
+    setTimeout(function () {
+        bs.setOption('proxy', function (proxies) {
+            return 'http://wearejh.com';
+        }).subscribe();
+    }, 10000);
+
+    // setTimeout(function () {
+    //     bs.setOption('proxy', function (proxies) {
+    //         return {
+    //             target: 'http://wearejh.com',
+    //             id: 'MY TING',
+    //             route: "/api"
+    //         };
+    //     }).subscribe();
+    // }, 2000);
+    //
+    // setTimeout(function () {
+    //     bs.setOption('proxy', function (proxies) {
+    //         return proxies.concat({
+    //             target: 'http://m2.wearejh.com',
+    //             id: 'MY TING',
+    //             route: "/api2"
+    //         });
+    //     }).subscribe();
+    // }, 3000);
 });
+

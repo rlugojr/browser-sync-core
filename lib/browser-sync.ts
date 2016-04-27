@@ -1,5 +1,6 @@
 /// <reference path="../typings/main.d.ts" />
 import {Socket} from "./sockets";
+import Immutable = require("immutable");
 
 'use strict';
 
@@ -51,7 +52,9 @@ export interface BrowserSync {
     getExternalSocketConnector: (opts: any) => string
     reload: () => void
     inject: (any) => void
+    applyMw: (options: Immutable.Map<any, any>) => void
     watchers?: any
+    optionUpdaters: any
 }
 
 bs.create = function (userOptions) {
@@ -117,13 +120,11 @@ function go(options, observer) {
      * normally occur when setting an option
      * @type {{clientJs: Function, rewriteRules: Function, middleware: Function}}
      */
-    const optionUpdaters = {
+    bs.optionUpdaters = {
         clientJs: clientJs.fromJS,
         middleware: middleware.fromJS,
         rewriteRules: rewriteRules.fromJS
     };
-
-    const updatableOptions = Object.keys(optionUpdaters);
 
     /**
      * Quite servers, remove event listeners, kill timers, stop
@@ -208,7 +209,7 @@ function go(options, observer) {
 
         const input = Rx.Observable.just({selector, fn});
 
-        if (updatableOptions.indexOf(selector) === -1) {
+        if (Object.keys(bs.optionUpdaters).indexOf(selector) === -1) {
             return input
                 .withLatestFrom(optSub, (x, opts) => {
                     return opts.updateIn( // update a current value
@@ -221,14 +222,9 @@ function go(options, observer) {
         }
 
         return input.withLatestFrom(optSub, (x, opts) => {
-            return opts.updateIn( // update a current value
-                x.selector.split('.'), // make selector an array always
-                (prev) => {
-                    // call an internal function to transform what the user
-                    // has provided into the correct internal type
-                    return optionUpdaters[x.selector].call(null, x.fn.call(null, prev.toJS()))
-                }
-            );
+            const prev = opts.getIn(x.selector.split('.')).toJS();
+            const modified = x.fn.call(null, prev);
+            return bs.optionUpdaters[x.selector].call(null, modified, opts);
         })
         .do(x => optSub.onNext(x)) // pump new options value into opts subject
         .do(applyMw) // re-apply middleware stack;
@@ -282,9 +278,12 @@ function go(options, observer) {
         }
     });
 
+
     function applyMw(options) {
         bsServer.app.stack = middleware.getMiddleware(options).middleware;
     }
+
+    bs.applyMw = applyMw;
 
     /**
      * Resolve all async plugin init/initAsync functions

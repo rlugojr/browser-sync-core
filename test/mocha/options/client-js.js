@@ -43,7 +43,7 @@ describe('client js as options', function () {
         })
             .get('clientJs')
             .toJS()
-            .filter(function(x) { return x.via !== 'Browsersync core'});
+            .filter(function(x) { return x.via !== 'Browsersync Core'});
 
         // Plugin JS goes before any user-provided!
         assert.equal(input[0].content, client3);
@@ -90,7 +90,7 @@ describe('client js as options', function () {
     });
     it('has expected built-ins', function () {
         var items = process({}).get('clientJs').toJS();
-        assert.equal(items[0].via, 'Browsersync core');
+        assert.equal(items[0].via, 'Browsersync Core');
         assert.equal(items[0].id, 'bs-no-conflict');
         assert.equal(items[1].id, 'bs-socket-io');
         assert.equal(items[2].id, 'bs-socket-connector');

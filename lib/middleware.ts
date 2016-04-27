@@ -1,4 +1,4 @@
-const Immutable    = require('immutable');
+import Immutable = require('immutable');
 const mw           = exports;
 import utils from './utils';
 const isFunction   = utils.isFunction;
@@ -7,14 +7,24 @@ const clientJs     = require('./client-js');
 const respMod      = require('resp-modifier');
 const mergeOpts    = require('./transform-options').mergeOptionsWithPlugins;
 var   count        = 0;
+const OPT_NAME     = 'middleware';
+
+
+export interface MiddlewareItem {
+    id: string
+    route: string
+    handle: () => void
+    via?: string
+}
 
 /**
  * Middleware option schema
  */
-const MiddlewareOption = Immutable.Record({
+const MiddlewareOption = Immutable.Record(<MiddlewareItem>{
     id: '',
     route: '',
-    handle: undefined
+    via: '',
+    handle: () => {}
 });
 
 /**
@@ -32,7 +42,7 @@ mw.merge = function (options) {
  * @returns {Map}
  */
 mw.decorate = function (options) {
-    return options.update('middleware', x => x.map(createOne));
+    return options.update(OPT_NAME, x => x.map(createOne));
 };
 
 /**
@@ -56,12 +66,10 @@ module.exports.createOne = createOne;
 
 /**
  * JS -> Immutable transformation
- * @param coll
- * @returns {*}
  */
-mw.fromJS = function (coll) {
-    return Immutable.fromJS(coll.map(createOne));
-};
+export function fromJS(modified: MiddlewareItem[], options: Immutable.Map<string, any>) {
+    return options.set(OPT_NAME, Immutable.fromJS(modified.map(createOne)));
+}
 
 /**
  * Combine default + user + plugin middlewares
@@ -83,12 +91,14 @@ mw.getMiddleware = function (options) {
             {
                 route: options.get('scriptPath'),
                 id: 'bs-client',
-                handle: clientJsHandle
+                handle: clientJsHandle,
+                via: 'Browsersync Core'
             },
             {
                 route: '',
                 id: 'bs-rewrite-rules',
-                handle: snippetMw.middleware
+                handle: snippetMw.middleware,
+                via: 'Browsersync Core'
             }
         ]
         .concat(options.get('middleware').toJS())
