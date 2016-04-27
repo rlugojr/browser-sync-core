@@ -227,7 +227,7 @@ function go(options, observer) {
                 (prev) => {
                     // call an internal function to transform what the user
                     // has provided into the correct internal type
-                    return optionUpdaters[x.selector].call(null, x.fn.call(null, prev.toJS()))
+                    return bs.optionUpdaters[x.selector].call(null, x.fn.call(null, prev.toJS()))
                 }
             );
         })

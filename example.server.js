@@ -37,28 +37,28 @@ bs.create({
     plugins: [],
 }).subscribe(bs => {
     console.log(bs.options.get('urls'));
-    // console.log(bs.options.get('plugins').toJS());
+    bs.setOption('clientJs', function (cjs) {
+        return cjs.concat('console.log("shane")');
+    }).subscribe();
 
-    setTimeout(function () {
-        console.log('resetting');
-        bs.setOption('proxy', function (proxies) {
-            return {
-                target: 'http://wearejh.com',
-                id: 'MY TING',
-                route: "/api"
-            };
-        }).subscribe();
-    }, 2000);
-
-    setTimeout(function () {
-        console.log('resetting');
-        bs.setOption('proxy', function (proxies) {
-            return {
-                target: 'http://wearejh.com',
-                id: 'MY TING',
-                route: "/api"
-            };
-        }).subscribe();
-    }, 3000);
+    // setTimeout(function () {
+    //     bs.setOption('proxy', function (proxies) {
+    //         return {
+    //             target: 'http://wearejh.com',
+    //             id: 'MY TING',
+    //             route: "/api"
+    //         };
+    //     }).subscribe();
+    // }, 2000);
+    //
+    // setTimeout(function () {
+    //     bs.setOption('proxy', function (proxies) {
+    //         return proxies.concat({
+    //             target: 'http://m2.wearejh.com',
+    //             id: 'MY TING',
+    //             route: "/api2"
+    //         });
+    //     }).subscribe();
+    // }, 3000);
 });
 
