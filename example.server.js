@@ -6,12 +6,12 @@ bs.create({
     //     'test/fixtures'
     // ],
     middleware: [
-       {
-           route: "/shane",
-           handle: function (req, res) {
-               return res.end('<html>shane is cool</html>');
-           }
-       }
+        {
+            route: "/shane",
+            handle: function (req, res) {
+                return res.end('<html>shane is cool</html>');
+            }
+        }
     ],
     //watchDebounce: 2000,
     //watchDelay: 2000,
@@ -32,14 +32,29 @@ bs.create({
         //}
     ],
     proxy: {
-       target: 'http://www.bbc.co.uk'
+        target: 'http://www.bbc.co.uk',
+        id: 'Shane Proxy'
     },
-    plugins: [],
+    plugins: []
 }).subscribe(bs => {
+
     console.log(bs.options.get('urls'));
-    bs.setOption('clientJs', function (cjs) {
-        return cjs.concat('console.log("shane")');
+
+    bs.setOption('proxy', function (proxies) {
+        return 'http://wearejh.com';
     }).subscribe();
+
+    setTimeout(function () {
+        bs.setOption('proxy', function (proxies) {
+            return 'http://www.bbc.co.uk';
+        }).subscribe();
+    }, 5000);
+
+    setTimeout(function () {
+        bs.setOption('proxy', function (proxies) {
+            return 'http://wearejh.com';
+        }).subscribe();
+    }, 10000);
 
     // setTimeout(function () {
     //     bs.setOption('proxy', function (proxies) {

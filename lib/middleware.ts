@@ -67,9 +67,9 @@ module.exports.createOne = createOne;
 /**
  * JS -> Immutable transformation
  */
-mw.fromJS = function (modified: MiddlewareItem[], options: Immutable.Map<string, any>) {
+export function fromJS(modified: MiddlewareItem[], options: Immutable.Map<string, any>) {
     return options.set(OPT_NAME, Immutable.fromJS(modified.map(createOne)));
-};
+}
 
 /**
  * Combine default + user + plugin middlewares

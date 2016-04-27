@@ -32,6 +32,15 @@ utils.getClient = function (id, data) {
     };
 };
 
+utils.getApp = function () {
+    var app = connect();
+    var server = http.createServer(app);
+    server.listen();
+    var add = server.address();
+    var url = 'http://localhost:' + add.port;
+    return {app, url, server};
+};
+
 utils.proxye2e = function (resp, done) {
     var app = connect();
     var server = http.createServer(app);

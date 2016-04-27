@@ -1,8 +1,10 @@
 import * as proxy from "./proxy.d";
 
-const Imm       = require('immutable');
-const debug     = require('debug')('bs:proxy');
-const OPT_NAME  = 'proxy';
+const Imm          = require('immutable');
+const debug        = require('debug')('bs:proxy');
+const OPT_NAME     = 'proxy';
+const middleware   = require('../middleware');
+const rewriteRules = require('../rewrite-rules');
 
 import utils from '../utils';
 const isString  = utils.isString;
@@ -52,9 +54,9 @@ const ProxyOption = Imm.Record(<proxy.ProxyOption>{
      */
     proxyRes:     Imm.List([]),
     proxyErr:     function(err, proxy) {
-        console.log('Error from proxy');
-        console.error(err);
-        console.error(err.stack);
+        // console.log('Error from proxy');
+        // console.error(err);
+        // console.error(err.stack);
     },
     url:          Imm.Map({}),
     options:      Imm.Map(defaultHttpProxyOptions),
@@ -76,16 +78,30 @@ module.exports.init = function (bs, opts, obs) {
     const httpProxy   = require('http-proxy');
     const proxies     = bs.options.getIn([OPT_NAME]);
     
-    bs.options$
-        .distinctUntilChanged(null, (a, b) => {
-            return Imm.is(a.get('proxy'), b.get('proxy'));
-        })
-        .skip(1)
-        .subscribe(function (x) {
-            // get new proxy options here
-        });
+    // bs.options$
+    //     .distinctUntilChanged(null, (a, b) => {
+    //         return Imm.is(a.get('proxy'), b.get('proxy'));
+    //     })
+    //     .skip(1)
+    //     .subscribe(function (x) {
+    //         // get new proxy options here
+    //     });
 
-    applyProxies(proxies);
+    const out = applyProxies(proxies);
+
+    /**
+     * Add middleware for proxies
+     */
+    bs.setOption('middleware', mw => {
+        return mw.concat(out.middlewares.toJS())
+    }).subscribe();
+
+    /**
+     * Add rewrite rules for proxies
+     */
+    bs.setOption('rewriteRules', rr => {
+        return rr.concat(out.rewriteRules.toJS());
+    }).subscribe();
 
     function applyProxies (proxies) {
 
@@ -170,30 +186,29 @@ module.exports.init = function (bs, opts, obs) {
                 rule.via   = pluginName;
                 return rule;
             });
+        
+        return {middlewares, rewriteRules};
+    }
 
-        /**
-         * Add middleware for proxies
-         */
-        bs.setOption('middleware', mw => {
-            return mw.concat(middlewares.toJS())
-        }).subscribe();
-
-        /**
-         * Add rewrite rules for proxies
-         */
-        bs.setOption('rewriteRules', rr => {
-            return rr.concat(rewriteRules.toJS());
-        }).subscribe();
-
-        /**
-         * Add an option updater interceptor
-         * @param coll
-         * @returns {any}
-         */
-        bs.optionUpdaters['proxy'] = function (incoming, options) {
-            const imm = Imm.fromJS(incoming)
-            return options.set('proxy', handleIncoming(imm));
-        }
+    /**
+     * Add an option updater interceptor
+     * @param coll
+     * @returns {any}
+     */
+    bs.optionUpdaters['proxy'] = function (incoming, options) {
+        const imm = handleIncoming(Imm.fromJS(incoming));
+        const proxies = applyProxies(imm);
+        const output = options
+            .set('proxy', imm)
+            .update('middleware', function (mw) {
+                return mw.filter(x => x.get('via') !== pluginName)
+                    .concat(proxies.middlewares.map(middleware.createOne));
+            })
+            .update('rewriteRules', function (rr) {
+                return rr.filter(x => x.get('via') !== pluginName)
+                    .concat(proxies.rewriteRules.map(rewriteRules.createOne));
+            });
+        return output;
     }
 };
 
