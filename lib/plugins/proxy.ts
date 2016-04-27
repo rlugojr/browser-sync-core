@@ -190,8 +190,9 @@ module.exports.init = function (bs, opts, obs) {
          * @param coll
          * @returns {any}
          */
-        bs.optionUpdaters['proxy'] = function (incoming) {
-            return handleIncoming(Imm.fromJS(incoming));
+        bs.optionUpdaters['proxy'] = function (incoming, options) {
+            const imm = Imm.fromJS(incoming)
+            return options.set('proxy', handleIncoming(imm));
         }
     }
 };
@@ -252,12 +253,13 @@ var count = 0;
 
 function createOneProxyOption (item) {
 
-    return new ProxyOption()
-        .mergeDeep(item.mergeDeep({
-            id: `Browsersync Proxy (${count += 1})`,
-            url: Imm.Map(require('url').parse(item.get('target'))),
-            options: {
-                target: item.get('target')
-            }
-        }));
+    const incoming = Imm.fromJS({
+        id: `Browsersync Proxy (${count += 1})`,
+        url: Imm.Map(require('url').parse(item.get('target'))),
+        options: {
+            target: item.get('target')
+        }
+    });
+
+    return new ProxyOption().mergeDeep(incoming.mergeDeep(item));
 }
