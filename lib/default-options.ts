@@ -45,12 +45,21 @@ module.exports = <BrowsersyncOptions>{
         async: true,
         whitelist: [],
         blacklist: [],
-        rule: {
-            match: /<body[^>]*>/i,
-            fn: function (snippet, req, res, match) {
-                return match + snippet;
+        id: 'bs-snippet',
+        via: 'Browsersync Core',
+        predicates: [function (req) {
+            const acceptHeader = req.headers['accept'];
+            if (!acceptHeader) {
+                return false;
             }
-        }
+            return acceptHeader.indexOf('html') > -1;
+        }],
+        fn: function (req, res, html, options) {
+            const snippet = options.get('snippet');
+            return html.replace(/<body[^>]*>/i, function (match) {
+                return match + snippet;
+            });
+        },
     },
     injectFileTypes: ['css', 'png', 'jpg', 'jpeg', 'svg', 'gif', 'webp'],
     excludedFileTypes: ['js', 'css', 'pdf', 'map', 'svg', 'ico', 'woff', 'json', 'eot', 'ttf', 'png', 'jpg', 'jpeg', 'webp', 'gif', 'mp4', 'mp3', '3gp', 'ogg', 'ogv', 'webm', 'm4a', 'flv', 'wmv', 'avi', 'swf', 'scss'],

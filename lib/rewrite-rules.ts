@@ -4,21 +4,21 @@ const config       = require('./config');
 const OPT_NAME     = 'rewriteRules';
 let count          = 0;
 
-export type Middleware  = (req, res, next) => void;
-export type TransformFn = (req, res, data: string) => string;
-export type Predicate   = (req, res, options: Immutable.Map<string, any>) => boolean;
+export type Middleware    = (req, res, next) => void;
+export type TransformFn   = (req, res, data: string, options: Immutable.Map<string, any>) => string;
+export type Predicate     = (req, res, options: Immutable.Map<string, any>) => boolean;
 
 export interface RewriteRule {
-    fn: Middleware
+    fn?: TransformFn
     via?: string
     id?: string
-    predicates?: Immutable.List<Predicate>
+    predicates?: Predicate[]
 }
 
-const RwRule = Immutable.Record(<RewriteRule>{
+const RwRule = Immutable.Record({
     via:        '',
     id:         '',
-    predicates: Immutable.List([]),
+    predicates: [],
     fn:         () => {}
 });
 

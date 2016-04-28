@@ -1,7 +1,6 @@
 import Immutable = require('immutable');
 const mw           = exports;
 import utils from './utils';
-import snippet from './snippet';
 import respMod from './resp-modifier';
 
 const isFunction = utils.isFunction;
@@ -9,7 +8,6 @@ const clientJs   = require('./client-js');
 const mergeOpts  = require('./transform-options').mergeOptionsWithPlugins;
 var   count      = 0;
 const OPT_NAME   = 'middleware';
-
 
 export interface MiddlewareItem {
     id: string
@@ -79,7 +77,7 @@ export function fromJS(modified: MiddlewareItem[], options: Immutable.Map<string
  */
 mw.getMiddleware = function (options) {
 
-    const rules     = snippet(options).concat(options.get('rewriteRules').toJS());
+    const rules     = [options.get('snippetOptions').toJS()].concat(options.get('rewriteRules').toJS());
     const respModMw = respMod(rules, options);
     const cli       = clientJs.getScript(options);
     
