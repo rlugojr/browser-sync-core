@@ -182,7 +182,9 @@ module.exports.init = function (bs, opts, obs) {
         const rewriteRules = proxies
             .filter(x => x.get('rewriteRules') === true)
             .map(x => {
-                const rule = proxyUtils.rewriteLinks(x.get('url').toJS());
+                const rule: RewriteRule = {
+                    fn: proxyUtils.rewriteLinks(x.get('url').toJS())
+                };
                 rule.via   = pluginName;
                 return rule;
             });

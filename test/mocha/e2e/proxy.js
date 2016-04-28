@@ -5,4 +5,3 @@ describe('Can proxy', function () {
         utils.proxye2e('resp1', done);
     });
 });
-

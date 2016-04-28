@@ -1,5 +1,6 @@
 import chokidar = require('chokidar');
 import {ClientOptions} from "./plugins/clients.d.ts";
+import {RewriteRule} from "./rewrite-rules";
 
 export interface BrowsersyncOptionsMap {
     get: (path: string) => any
@@ -305,16 +306,10 @@ interface SocketIoOptions {
     path: string
 }
 
-interface SnippetRule {
-    match: RegExp,
-    fn: (snippet: string, req, res, match) => string
-}
-
-interface SnippetOptions {
+interface SnippetOptions extends RewriteRule {
     async: boolean
     whitelist: string[]
     blacklist: string[]
-    rule: SnippetRule
 }
 
 export interface Cleanup {

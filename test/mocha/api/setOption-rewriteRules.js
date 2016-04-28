@@ -11,9 +11,8 @@ describe('api: bs.setOption("rewriteRules")', function () {
             }]
         }).subscribe(function (bs) {
             bs.setOption('rewriteRules', function (rr) {
-                return rr.concat({
-                    match: 'Shane',
-                    replace: 'kittie'
+                return rr.concat(function (req, res, string) {
+                    return string.replace('Shane', 'kittie');
                 });
             }).subscribe(function (x) {
                 request(x.getIn(['urls', 'local']))

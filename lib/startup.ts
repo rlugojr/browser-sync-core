@@ -1,7 +1,8 @@
 'use strict';
 
-const Immutable = require('immutable');
-const Rx = require('rx');
+import Immutable = require('immutable');
+import Rx = require('rx');
+
 const zip = Rx.Observable.zip;
 const just = Rx.Observable.just;
 
@@ -35,7 +36,7 @@ const pipeline = [
     middleware.decorate,
 
     rewriteRules.merge,
-    rewriteRules.decorate,
+    rewriteRules.transformOptions,
 
     plugins.transformOptions
 ];
@@ -44,7 +45,7 @@ const pipeline = [
  * @param userOptions
  * @returns {Rx.Observable}
  */
-module.exports = function (userOptions) {
+export default function (userOptions: {}): Rx.Observable<Immutable.Map<string, any>> {
 
     const options = opts.merge(userOptions);
     const ports   = getPorts(options);
@@ -62,3 +63,8 @@ function process (opts, pipeline) {
 	return pipeline.reduce((all, item) => item.call(null, all), opts);
 }
 module.exports.process = process;
+
+export function startupOptions (userOptions: {}): Immutable.Map<string, any> {
+    const options = opts.merge(userOptions);
+    return process(options, pipeline);
+}

@@ -1,14 +1,13 @@
 import Immutable = require('immutable');
 const mw           = exports;
 import utils from './utils';
-const isFunction   = utils.isFunction;
-const snippet      = require('./snippet');
-const clientJs     = require('./client-js');
-const respMod      = require('resp-modifier');
-const mergeOpts    = require('./transform-options').mergeOptionsWithPlugins;
-var   count        = 0;
-const OPT_NAME     = 'middleware';
+import respMod from './resp-modifier';
 
+const isFunction = utils.isFunction;
+const clientJs   = require('./client-js');
+const mergeOpts  = require('./transform-options').mergeOptionsWithPlugins;
+var   count      = 0;
+const OPT_NAME   = 'middleware';
 
 export interface MiddlewareItem {
     id: string
@@ -78,14 +77,15 @@ export function fromJS(modified: MiddlewareItem[], options: Immutable.Map<string
  */
 mw.getMiddleware = function (options) {
 
-    const snippetMw = respMod.create(snippet.rules(options));
+    const rules     = [options.get('snippetOptions').toJS()].concat(options.get('rewriteRules').toJS());
+    const respModMw = respMod(rules, options);
     const cli       = clientJs.getScript(options);
-
+    
     const clientJsHandle = (req, res) => {
         res.setHeader('Content-Type', 'text/javascript');
         res.end(cli);
     };
-
+    
     return {
         middleware: [
             {
@@ -97,7 +97,7 @@ mw.getMiddleware = function (options) {
             {
                 route: '',
                 id: 'bs-rewrite-rules',
-                handle: snippetMw.middleware,
+                handle: respModMw,
                 via: 'Browsersync Core'
             }
         ]

@@ -4,13 +4,23 @@ const config       = require('./config');
 const OPT_NAME     = 'rewriteRules';
 let count          = 0;
 
+export type Middleware    = (req, res, next) => void;
+export type TransformFn   = (req, res, data: string, options: Immutable.Map<string, any>) => string;
+export type Predicate     = (req, res, options: Immutable.Map<string, any>) => boolean;
+
 export interface RewriteRule {
-    match: string|RegExp
-    fn?: (req:any, res:any, match:string) => string | string
-    replace?: (req:any, res:any, match:string) => string | string
+    fn?: TransformFn
     via?: string
     id?: string
+    predicates?: Predicate[]
 }
+
+const RwRule = Immutable.Record({
+    via:        '',
+    id:         '',
+    predicates: [],
+    fn:         () => {}
+});
 
 /**
  * Pull server:middleware hooks from plugins
@@ -26,15 +36,27 @@ export function merge (options) {
  * @param {Map} options
  * @returns {Map}
  */
-export function decorate (options) {
+export function transformOptions (options) {
     return options.update('rewriteRules', x => {
         return x.map(createOne);
     });
 }
 
+/**
+ * @param item
+ * @returns {Cursor|Map<K, V>|List<T>|Map<string, V>}
+ */
 export function createOne (item) {
-    return Immutable.Map({
-        id: 'bs-rewrite-rule-' + (count += 1)
+    if (typeof item === 'function') {
+        return new RwRule(<RewriteRule>{
+            id: 'bs-rewrite-rule-' + (count += 1),
+            via: 'Inline Function',
+            fn: item
+        });
+    }
+    return new RwRule({
+        id: 'bs-rewrite-rule-' + (count += 1),
+        via: 'Inline Function'
     }).mergeDeep(item);
 }
 

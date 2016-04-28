@@ -49,12 +49,14 @@ utils.proxye2e = function (resp, done) {
     var url = 'http://localhost:' + add.port;
     var respIn = utils[resp](url, ''); // no snippet at this point
 
-    app.use('/', function (req, res) {
-        res.end(respIn);
-    });
+    app.use('/', function (req, res) {res.end(respIn);});
+    app.use('/shane', function (req, res) {res.end(respIn);});
 
     bs.create({
-        proxy: url
+        proxy: url,
+        middleware: [function (req, res, next) {
+            next();
+        }]
     }).subscribe(function (bs) {
         var bsUrl = bs.options.getIn(['urls', 'local']);
         var bsPort = bs.options.getIn(['port']);

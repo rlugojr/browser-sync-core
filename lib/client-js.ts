@@ -1,6 +1,5 @@
 import Immutable = require('immutable');
 const clientJs           = exports;
-const snippet            = require('./snippet');
 const connectUtils       = require('./connect-utils');
 const fs                 = require('fs');
 const path               = require('path');
