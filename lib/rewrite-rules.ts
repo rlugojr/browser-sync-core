@@ -6,23 +6,20 @@ let count          = 0;
 
 export type Middleware  = (req, res, next) => void;
 export type TransformFn = (req, res, data: string) => string;
+export type Predicate   = (req, res, options: Immutable.Map<string, any>) => boolean;
 
 export interface RewriteRule {
     fn: Middleware
     via?: string
     id?: string
-    paths?: Immutable.List<string>
-    whitelist?: Immutable.List<string>
-    blacklist?: Immutable.List<string>
+    predicates?: Immutable.List<Predicate>
 }
 
 const RwRule = Immutable.Record(<RewriteRule>{
-    via:       'Browsersync Core',
-    id:        '',
-    whitelist: Immutable.List([]),
-    blacklist: Immutable.List([]),
-    paths:     Immutable.List([]),
-    fn:        () => {}
+    via:        '',
+    id:         '',
+    predicates: Immutable.List([]),
+    fn:         () => {}
 });
 
 /**
@@ -39,15 +36,27 @@ export function merge (options) {
  * @param {Map} options
  * @returns {Map}
  */
-export function decorate (options) {
+export function transformOptions (options) {
     return options.update('rewriteRules', x => {
         return x.map(createOne);
     });
 }
 
+/**
+ * @param item
+ * @returns {Cursor|Map<K, V>|List<T>|Map<string, V>}
+ */
 export function createOne (item) {
-    return Immutable.Map({
-        id: 'bs-rewrite-rule-' + (count += 1)
+    if (typeof item === 'function') {
+        return new RwRule(<RewriteRule>{
+            id: 'bs-rewrite-rule-' + (count += 1),
+            via: 'Inline Function',
+            fn: item
+        });
+    }
+    return new RwRule({
+        id: 'bs-rewrite-rule-' + (count += 1),
+        via: 'Inline Function'
     }).mergeDeep(item);
 }
 

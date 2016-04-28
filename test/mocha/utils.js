@@ -54,7 +54,11 @@ utils.proxye2e = function (resp, done) {
     });
 
     bs.create({
-        proxy: url
+        proxy: url,
+        middleware: [function (req, res, next) {
+            console.log('req from proxye2e', req.url);
+            next();
+        }]
     }).subscribe(function (bs) {
         var bsUrl = bs.options.getIn(['urls', 'local']);
         var bsPort = bs.options.getIn(['port']);

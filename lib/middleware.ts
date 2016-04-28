@@ -81,30 +81,28 @@ mw.getMiddleware = function (options) {
 
     const rules     = snippet(options).concat(options.get('rewriteRules').toJS());
     const respModMw = respMod(rules, options);
-
-    // const cli          = clientJs.getScript(o
-    // ptions);
-    //
-    // const clientJsHandle = (req, res) => {
-    //     res.setHeader('Content-Type', 'text/javascript');
-    //     res.end(cli);
-    // };
-    //
-    // return {
-    //     middleware: [
-    //         {
-    //             route: options.get('scriptPath'),
-    //             id: 'bs-client',
-    //             handle: clientJsHandle,
-    //             via: 'Browsersync Core'
-    //         },
-    //         {
-    //             route: '',
-    //             id: 'bs-rewrite-rules',
-    //             handle: snippetMw.middleware,
-    //             via: 'Browsersync Core'
-    //         }
-    //     ]
-    //     .concat(options.get('middleware').toJS())
-    // }
+    const cli       = clientJs.getScript(options);
+    
+    const clientJsHandle = (req, res) => {
+        res.setHeader('Content-Type', 'text/javascript');
+        res.end(cli);
+    };
+    
+    return {
+        middleware: [
+            {
+                route: options.get('scriptPath'),
+                id: 'bs-client',
+                handle: clientJsHandle,
+                via: 'Browsersync Core'
+            },
+            {
+                route: '',
+                id: 'bs-rewrite-rules',
+                handle: respModMw,
+                via: 'Browsersync Core'
+            }
+        ]
+        .concat(options.get('middleware').toJS())
+    }
 };
