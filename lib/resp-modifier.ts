@@ -33,6 +33,16 @@ export default function (rules: RewriteRule[], options: Immutable.Map<string, an
                 return true;
             });
 
+        if (!hasAcceptHeaders(req)) {
+            debug("- no text/html headers", req.url);
+            return next();
+        }
+
+        if (defaultIgnoreTypes.some(x => new RegExp(x).test(req.url))) {
+            debug("- In default ignore types", req.url);
+            return next();
+        }
+
         if (toApply.length) {
             debug(`+ modifying: ${req.url} with ${toApply.length} rules`);
             modifyResponse(toApply);
@@ -133,3 +143,30 @@ export default function (rules: RewriteRule[], options: Immutable.Map<string, an
         }
     }
 }
+
+export const defaultIgnoreTypes = [
+    // text files
+    "js", "json", "css",
+    // image files
+    "png", "jpg", "jpeg", "gif", "ico", "tif", "tiff", "bmp", "webp", "psd",
+    // vector & font
+    "svg", "woff", "ttf", "otf", "eot", "eps", "ps", "ai",
+    // audio
+    "mp3", "wav", "aac", "m4a", "m3u", "mid", "wma",
+    // video & other media
+    "mpg", "mpeg", "mp4", "m4v", "webm", "swf", "flv", "avi", "mov", "wmv",
+    // document files
+    "pdf", "doc", "docx", "xls", "xlsx", "pps", "ppt", "pptx", "odt", "ods", "odp", "pages", "key", "rtf", "txt", "csv",
+    // data files
+    "zip", "rar", "tar", "gz", "xml", "app", "exe", "jar", "dmg", "pkg", "iso"
+].map(function (ext) {
+    return "\\." + ext + "(\\?.*)?$";
+});
+
+function hasAcceptHeaders(req) {
+    var acceptHeader = req.headers["accept"];
+    if (!acceptHeader) {
+        return false;
+    }
+    return acceptHeader.indexOf("html") > -1;
+};
