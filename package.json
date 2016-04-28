@@ -65,7 +65,6 @@
     "immutable": "3.8.1",
     "meow": "3.7.0",
     "portscanner": "1.0.0",
-    "resp-modifier": "^6.0.0",
     "rx": "4.1.0",
     "serve-static": "1.10.2",
     "socket.io": "1.4.5",
