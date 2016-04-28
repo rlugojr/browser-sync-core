@@ -1,19 +1,18 @@
-export function rules (options) {
-    return {
-        rules: [snippetRegex(options)].concat(options.get('rewriteRules').toJS()),
-        blacklist: options.getIn(['snippetOptions', 'blacklist']).toJS(),
-        whitelist: options.getIn(['snippetOptions', 'whitelist']).toJS()
-    };
-}
+import {RewriteRule} from "./rewrite-rules";
 
-function snippetRegex (options) {
-    var fn = options.getIn(['snippetOptions', 'rule', 'fn']);
-    fn     = fn.bind(null, options.get('snippet'));
-
-    return {
-        match: options.getIn(['snippetOptions', 'rule', 'match']),
-        fn: fn,
-        once: true,
-        id: 'bs-snippet'
-    };
+export default function (options): RewriteRule[] {
+    const snippet = options.get('snippet');
+    return [
+        {
+            id: 'bs-snippet',
+            via: 'Browsersync Core',
+            blacklist: options.getIn(['snippetOptions', 'blacklist']).toJS(),
+            whitelist: options.getIn(['snippetOptions', 'whitelist']).toJS(),
+            fn: function (req, res, data) {
+                return data.replace(options.getIn(['snippetOptions', 'rule', 'match']), function (match) {
+                    return match + snippet;
+                });
+            }
+        }
+    ]
 }

@@ -1,13 +1,14 @@
 import Immutable = require('immutable');
 const mw           = exports;
 import utils from './utils';
-const isFunction   = utils.isFunction;
-const snippet      = require('./snippet');
-const clientJs     = require('./client-js');
-const respMod      = require('resp-modifier');
-const mergeOpts    = require('./transform-options').mergeOptionsWithPlugins;
-var   count        = 0;
-const OPT_NAME     = 'middleware';
+import snippet from './snippet';
+import respMod from './resp-modifier';
+
+const isFunction = utils.isFunction;
+const clientJs   = require('./client-js');
+const mergeOpts  = require('./transform-options').mergeOptionsWithPlugins;
+var   count      = 0;
+const OPT_NAME   = 'middleware';
 
 
 export interface MiddlewareItem {
@@ -78,29 +79,32 @@ export function fromJS(modified: MiddlewareItem[], options: Immutable.Map<string
  */
 mw.getMiddleware = function (options) {
 
-    const snippetMw = respMod.create(snippet.rules(options));
-    const cli       = clientJs.getScript(options);
+    const rules     = snippet(options).concat(options.get('rewriteRules').toJS());
+    const respModMw = respMod(rules, options);
 
-    const clientJsHandle = (req, res) => {
-        res.setHeader('Content-Type', 'text/javascript');
-        res.end(cli);
-    };
-
-    return {
-        middleware: [
-            {
-                route: options.get('scriptPath'),
-                id: 'bs-client',
-                handle: clientJsHandle,
-                via: 'Browsersync Core'
-            },
-            {
-                route: '',
-                id: 'bs-rewrite-rules',
-                handle: snippetMw.middleware,
-                via: 'Browsersync Core'
-            }
-        ]
-        .concat(options.get('middleware').toJS())
-    }
+    // const cli          = clientJs.getScript(o
+    // ptions);
+    //
+    // const clientJsHandle = (req, res) => {
+    //     res.setHeader('Content-Type', 'text/javascript');
+    //     res.end(cli);
+    // };
+    //
+    // return {
+    //     middleware: [
+    //         {
+    //             route: options.get('scriptPath'),
+    //             id: 'bs-client',
+    //             handle: clientJsHandle,
+    //             via: 'Browsersync Core'
+    //         },
+    //         {
+    //             route: '',
+    //             id: 'bs-rewrite-rules',
+    //             handle: snippetMw.middleware,
+    //             via: 'Browsersync Core'
+    //         }
+    //     ]
+    //     .concat(options.get('middleware').toJS())
+    // }
 };

@@ -1,8 +1,9 @@
-import {RewriteRule} from "../rewrite-rules";
+import {RewriteRule, TransformFn} from "../rewrite-rules";
+
 import NodeURL = require('url');
 const url = require('url');
 
-export function rewriteLinks (userServer: NodeURL.Url): RewriteRule {
+export function rewriteLinks (userServer: NodeURL.Url): TransformFn {
 
     var host   = userServer.hostname;
     var string = host;
@@ -14,13 +15,10 @@ export function rewriteLinks (userServer: NodeURL.Url): RewriteRule {
         }
     }
 
-    return {
-        match: new RegExp("https?:\\\\/\\\\/" + string + "|https?://" + string + "(\/)?|('|\")(https?://|/|\\.)?" + string + "(\/)?(.*?)(?=[ ,'\"\\s])", "g"),
-        //match: new RegExp("https?:\\\\?/\\\\?/" + string + "(\/)?|('|\")(https?://|\\\\?/|\\.)?" + string + "(\/)?(.*?)(?=[ ,'\"\\s])", "g"),
-        //match: new RegExp('https?://' + string + '(\/)?|(\'|")(https?://|/|\\.)?' + string + '(\/)?(.*?)(?=[ ,\'"\\s])', 'g'),
-        //match: new RegExp("https?:\\\\/\\\\/" + string, "g"),
-        fn: function (req, res, match) {
+    const regex = new RegExp("https?:\\\\/\\\\/" + string + "|https?://" + string + "(\/)?|('|\")(https?://|/|\\.)?" + string + "(\/)?(.*?)(?=[ ,'\"\\s])", "g")
 
+    return function (req, res, data) {
+        return data.replace(regex, function (match) {
             var proxyUrl = req.headers['host'];
 
             /**
@@ -78,8 +76,8 @@ export function rewriteLinks (userServer: NodeURL.Url): RewriteRule {
                 out.path || '',
                 out.hash || ''
             ].join('');
-        }
-    };
+        })
+    }
 };
 
 /**

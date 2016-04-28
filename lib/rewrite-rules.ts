@@ -4,13 +4,26 @@ const config       = require('./config');
 const OPT_NAME     = 'rewriteRules';
 let count          = 0;
 
+export type Middleware  = (req, res, next) => void;
+export type TransformFn = (req, res, data: string) => string;
+
 export interface RewriteRule {
-    match: string|RegExp
-    fn?: (req:any, res:any, match:string) => string | string
-    replace?: (req:any, res:any, match:string) => string | string
+    fn: Middleware
     via?: string
     id?: string
+    paths?: Immutable.List<string>
+    whitelist?: Immutable.List<string>
+    blacklist?: Immutable.List<string>
 }
+
+const RwRule = Immutable.Record(<RewriteRule>{
+    via:       'Browsersync Core',
+    id:        '',
+    whitelist: Immutable.List([]),
+    blacklist: Immutable.List([]),
+    paths:     Immutable.List([]),
+    fn:        () => {}
+});
 
 /**
  * Pull server:middleware hooks from plugins
