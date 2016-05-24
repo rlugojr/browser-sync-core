@@ -18,7 +18,8 @@
     "index.js",
     "lib",
     "client",
-    "protocol.json"
+    "protocol.json",
+    "dist"
   ],
   "engines": {
     "node": ">= 4.0.0"
