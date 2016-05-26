@@ -2,9 +2,9 @@ var bs = require('./');
 
 bs.create({
     strict: false,
-    // serveStatic: [
-    //     'test/fixtures'
-    // ],
+    serveStatic: [
+        'test/fixtures'
+    ],
     middleware: [
         {
             route: "/shane",
@@ -31,11 +31,11 @@ bs.create({
         //}
         //}
     ],
-    proxy: {
-        target: 'https://www.browsersync.io',
-        id: 'Shane Proxy'
-    },
-    scheme: "https",
+    // proxy: {
+    //     target: 'https://www.browsersync.io',
+    //     id: 'Shane Proxy'
+    // },
+    // scheme: "https",
     plugins: []
 }).subscribe(bs => {
 

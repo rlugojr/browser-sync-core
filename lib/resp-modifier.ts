@@ -33,12 +33,14 @@ export default function (rules: RewriteRule[], options: Immutable.Map<string, an
                 return true;
             });
 
+        const path = req.url.split('?')[0];
+
         if (!hasAcceptHeaders(req)) {
             debug("- no text/html headers", req.url);
             return next();
         }
 
-        if (defaultIgnoreTypes.some(x => new RegExp(x).test(req.url))) {
+        if (defaultIgnoreTypes.some(x => new RegExp(x).test(path))) {
             debug("- In default ignore types", req.url);
             return next();
         }

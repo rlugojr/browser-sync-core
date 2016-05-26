@@ -110,15 +110,15 @@ export function init (bs: BrowserSync) {
             const evt: ClientSocketEvent = x[0];
             const ctrl = x[1];
             if (ctrl.id === '') {
-                debug('✔  ALLOW EVENT, CONTROLLER NOT SET');
-                debug('└─ ', evt);
+                debug('✔  ALLOW EVENT, controller not set');
+                debug('└─ ', evt.event, 'data:', evt.data);
                 return just(evt);
             } else if (ctrl.id === evt.id) {
-                debug('✔ ALLOW EVENT, CTRL ID === EVENT ID');
-                debug('└─ ', evt);
+                debug('✔ ALLOW EVENT, controller.id === event.id');
+                debug('└─ ', evt.event, 'data:', evt.data);
                 return just(evt);
             } else {
-                debug('PROBS IGNORE EVENT id:', evt.id, 'CTRL id:', ctrl.id);
+                debug('IGNORE EVENT id:', evt.id, 'CTRL id:', ctrl.id);
             }
             return empty();
         }).subscribe(x => {
