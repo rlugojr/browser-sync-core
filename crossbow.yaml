@@ -7,24 +7,24 @@ watch:
         tasks: 'compile'
 
 tasks:
-
+    lodash: '@npm lodash include=get,set,assign exports=node --output=vendor/lodash'
     unit:
       - '@npm mocha test/mocha/**/*.js'
 
+    build-all@p:
+      - build-server
+      - build-client
+
     build-server:
-      - '@shell rm -rf dist'
+      - '@sh rm -rf dist'
       - '@npm tsc'
 
     build-client:
       - browserify
       - uglify
 
-    build-all@p:
-      - build-server
-      - build-client
-
     nodemon: >
-      @bgShell nodemon
+      @bg nodemon
       example.server.js
       --watch dist
       --watch client/dist

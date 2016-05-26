@@ -11,11 +11,8 @@ export function create (options) {
     const mw  = middleware.getMiddleware(options);
 
     app.stack = mw.middleware;
-
-    const output       = getServer(app, options);
-    output.snippetMw   = mw.snippetMw;
-
-    return output;
+    
+    return getServer(app, options);
 }
 
 /**
@@ -26,8 +23,6 @@ export function create (options) {
 export function getServer (app, options) {
 
     return {
-        // todo - fix the need for this
-        snippetMw: undefined,
         server: (function () {
             if (options.get('scheme') === 'https') {
                 const pfxPath = options.getIn(['https', 'pfx']);
