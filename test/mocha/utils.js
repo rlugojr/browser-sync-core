@@ -5,8 +5,11 @@ const socket = require('socket.io-client');
 const bs = require('../../');
 const connect = require('connect');
 const http = require('http');
+const https = require('https');
 const assert = require('chai').assert;
 var request = require('supertest');
+const config = require('../../dist/config');
+const fs = require('fs');
 
 var uniq = 0;
 
@@ -38,6 +41,20 @@ utils.getApp = function () {
     server.listen();
     var add = server.address();
     var url = 'http://localhost:' + add.port;
+    return {app, url, server};
+};
+
+utils.getSecureApp = function () {
+    var app = connect();
+    // console.log(fs.readFileSync(config.certs.key));
+    // console.log(fs.readFileSync(config.certs.cert));
+    var server = https.createServer({
+        key:  fs.readFileSync(config.certs.key),
+        cert: fs.readFileSync(config.certs.cert)
+    }, app);
+    server.listen();
+    var add = server.address();
+    var url = 'https://localhost:' + add.port;
     return {app, url, server};
 };
 

@@ -32,29 +32,30 @@ bs.create({
         //}
     ],
     proxy: {
-        target: 'http://www.bbc.co.uk',
+        target: 'https://www.browsersync.io',
         id: 'Shane Proxy'
     },
+    scheme: "https",
     plugins: []
 }).subscribe(bs => {
 
     console.log(bs.options.get('urls'));
 
-    bs.setOption('proxy', function (proxies) {
-        return 'http://wearejh.com';
-    }).subscribe();
-
-    setTimeout(function () {
-        bs.setOption('proxy', function (proxies) {
-            return 'http://www.bbc.co.uk';
-        }).subscribe();
-    }, 5000);
-
-    setTimeout(function () {
-        bs.setOption('proxy', function (proxies) {
-            return 'http://wearejh.com';
-        }).subscribe();
-    }, 10000);
+    // bs.setOption('proxy', function (proxies) {
+    //     return 'http://wearejh.com';
+    // }).subscribe();
+    //
+    // setTimeout(function () {
+    //     bs.setOption('proxy', function (proxies) {
+    //         return 'http://www.bbc.co.uk';
+    //     }).subscribe();
+    // }, 5000);
+    //
+    // setTimeout(function () {
+    //     bs.setOption('proxy', function (proxies) {
+    //         return 'http://wearejh.com';
+    //     }).subscribe();
+    // }, 10000);
 
     // setTimeout(function () {
     //     bs.setOption('proxy', function (proxies) {

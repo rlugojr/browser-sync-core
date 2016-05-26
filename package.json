@@ -41,7 +41,7 @@
     "bs-snippet-injector": "^2.0.1",
     "chai": "3.5.0",
     "crossbow": "0.6.1",
-    "crossbow-cli": "3.0.6",
+    "crossbow-cli": "3.0.16",
     "eslint": "2.8.0",
     "lodash.get": "4.2.1",
     "lodash.merge": "4.3.5",

@@ -1,35 +1,36 @@
-var bs = require('./');
-var con = require('connect');
-var http = require('http');
+const connect = require('connect');
+const http = require('http');
+const fs = require('fs');
 
-var app = con();
-app.use('/api/shane', function (req, res, next) {
-	res.end('shane');
-});
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 
-var server = http.createServer(app);
+var app = connect();
+
+const https = require('https');
+// console.log(fs.readFileSync(config.certs.key));
+// console.log(fs.readFileSync(config.certs.cert));
+var server = https.createServer({
+    key:  fs.readFileSync('server/certs/server.key'),
+    cert: fs.readFileSync('server/certs/server.crt')
+}, app);
+app.use(function (req, res) {
+    res.end('shane');
+})
 server.listen();
-var addr = server.address();
-var url = 'http://localhost:' + addr.port;
+var add = server.address();
+var url = 'https://localhost:' + add.port;
 
-bs.create({
-    serveStatic: ['test/fixtures', '.'],
-    watch: 'test/fixtures',
-    watchDebounce: 4000,
-    proxy: {
-        route: '/api',
-        target: url
-    }
-}).subscribe(bs => {
-    //console.log(opts.options.get('urls'));
-    //console.log(opts.get('urls'));
-    //bs.connections$.subscribe(x => console.log('CONNECTION', x.id));
-    //bs.registered$.subscribe(x => console.log('Registration', x.connection));
+const request = require('supertest');
 
-    bs.watchers$.pluck('event').subscribe(x => console.log('File changed', x.event, x.path));
-    bs.coreWatchers$.pluck('event').subscribe(x => console.log('File changed', x.event, x.path));
-    //console.log(bs.options.get('urls').toJS());
-    //console.log(bs.options.get('middleware').toJS());
+
+https.get(url, (res) => {
+    console.log('statusCode: ', res.statusCode);
+    console.log('headers: ', res.headers);
+
+    res.on('data', (d) => {
+        process.stdout.write(d);
+    });
+
+}).on('error', (e) => {
+    console.error(e);
 });
-
-

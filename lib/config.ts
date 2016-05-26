@@ -29,7 +29,7 @@ module.exports = {
         'proxy+https':  'Invalid config. You set https: true, but your proxy target doesn\'t reflect this.'
     },
     certs: {
-        key: path.join(__dirname, '/../server/certs/server.key'),
-        cert: path.join(__dirname, '/../server/certs/server.crt')
+        key: path.join(__dirname, '/../', 'server', 'certs', 'server.key'),
+        cert: path.join(__dirname, '/../', 'server', 'certs', 'server.crt')
     }
 };

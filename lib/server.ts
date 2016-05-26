@@ -21,14 +21,16 @@ export function create (options) {
  * @returns {{server: HttpServer, app: function}}
  */
 export function getServer (app, options) {
-
     return {
         server: (function () {
             if (options.get('scheme') === 'https') {
                 const pfxPath = options.getIn(['https', 'pfx']);
-                return pfxPath ?
-                    https.createServer(getPFX(pfxPath), app) :
-                    https.createServer(getKeyAndCert(options), app);
+
+                if (pfxPath) {
+                    return https.createServer(getPFX(pfxPath), app);
+                }
+
+                return https.createServer(getKeyAndCert(options), app);
             }
             return http.createServer(app);
         })(),

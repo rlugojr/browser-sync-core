@@ -171,7 +171,6 @@ module.exports.init = function (bs, opts, obs) {
                     // todo: Is the following a real usecase?
                     // eg: proxy: {route: "/api"}
                     // ->  Add /api to proxy calls?
-
                     proxy.web(req, res, {target: target});
                 }
             }
@@ -232,8 +231,33 @@ module.exports.init = function (bs, opts, obs) {
  * @param {Immutable.Map} options
  */
 module.exports.transformOptions = function (options) {
-    return options.update(OPT_NAME, handleIncoming);
+    const initial = options.get('proxy');
+    if (!initial) {
+        return options;
+    }
+    const transformedOptions = handleIncoming(options.get('proxy'));
+    const https              = hasHttpsScheme(transformedOptions);
+    /**
+     * If any proxies has https - change
+     * 1. scheme option to https (this will override the server etc)
+     * 2. url options (as we will now be serving over https)
+     */
+    if (https) {
+        return options.set('proxy', transformedOptions)
+            .set('scheme', https ? 'https': 'http')
+            .update('urls', function (urls) {
+                const mapped = urls.map((value, key) => {
+                    return value.replace(/^http:/, 'https:');
+                });
+                return mapped;
+            })
+    }
+    return options.set('proxy', transformedOptions);
 };
+
+function hasHttpsScheme (proxyOptions) {
+    return proxyOptions.filter(x => x.getIn(['url', 'protocol']) === 'https:').size > 0;
+}
 
 function handleIncoming (initialProxyOption) {
     /**
