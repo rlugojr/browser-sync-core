@@ -1,6 +1,8 @@
 import * as proxy from "./proxy.d";
 
 const Imm          = require('immutable');
+const isList       = Imm.List.isList;
+const isMap        = Imm.Map.isMap;
 const debug        = require('debug')('bs:proxy');
 const OPT_NAME     = 'proxy';
 const middleware   = require('../middleware');
@@ -114,7 +116,7 @@ module.exports.init = function (bs, opts, obs) {
             const proxy       = httpProxy.createProxyServer(x.get('options').toJS());
             const proxyReqFns = [].concat(x.get('proxyReq').toJS());
             const proxyResFns = [].concat(x.get('proxyRes').toJS());
-            const target      = x.get('target');
+            const target      = x.getIn(['options', 'target']);
 
             debug(`+ target: ${target}`);
 
@@ -234,13 +236,22 @@ module.exports.transformOptions = function (options) {
 };
 
 function handleIncoming (initialProxyOption) {
+    /**
+     * Incoming string
+     */
     if (isString(initialProxyOption)) {
         return Imm.List([createOneProxyOption(stubIncomingString(initialProxyOption))])
     }
-    if (Imm.List.isList(initialProxyOption)) {
+    /**
+     * Incoming List
+     */
+    if (isList(initialProxyOption)) {
         return initialProxyOption.map(stubIncomingString).map(createOneProxyOption);
     }
-    if (Imm.Map.isMap(initialProxyOption)) {
+    /**
+     * Incoming Map
+     */
+    if (isMap(initialProxyOption)) {
         return Imm.List([createOneProxyOption(initialProxyOption)]);
     }
 }
@@ -251,14 +262,23 @@ function handleIncoming (initialProxyOption) {
  */
 function stubIncomingString (item) {
 
-    if (!isString(item)) {
+    /**
+     * Is the incoming item a Map
+     */
+    if (isMap(item)) {
         return item;
     }
 
+    /**
+     * If the incoming string does not contain the protocol, add it
+     */
     if (!item.match(/^https?:\/\//)) {
         item = 'http://' + item
     }
 
+    /**
+     * Now return a Map as though that was given as the option
+     */
     return Imm.Map({target: item});
 }
 
@@ -270,13 +290,13 @@ var count = 0;
 
 function createOneProxyOption (item) {
 
-    const incoming = Imm.fromJS({
-        id: `Browsersync Proxy (${count += 1})`,
-        url: Imm.Map(require('url').parse(item.get('target'))),
-        options: {
-            target: item.get('target')
-        }
-    });
+    const parsedUrl  = Imm.Map(require('url').parse(item.get('target')));
+    const targetHost = parsedUrl.get('protocol') + '//' + parsedUrl.get('host');
 
-    return new ProxyOption().mergeDeep(incoming.mergeDeep(item));
+    const proxyOption = new ProxyOption({
+        id: `Browsersync Proxy (${count += 1})`,
+        url: parsedUrl,
+    }).mergeDeep(item.setIn(['options', 'target'], targetHost));
+
+    return proxyOption;
 }

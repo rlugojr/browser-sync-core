@@ -79,6 +79,14 @@ describe('Transforming proxy option', function () {
         assert.equal(trans[0].route, '');
         assert.equal(trans[0].target, 'http://some.backend.dev');
     });
+    it('accepts accepts path names', function () {
+        const opts = utils.optmerge({
+            proxy: 'http://some.backend.dev/shane/kittie'
+        });
+        const trans = proxy.transformOptions(opts).get('proxy').toJS();
+        assert.equal(trans[0].route, '');
+        assert.equal(trans[0].options.target, 'http://some.backend.dev');
+    });
     it('maintains default map for options', function () {
         const opts = utils.optmerge({
             proxy: {
