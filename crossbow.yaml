@@ -8,6 +8,11 @@ watch:
 
 tasks:
     lodash: '@npm lodash include=get,set,assign exports=node --output=vendor/lodash'
+
+    test:
+      - build-all
+      - unit
+
     unit:
       - '@npm mocha test/mocha/**/*.js'
 

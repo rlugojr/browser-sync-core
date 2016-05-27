@@ -45,6 +45,11 @@ export interface BrowserSync {
     options: any
     setOption: (selector:string, fn) => any
     getSocket: (id:string) => any
+
+    // Controller
+    setController:   (id:string) => void
+    resetController: () => void
+
     setClientOption: (id:string, selector:string, fn) => any
     setDefaultClientOption: (selector:string, fn) => any
     overrideClientOptions: (selector:string, fn) => any
@@ -59,8 +64,10 @@ export interface BrowserSync {
 
 bs.create = function (userOptions) {
     return startup(userOptions).flatMap(opts => {
-        return Rx.Observable.create(obs => go(opts, obs));
-    })
+        return Rx.Observable.create(obs => {
+            go(opts, obs);
+        });
+    });
 };
 
 /**
@@ -278,13 +285,12 @@ function go(options, observer) {
         }
     });
 
-
     function applyMw(options) {
         bsServer.app.stack = middleware.getMiddleware(options).middleware;
     }
 
     bs.applyMw = applyMw;
-
+    
     /**
      * Resolve all async plugin init/initAsync functions
      * and then call the callback to indicate all

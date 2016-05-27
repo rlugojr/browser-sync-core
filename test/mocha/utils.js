@@ -101,3 +101,7 @@ utils.proxye2e = function (resp, done) {
 utils.resp1 = function (host, snippet) {
     return '<!doctype html><html lang="en"><head><meta charset="UTF-8"><title>Document</title><link rel="stylesheet" href="'+host+'/css/core.css"></head><body>'+snippet+'</body></html>';
 };
+
+utils.getScrollEvent = function () {
+    return {position: {raw: {x: 0, y: 32}, proportional: 0.007818226239921818}, url: '/'};
+};

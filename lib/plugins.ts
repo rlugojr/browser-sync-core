@@ -16,7 +16,7 @@ const NAME_PATH    = ['module', 'plugin:name'];
  * clients will ALWAYS be the first core plugin and watch 
  * would always be the last.
  */
-const autoList     = ['watch', 'proxy', '404', 'serveStatic', 'clients'];
+const autoList     = ['watch', 'proxy', '404', 'serveStatic', 'clients', 'stdin'];
 
 import utils from './utils';
 const isString   = utils.isString;

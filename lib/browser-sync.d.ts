@@ -286,7 +286,12 @@ export interface BrowsersyncOptions {
 
     clientOptions?: ClientOptions
 
-    injectFileTypes: string[]
+    injectFileTypes: string[],
+
+    /**
+     * Should Browsersync accept function calls over process.stdin 
+     */
+    stdin: boolean
 }
 
 interface SocketOptions {

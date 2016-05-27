@@ -4,9 +4,9 @@
   "description": "Browsersync's Engine",
   "main": "dist/browser-sync.js",
   "scripts": {
-    "test": "crossbow run build-all unit",
+    "test": "crossbow run test",
     "start": "crossbow watch",
-    "pre-publish": "crossbow run build-all"
+    "pre-publish": "crossbow run test"
   },
   "repository": "Browsersync/browser-sync-core",
   "keywords": [

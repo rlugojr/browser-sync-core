@@ -9,6 +9,7 @@ const just       = Rx.Observable.just;
 const empty      = Rx.Observable.empty;
 const assign     = require('object-assign');
 const debug      = require('debug')('bs:clients');
+const debugState = require('debug')('bs:clients-state');
 
 import utils      from '../utils';
 import Immutable = require('immutable');
@@ -29,6 +30,12 @@ interface ClientSocketEvent {
     client: SocketIO.Socket
 }
 
+interface ClientController {
+    locked: boolean
+    id: string
+    socketId: string
+}
+
 module.exports['plugin:name'] = "Browsersync Clients";
 
 export function init (bs: BrowserSync) {
@@ -37,7 +44,7 @@ export function init (bs: BrowserSync) {
     const clients$     = new Rx.BehaviorSubject(Immutable.OrderedMap());
 
     const blank        = {locked: false, id: '', socketId: ''};
-    var controller     = new Rx.BehaviorSubject(blank);
+    const controller   = new Rx.BehaviorSubject(blank);
 
     /**
      * Listen for incoming connections that occur
@@ -48,8 +55,12 @@ export function init (bs: BrowserSync) {
     const clientEvents$ = connections$
         .withLatestFrom(bs.options$)
         .flatMap(x => {
-            const client:  SocketIO.Socket = x[0];
+
+            const client:  SocketIO.Socket       = x[0];
             const options: BrowsersyncOptionsMap = x[1];
+            const availableEvents = options.getIn(['clientOptions', 'events']);
+
+            debug(`Available Events, ${availableEvents}`);
 
             client.emit('connection', options.get('clientOptions'));
 
@@ -65,7 +76,7 @@ export function init (bs: BrowserSync) {
         .flatMap((obj) => {
             const evt     = obj[0];
             const clients = obj[1];
-            let match   = clients.filter(x => x.get('socketId') === evt.client.id);
+            let match     = clients.filter(client => client.get('socketId') === evt.client.id);
             if (match.size) {
                 match = match.toList();
                 return just(<ClientSocketEvent>{
@@ -97,6 +108,15 @@ export function init (bs: BrowserSync) {
      */
     Rx.Observable
         .interval(1000)
+        .withLatestFrom(controller, (i, controller: ClientController) => {
+            return controller;
+        })
+        .where(x => {
+            if (x.locked) {
+                return false;
+            }
+            return true;
+        })
         .map(x => blank)
         .subscribe(controller);
 
@@ -107,23 +127,32 @@ export function init (bs: BrowserSync) {
     clientEvents$
         .withLatestFrom(controller)
         .flatMap(function (x) {
-            const evt: ClientSocketEvent = x[0];
-            const ctrl = x[1];
+            const evt:  ClientSocketEvent = x[0];
+            const ctrl: ClientController  = x[1];
+
             if (ctrl.id === '') {
                 debug('✔  ALLOW EVENT, controller not set');
                 debug('└─ ', evt.event, 'data:', evt.data);
-                return just(evt);
+                return just(x);
             } else if (ctrl.id === evt.id) {
                 debug('✔ ALLOW EVENT, controller.id === event.id');
                 debug('└─ ', evt.event, 'data:', evt.data);
-                return just(evt);
-            } else {
-                debug('IGNORE EVENT id:', evt.id, 'CTRL id:', ctrl.id);
+                return just(x);
             }
+
+            debug('IGNORE EVENT id:', evt.id, 'CTRL id:', ctrl.id);
+
             return empty();
-        }).subscribe(x => {
-        x.client.broadcast.emit(x.event, x.data);
-    });
+        })
+        .do((x: ClientSocketEvent) => {
+
+            const evt: ClientSocketEvent = x[0];
+            
+            debug(`BROADCAST, EVT: ${evt.event} BSID: ${evt.id}`);
+            
+            evt.client.broadcast.emit(evt.event, evt.data);
+        })
+        .subscribe();
 
 
     // ------------------------------------------------------
@@ -184,6 +213,7 @@ export function init (bs: BrowserSync) {
         .withLatestFrom(clients$, bs.options$, (x, clients, options: BrowsersyncOptionsMap) => {
             const client:     SocketIO.Socket = x.client;
             const connection: clients.IncomingClientRegistration = x.connection;
+            debugState('REGISTER', connection.client.id);
             return clients.updateIn([connection.client.id], () => {
                 return createClient(client, connection, options.get('clientOptions'));
             });
@@ -244,6 +274,15 @@ export function init (bs: BrowserSync) {
             .do(clients$.onNext.bind(clients$));
     };
 
+    bs.setController = function (browserSyncClientId: string) {
+        const socket = bs.getSocket(browserSyncClientId);
+        controller.onNext({locked: true, id: browserSyncClientId, socketId: socket.id});
+    };
+
+    bs.resetController = function () {
+        controller.onNext({locked: false, id: '', socketId: ''});
+    };
+
     return () => {
         int.dispose();
         sub2.dispose();
@@ -290,13 +329,18 @@ function trackController (incoming, controller) {
 
             const incomingEvent     = x[0];
             const currentController = x[1];
-            // console.log(incomingEvent.socketId, currentController.id);
+
+            if (currentController.locked) {
+                debugState(`CTRL LOCKED ${currentController.id}`);
+                return empty();
+            }
 
             /**
              * Controller has not been set, therefore we allow this event
              * through (as this will in turn cause the controller to be set)
              */
             if (currentController.id === '') {
+                debugState('CTRL NOT SET - using current from event');
                 return just({locked: false, id: incomingEvent.id, socketId: incomingEvent.socketId});
             }
 
@@ -306,6 +350,7 @@ function trackController (incoming, controller) {
              * as this could change (ie: every time the browser reloads)
              */
             if (currentController.id === incomingEvent.id) {
+                debugState('CTRL matches EVENT, updating socketId');
                 return just(assign(currentController, {socketId: incomingEvent.socketId}));
             }
 
