@@ -1,5 +1,6 @@
+import config from './config';
+
 const fs         = require('fs');
-const config     = require('./config');
 const middleware = require('./middleware');
 const connect    = require('connect');
 const http       = require('http');

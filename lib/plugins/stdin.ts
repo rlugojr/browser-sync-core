@@ -29,11 +29,11 @@ export function init (bs: BrowserSync) {
         })
         .subscribe(stdinEvent => {
             if (typeof stdinEvent.fn === 'function') {
-                console.log('Calling  :', stdinEvent.fnName);
-                console.log('with args:', stdinEvent.args);
+                console.log('stdin: calling   :', stdinEvent.fnName);
+                console.log('stdin: with args :', stdinEvent.args);
                 stdinEvent.fn.apply(null, stdinEvent.args);
             } else {
-                console.log(stdinEvent, 'is not a valid function to call');
+                console.log(stdinEvent.fnName, 'is not a valid function to call');
             }
         });
 

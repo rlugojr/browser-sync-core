@@ -5,6 +5,7 @@ import Immutable = require("immutable");
 import startup from './startup';
 import Rx = require('rx');
 import config from './config';
+import {GlobalClientEvents, GlobalReloadEvent} from "./browser-sync-clients";
 
 const Observable = Rx.Observable;
 const connectUtils = require('./connect-utils');
@@ -273,12 +274,15 @@ function go(options, observer) {
 
     bs.options$ = optSub;
 
+    type ReloadEmitter = (type: GlobalClientEvents, payload: GlobalReloadEvent) => void;
+
     /**
      * Define the public API for actions that should affect clients
      */
     bs.clients = {
         reload: () => {
-            console.log('Called reload')
+            const emit: ReloadEmitter = bs.bsSocket.clients.emit;
+            emit(GlobalClientEvents.reload, {force: true});
         }
     };
 
@@ -287,7 +291,7 @@ function go(options, observer) {
             return optSub.getValue();
         },
         set: function (val) {
-            throw new TypeError('Cannot re-assign this value');
+            throw new TypeError('Cannot re-assign th          bb hbh bh bhbhb                   b cv   bn                      z    is value');
         }
     });
 

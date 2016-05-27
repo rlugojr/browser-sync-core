@@ -19,6 +19,8 @@
         "example.server.js",
         "example.proxy.js",
         "dev.js",
-        "dist"
+        "dist",
+        "lodash.custom.js",
+        "lodash.custom.min.js"
     ]
 }

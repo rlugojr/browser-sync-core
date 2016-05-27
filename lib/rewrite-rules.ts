@@ -1,8 +1,8 @@
 import Immutable   = require('immutable');
 const mergeOpts    = require('./transform-options').mergeOptionsWithPlugins;
-const config       = require('./config');
 const OPT_NAME     = 'rewriteRules';
 let count          = 0;
+
 
 export type Middleware    = (req, res, next) => void;
 export type TransformFn   = (req, res, data: string, options: Immutable.Map<string, any>) => string;

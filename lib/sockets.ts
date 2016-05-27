@@ -1,7 +1,7 @@
 'use strict';
 
-const socket    = require('socket.io');
-const server    = require('./server');
+import socket = require('socket.io');
+const server  = require('./server');
 
 export interface Protocol {
     send: (path:string, arg:any) => void

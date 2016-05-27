@@ -1,9 +1,10 @@
 import Immutable = require('immutable');
+import config from './config';
+
 const clientJs           = exports;
 const connectUtils       = require('./connect-utils');
 const fs                 = require('fs');
 const path               = require('path');
-const config             = require('./config');
 const OPT_NAME           = 'clientJs';
 const socketIoClient     = fs.readFileSync(path.join(__dirname, '..', config.socketIoScript), 'utf-8');
 

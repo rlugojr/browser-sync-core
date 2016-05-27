@@ -1,8 +1,9 @@
 'use strict';
 
+import config from './config';
+
 const fs             = require('fs');
 const path           = require('path');
-const config         = require('./config');
 const socketTemplate = fs.readFileSync(config.templates.connector, 'utf-8');
 const scriptTemplate = fs.readFileSync(config.templates.scriptTag, 'utf-8');
 
