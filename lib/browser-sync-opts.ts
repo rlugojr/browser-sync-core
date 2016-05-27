@@ -322,3 +322,7 @@ export interface Cleanup {
     async: boolean
     fn: () => void
 }
+
+export interface ClientsApi {
+    reload: () => void
+}

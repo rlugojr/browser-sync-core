@@ -45,6 +45,10 @@ bs.create({
 
     console.log(bs.options.get('urls'));
 
+    // setInterval(function () {
+    //     bs.reload();
+    // }, 2000);
+
     // bs.setOption('proxy', function (proxies) {
     //     return 'http://wearejh.com';
     // }).subscribe();

@@ -1,34 +1,43 @@
 /// <reference path="../typings/main.d.ts" />
 import {Socket} from "./sockets";
+import {ClientsApi} from "./browser-sync.d";
 import Immutable = require("immutable");
 import startup from './startup';
+import Rx = require('rx');
+import config from './config';
 
-const Rx = require('rx');
 const Observable = Rx.Observable;
-const config = require('./config');
-const path = require('path');
 const connectUtils = require('./connect-utils');
 const server = require('./server');
 const sockets = require('./sockets');
 const plugins = require('./plugins');
 const clientJs = require('./client-js');
 const middleware = require('./middleware');
-const protocol = require('./protocol');
 const utils = require('./utils');
 const rewriteRules = require('./rewrite-rules');
+
 const debugOptions = require('debug')('bs:options');
 const debugCleanup = require('debug')('bs:cleanup');
 const debugPlugins = require('debug')('bs:plugins');
+
 const bs = exports;
 
 export interface BrowserSync {
 
+    /**
+     * Exported streams
+     */
     connections$: any
     registered$: any
     options$: any
     watchers$?: any
     coreWatchers$?: any
     clients$: any
+
+    /**
+     * Exported APIs (by namespace)
+     */
+    clients: ClientsApi
 
     server: any
     bsSocket: any
@@ -39,7 +48,6 @@ export interface BrowserSync {
     utils: any
     io: any
     sockets: Socket
-    clients: any
     options: any
     setOption: (selector:string, fn) => any
     getSocket: (id:string) => any
@@ -86,7 +94,7 @@ function go(options, observer) {
      * @param {function} fn
      */
     bs.registerCleanupTask = fn => {
-        cleanups.push(fn); // todo: is there another way to model
+        cleanups.push(fn); // todo: is there another way to model 
     };
 
     /** -----------
@@ -96,7 +104,7 @@ function go(options, observer) {
      * @type {{io, steward, clients, connections, protocol, pause, resume}}
      */
     bs.bsSocket = sockets.create(bs, bs.server, options);
-
+    
     /**
      * Run the server
      */
@@ -158,7 +166,7 @@ function go(options, observer) {
             .subscribe(
                 x => {},
                 e => console.error('error', e.stack),
-                d => {
+                () => {
                     debugCleanup(`= complete in ${(new Date().getTime() - now)}ms`)
                     if (typeof cb === 'function') {
                         cb();
@@ -182,7 +190,6 @@ function go(options, observer) {
      * Expose all socket properties
      */
     bs.sockets      = bs.bsSocket;
-    bs.clients      = bs.bsSocket.clients;
 
     /**
      * Get a file-watcher for a specific namespace
@@ -249,7 +256,7 @@ function go(options, observer) {
             .map(x => x.updateIn(['clientOptions'].concat(selector), fn))
             .do(optSub.onNext.bind(optSub))
     };
-
+    
     /**
      * Allow plugins to also load the same socket.io script
      * used by Browsersync
@@ -266,12 +273,13 @@ function go(options, observer) {
 
     bs.options$ = optSub;
 
-    bs.reload = function () {
-        bs.bsSocket.protocol.send('Global.reload', true);
-    };
-
-    bs.inject = function (obj) {
-        bs.bsSocket.protocol.send('Global.inject', obj);
+    /**
+     * Define the public API for actions that should affect clients
+     */
+    bs.clients = {
+        reload: () => {
+            console.log('Called reload')
+        }
     };
 
     Object.defineProperty(bs, 'options', {
@@ -288,7 +296,7 @@ function go(options, observer) {
     }
 
     bs.applyMw = applyMw;
-
+    
     /**
      * Resolve all async plugin init/initAsync functions
      * and then call the callback to indicate all

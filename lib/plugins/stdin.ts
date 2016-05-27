@@ -2,6 +2,7 @@ import {BrowserSync} from "../browser-sync";
 import Rx = require('rx');
 import ReadableStream = NodeJS.ReadableStream;
 const {just, fromEvent} = Rx.Observable;
+const _ = require('../../lodash.custom');
 
 export interface StdinEvent {
     fnName: string
@@ -22,7 +23,7 @@ export function init (bs: BrowserSync) {
             const split = x.trim().split(' ').filter(Boolean);
             return just({
                 fnName: split[0],
-                fn: bs[split[0]],
+                fn: _.get(bs, split[0]),
                 args: split.slice(1)
             });
         })

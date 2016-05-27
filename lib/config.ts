@@ -2,7 +2,7 @@
 
 const path = require('path');
 
-module.exports = {
+const config = {
     controlPanel: {
         jsFile: '/js/app.js',
         baseDir: path.join(__dirname, 'control-panel')
@@ -33,3 +33,5 @@ module.exports = {
         cert: path.join(__dirname, '/../', 'server', 'certs', 'server.crt')
     }
 };
+
+export default config;

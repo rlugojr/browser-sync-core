@@ -7,7 +7,6 @@ watch:
         tasks: 'compile'
 
 tasks:
-    lodash: '@npm lodash include=get,set,assign exports=node --output=vendor/lodash'
 
     test:
       - build-all
@@ -17,6 +16,7 @@ tasks:
       - '@npm mocha test/mocha/**/*.js'
 
     build-all@p:
+      - lodash
       - build-server
       - build-client
 
@@ -27,6 +27,11 @@ tasks:
     build-client:
       - browserify
       - uglify
+
+    lodash: >
+      @npm lodash
+      include=get,set,merge
+      exports=node
 
     nodemon: >
       @bg nodemon
