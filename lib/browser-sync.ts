@@ -1,6 +1,6 @@
 /// <reference path="../typings/main.d.ts" />
 import {Socket} from "./sockets";
-import {ClientsApi} from "./browser-sync.d";
+import {ClientsApi} from "./browser-sync-opts";
 import Immutable = require("immutable");
 import startup from './startup';
 import Rx = require('rx');
