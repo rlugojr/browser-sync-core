@@ -281,8 +281,7 @@ function go(options, observer) {
      */
     bs.clients = {
         reload: () => {
-            const emit: ReloadEmitter = bs.bsSocket.clients.emit;
-            emit(GlobalClientEvents.reload, {force: true});
+            bs.bsSocket.clients.emit(GlobalClientEvents.reload, <GlobalReloadEvent>{force: true});
         }
     };
 

@@ -41,6 +41,7 @@ export function init (bs: BrowserSync) {
 
     const connections$ = Rx.Observable.fromEvent(bs.bsSocket.clients, 'connection');
     const clients$     = new Rx.BehaviorSubject(Immutable.OrderedMap());
+    const scheduler    = bs.options.getIn(['debug', 'scheduler']);
 
     const blank        = {locked: false, id: '', socketId: ''};
     const controller   = new Rx.BehaviorSubject(blank);
@@ -106,7 +107,7 @@ export function init (bs: BrowserSync) {
      * it to the blank default
      */
     Rx.Observable
-        .interval(1000)
+        .interval(1000, scheduler)
         .withLatestFrom(controller, (i, controller: ClientController) => {
             return controller;
         })
@@ -165,7 +166,7 @@ export function init (bs: BrowserSync) {
      * but we store/think about clients in a very different way (tab sessions persisting)
      */
     const int = Rx.Observable
-        .interval(6000)
+        .interval(6000, scheduler)
         .map(x => Object.keys(bs.bsSocket.clients.sockets))
         //.do(x => console.log('Filtering clients'))
         .withLatestFrom(clients$, (sockets, clients) => {
@@ -279,7 +280,7 @@ export function init (bs: BrowserSync) {
     };
 
     bs.resetController = function () {
-        controller.onNext(blank);
+        controller.onNext({locked: false, id: '', socketId: ''});
     };
 
     return () => {

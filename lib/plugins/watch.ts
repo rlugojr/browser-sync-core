@@ -144,11 +144,12 @@ export function init (bs: BrowserSync) {
         // one in the injectFileTypes array, attempt an injection
 
         if (watchEventMerged.options.get('injectFileTypes').contains(event.ext)) {
-            return bs.inject(event);
+            // todo implement client methods like inject
+            return bs.clients.reload();
         }
 
         // Otherwise, simply reload the browser
-        bs.reload();
+        bs.clients.reload();
     });
 
     const closeWatchers = () => bs.watchers.forEach(w => w.watcher.close());

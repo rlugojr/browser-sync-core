@@ -4,7 +4,7 @@ const register = require('../../../dist/plugins/clients').ClientEvents.register;
 const Rx = require('rx');
 
 describe('Setting the controller automatically via first emitted event', function () {
-    it.only('resets the controller after the timeout if not locked', function (done) {
+    it('resets the controller after the timeout if not locked', function (done) {
         const scheduler = new Rx.TestScheduler();
         browserSync.create({
             debug: {

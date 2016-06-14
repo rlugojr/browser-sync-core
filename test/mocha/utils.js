@@ -8,7 +8,7 @@ const http = require('http');
 const https = require('https');
 const assert = require('chai').assert;
 var request = require('supertest');
-const config = require('../../dist/config');
+const config = require('../../dist/config').default;
 const fs = require('fs');
 
 var uniq = 0;
