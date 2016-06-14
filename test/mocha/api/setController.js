@@ -4,6 +4,16 @@ const register = require('../../../dist/plugins/clients').ClientEvents.register;
 const Rx = require('rx');
 
 describe('Setting the controller automatically via first emitted event', function () {
+    it.only('resets the controller after the timeout if not locked', function (done) {
+        const scheduler = new Rx.TestScheduler();
+        browserSync.create({
+            debug: {
+                scheduler: scheduler
+            }
+        }).subscribe(function (bs) {
+            bs.cleanup(done);
+        })
+    });
     it('Allows an event from one client to be broadcast to others', function (done) {
         browserSync.create({}).subscribe(function (bs) {
             const client  = utils.getClientSocket(bs);
@@ -32,9 +42,7 @@ describe('Setting the controller automatically via first emitted event', functio
             client1.emit(register, utils.getClient('1'));
             client2.emit(register, utils.getClient('2'));
 
-
             // this will set the controller as it will be the first event
-
             bs.registered$
                 .take(2)
                 .toArray()
@@ -43,9 +51,9 @@ describe('Setting the controller automatically via first emitted event', functio
                     client1.on('scroll', function () {
                         bs.cleanup(done);
                     });
-                    
+
                     client1.emit('scroll', utils.getScrollEvent());
-                    
+
                     bs.setController('2');
 
                     client2.emit('scroll', utils.getScrollEvent());

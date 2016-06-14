@@ -1,4 +1,4 @@
-import {BrowsersyncOptions} from "./browser-sync.d";
+import {BrowsersyncOptions} from "./browser-sync-opts";
 
 /**
  * @module BrowserSync.options

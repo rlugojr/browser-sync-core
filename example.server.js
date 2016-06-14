@@ -13,13 +13,17 @@ bs.create({
             }
         }
     ],
-    //watchDebounce: 2000,
+    // watchDebounce: 2000,
     //watchDelay: 2000,
     watch: [
         //"test/fixtures"
         {
             debounce: 2000,
-            match: 'test/fixtures'
+            match: 'test/fixtures/*.html'
+        },
+        {
+            debounce: 500,
+            match: 'test/fixtures/**/*.css'
         }
         //{
         //{

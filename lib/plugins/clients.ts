@@ -13,9 +13,8 @@ const debugState = require('debug')('bs:clients-state');
 
 import utils      from '../utils';
 import Immutable = require('immutable');
-
 import {parse} from 'url';
-import {BrowsersyncOptionsMap} from "../browser-sync.d";
+import {BrowsersyncOptionsMap} from "../browser-sync-opts";
 import {BrowserSync} from "../browser-sync";
 
 export const ClientEvents = {
@@ -147,9 +146,9 @@ export function init (bs: BrowserSync) {
         .do((x: ClientSocketEvent) => {
 
             const evt: ClientSocketEvent = x[0];
-            
+
             debug(`BROADCAST, EVT: ${evt.event} BSID: ${evt.id}`);
-            
+
             evt.client.broadcast.emit(evt.event, evt.data);
         })
         .subscribe();
@@ -280,7 +279,7 @@ export function init (bs: BrowserSync) {
     };
 
     bs.resetController = function () {
-        controller.onNext({locked: false, id: '', socketId: ''});
+        controller.onNext(blank);
     };
 
     return () => {

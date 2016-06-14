@@ -1,5 +1,3 @@
-import * as proxy from "./proxy.d";
-
 const Imm          = require('immutable');
 const isList       = Imm.List.isList;
 const isMap        = Imm.Map.isMap;
@@ -20,7 +18,7 @@ import {RewriteRule} from "../rewrite-rules";
  * see:
  * @type {{changeOrigin: boolean, autoRewrite: boolean, secure: boolean}}
  */
-const defaultHttpProxyOptions = <proxy.HttpProxyOptions>{
+const defaultHttpProxyOptions = <HttpProxyOptions>{
     changeOrigin: true,
     autoRewrite: true,
     secure: false,
@@ -33,14 +31,14 @@ const defaultHttpProxyOptions = <proxy.HttpProxyOptions>{
  * This helps login systems such as Magento
  * @type {{stripDomain: boolean}}
  */
-const defaultCookieOptions = <proxy.CookieOptions>{
+const defaultCookieOptions = <CookieOptions>{
     stripDomain: true
 };
 
 /**
  * Browsersync proxy option
  */
-const ProxyOption = Imm.Record(<proxy.ProxyOption>{
+const ProxyOption = Imm.Record(<ProxyOption>{
     id: '',
     route: '',
     target: '',
@@ -79,17 +77,7 @@ module.exports.init = function (bs, opts, obs) {
     const utils       = require('./proxy-utils');
     const httpProxy   = require('http-proxy');
     const proxies     = bs.options.getIn([OPT_NAME]);
-    
-    // bs.options$
-    //     .distinctUntilChanged(null, (a, b) => {
-    //         return Imm.is(a.get('proxy'), b.get('proxy'));
-    //     })
-    //     .skip(1)
-    //     .subscribe(function (x) {
-    //         // get new proxy options here
-    //     });
-
-    const out = applyProxies(proxies);
+    const out         = applyProxies(proxies);
 
     /**
      * Add middleware for proxies
@@ -189,12 +177,13 @@ module.exports.init = function (bs, opts, obs) {
                 rule.via   = pluginName;
                 return rule;
             });
-        
+
         return {middlewares, rewriteRules};
     }
 
     /**
-     * Add an option updater interceptor
+     * Add an option updater interceptor to allow
+     * dynamic setting of proxy target at run time
      * @param coll
      * @returns {any}
      */
@@ -324,3 +313,39 @@ function createOneProxyOption (item) {
 
     return proxyOption;
 }
+
+import NodeURL  = require('url');
+
+export interface CookieOptions {
+    stripDomain: boolean
+}
+
+export interface HttpProxyOptions {
+    changeOrigin: boolean
+    autoRewrite: boolean
+    secure: boolean
+    ws: boolean
+}
+
+export interface ProxyOption {
+    id: string,
+    route: string
+    target: string
+    rewriteRules: boolean,
+    /**
+     * Functions to be called on proxy response
+     * with args [proxyReq, req, res, options]
+     */
+    proxyReq: any[],
+    /**
+     * Functions to be called on proxy response
+     * with args [proxyRes, req, res]
+     */
+    proxyRes: any[],
+    proxyErr: (err, proxy) => void
+    url: NodeURL.Url
+    options: HttpProxyOptions
+    cookies: CookieOptions
+    ws: boolean
+}
+

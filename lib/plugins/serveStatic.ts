@@ -1,6 +1,5 @@
-import {ServeStaticOptions} from "./serveStatic.d";
-
 import utils from '../utils';
+import {ServeStaticOptions} from "./serveStatic-opts";
 const fs = require('fs');
 const config = require('../config');
 const path = require('path');
@@ -113,16 +112,27 @@ function generateMw (originalMw, transformed) {
  * @returns {*}
  */
 function resolveMany (initialOption) {
+    /**
+     * If any array was given, such as
+     * ['.tmp', './app']
+     */
     if (Immutable.List.isList(initialOption)) {
         const out = initialOption.reduce((all, x) => {
-            const litem = resolveMany(x);
-            if (Immutable.List.isList(litem)) {
-                return all.concat(litem);
+            const item = resolveMany(x);
+            if (Immutable.List.isList(item)) {
+                return all.concat(item);
             }
-            return all.push(litem);
+            return all.push(item);
         }, Immutable.List([]));
         return out;
     }
+
+    /**
+     * If an object was given such as
+     * {
+     *   root: './app'
+     * }
+     */
     if (Immutable.Map.isMap(initialOption)) {
         if (Immutable.List.isList(initialOption.get('root'))) {
             return initialOption.get('root').map(root => {
@@ -135,6 +145,10 @@ function resolveMany (initialOption) {
         }
         return createOne(initialOption, 'core');
     }
+
+    /**
+     * Finally if a string was given...
+     */
     if (utils.isString('string')) {
         return createOne(initialOption, 'core');
     }
@@ -147,6 +161,10 @@ function resolveMany (initialOption) {
  */
 function createOne (item, namespace, options?) {
 
+    /**
+     * If we're creating from a string, there cannot
+     * be any options etc, so just create a default
+     */
     if (utils.isString(item)) {
         return new ServeStaticOption({
             root: item,
@@ -156,12 +174,15 @@ function createOne (item, namespace, options?) {
             .update('options', (opt) => opt.mergeDeep(options))
     }
 
+    /**
+     * Here it must have been an object
+     */
     return new ServeStaticOption({
         namespace,
         id: getServeStaticId(ssID++)
     })
-        .mergeDeep(item)
-        .update('options', (opt) => opt.mergeDeep(options));
+    .mergeDeep(item)
+    .update('options', (opt) => opt.mergeDeep(options));
 }
 
 function getServeStaticId (num) {

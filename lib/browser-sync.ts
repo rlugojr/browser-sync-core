@@ -3,8 +3,6 @@ import {Socket} from "./sockets";
 import Immutable = require("immutable");
 import startup from './startup';
 
-'use strict';
-
 const Rx = require('rx');
 const Observable = Rx.Observable;
 const config = require('./config');
@@ -88,7 +86,7 @@ function go(options, observer) {
      * @param {function} fn
      */
     bs.registerCleanupTask = fn => {
-        cleanups.push(fn); // todo: is there another way to model 
+        cleanups.push(fn); // todo: is there another way to model
     };
 
     /** -----------
@@ -98,7 +96,7 @@ function go(options, observer) {
      * @type {{io, steward, clients, connections, protocol, pause, resume}}
      */
     bs.bsSocket = sockets.create(bs, bs.server, options);
-    
+
     /**
      * Run the server
      */
@@ -251,7 +249,7 @@ function go(options, observer) {
             .map(x => x.updateIn(['clientOptions'].concat(selector), fn))
             .do(optSub.onNext.bind(optSub))
     };
-    
+
     /**
      * Allow plugins to also load the same socket.io script
      * used by Browsersync
@@ -290,7 +288,7 @@ function go(options, observer) {
     }
 
     bs.applyMw = applyMw;
-    
+
     /**
      * Resolve all async plugin init/initAsync functions
      * and then call the callback to indicate all
