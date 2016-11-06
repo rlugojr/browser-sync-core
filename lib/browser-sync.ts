@@ -141,8 +141,8 @@ function go(options, observer) {
     };
 
     /**
-     * Quite servers, remove event listeners, kill timers, stop
-     * file-watchers. Allows the process to exit
+     * Quit servers, remove event listeners, kill timers, stop
+     * file-watchers etc... Allows the process to exit
      */
     bs.cleanup = (cb) => {
 

@@ -103,6 +103,15 @@ mw.getMiddleware = function (options) {
         }
     ];
 
+    if (options.get('cors')) {
+        baseMiddleware.unshift({
+            route: '',
+            id: 'bs-cores',
+            handle: getCorsMiddleware(),
+            via: 'Browsersync Core'
+        })
+    }
+
     const userMiddlewares   = options.get("middleware").toJS();
     const beforeMiddlewares = userMiddlewares.filter((x) => x.override);
     const afterMiddlewares  = userMiddlewares.filter((x) => !x.override);
@@ -111,3 +120,21 @@ mw.getMiddleware = function (options) {
         middleware: [...beforeMiddlewares, ...baseMiddleware, ...afterMiddlewares].filter(Boolean)
     }
 };
+
+function getCorsMiddleware() {
+    return function (req, res, next) {
+        // Website you wish to allow to connect
+        res.setHeader("Access-Control-Allow-Origin", "*");
+
+        // Request methods you wish to allow
+        res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+
+        // Request headers you wish to allow
+        res.setHeader("Access-Control-Allow-Headers", "X-Requested-With,content-type");
+
+        // Set to true if you need the website to include cookies in the requests sent
+        // to the API (e.g. in case you use sessions)
+        res.setHeader("Access-Control-Allow-Credentials", 'true');
+        next();
+    }
+}
