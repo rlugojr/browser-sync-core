@@ -1,6 +1,6 @@
 import chokidar = require('chokidar');
-import {ClientOptions} from "./plugins/clients.d.ts";
 import {RewriteRule} from "./rewrite-rules";
+import {ClientOptions} from "./plugins/clients";
 
 export interface BrowsersyncOptionsMap {
     get: (path: string) => any

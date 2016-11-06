@@ -6,6 +6,7 @@
   "scripts": {
     "test": "crossbow run test",
     "start": "crossbow watch",
+    "build-all": "crossbow run build-all",
     "pre-publish": "crossbow run test"
   },
   "repository": "Browsersync/browser-sync-core",
@@ -40,9 +41,9 @@
     "browserify-middleware": "^7.0.0",
     "bs-snippet-injector": "^2.0.1",
     "chai": "3.5.0",
-    "crossbow": "0.6.1",
-    "crossbow-cli": "3.0.16",
+    "crossbow": "latest",
     "eslint": "2.8.0",
+    "lodash-cli": "^4.16.6",
     "lodash.get": "4.2.1",
     "lodash.merge": "4.3.5",
     "lodash.set": "4.1.0",
@@ -51,10 +52,10 @@
     "parallelshell": "2.0.0",
     "protractor": "3.2.2",
     "sinon": "1.17.3",
-    "socket.io-client": "1.4.6",
+    "socket.io-client": "latest",
     "supertest": "1.2.0",
-    "typescript": "1.8.10",
-    "typings": "0.8.1",
+    "typescript": "latest",
+    "typings": "latest",
     "uglifyjs": "2.4.10",
     "watchify": "3.7.0"
   },
@@ -69,7 +70,7 @@
     "portscanner": "1.0.0",
     "rx": "4.1.0",
     "serve-static": "1.10.2",
-    "socket.io": "1.4.6",
+    "socket.io": "latest",
     "ua-parser-js": "0.7.10"
   }
 }

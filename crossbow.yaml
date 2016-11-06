@@ -27,6 +27,12 @@ tasks:
     build-client:
       - browserify
       - uglify
+      - socket-io-client
+
+    socket-io-client: >
+      @npm uglifyjs
+      node_modules/socket.io-client/socket.io.js >
+      public/socket.io.js
 
     lodash: >
       @npm lodash

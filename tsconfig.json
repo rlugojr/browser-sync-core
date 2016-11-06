@@ -7,20 +7,8 @@
         "outDir": "dist",
         "allowJs": true
     },
-    "exclude": [
-        "node_modules",
-        "typings",
-        "server",
-        "test",
-        "cli.js",
-        "client",
-        "public",
-        "example.js",
-        "example.server.js",
-        "example.proxy.js",
-        "dev.js",
-        "dist",
-        "lodash.custom.js",
-        "lodash.custom.min.js"
+    "include": [
+        "typings/main.d.ts",
+        "lib/**/*.ts"
     ]
 }

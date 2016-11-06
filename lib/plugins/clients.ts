@@ -1,7 +1,5 @@
-/// <reference path="../../typings/main.d.ts" />
 import NodeURL  = require('url');
 import SocketIO = require('socket.io');
-import * as clients from './clients.d';
 
 const Rx         = require('rx');
 const Observable = Rx.Observable;
@@ -189,7 +187,7 @@ export function init (bs: BrowserSync) {
     const registered$ = connections$
         .flatMap((client: SocketIO.Socket) => {
             return Rx.Observable.create(obs => {
-                client.on(ClientEvents.register, (connection: clients.IncomingClientRegistration) => {
+                client.on(ClientEvents.register, (connection: IncomingClientRegistration) => {
                     obs.onNext({
                         client,
                         connection
@@ -212,7 +210,7 @@ export function init (bs: BrowserSync) {
     const sub2 = registered$
         .withLatestFrom(clients$, bs.options$, (x, clients, options: BrowsersyncOptionsMap) => {
             const client:     SocketIO.Socket = x.client;
-            const connection: clients.IncomingClientRegistration = x.connection;
+            const connection: IncomingClientRegistration = x.connection;
             debugState('REGISTER', connection.client.id);
             return clients.updateIn([connection.client.id], () => {
                 return createClient(client, connection, options.get('clientOptions'));
@@ -289,12 +287,12 @@ export function init (bs: BrowserSync) {
     }
 }
 
-function createClient (client: SocketIO.Socket, incoming: clients.IncomingClientRegistration, clientOptions) {
+function createClient (client: SocketIO.Socket, incoming: IncomingClientRegistration, clientOptions) {
 
     const ua      = client.handshake.headers['user-agent'];
     const referer = client.handshake.headers['referer'];
 
-    const newClient = <clients.Client>{
+    const newClient = <Client>{
         ua: ua,
         id: incoming.client.id,
         heartbeat: new Date().getTime(),
@@ -363,4 +361,95 @@ function trackController (incoming, controller) {
              */
             return empty();
         });
+}
+
+export interface ClientBrowser {
+    type: string
+}
+
+export interface Client {
+    ua: string,
+    id: string|number,
+    heartbeat: number,
+    location: ClientLocation|any,
+    browser: ClientBrowser
+    options: ClientOptions
+    socketId: string|number
+}
+
+export interface ClientScroll {
+    x: number
+    y: number
+}
+
+export interface ClientDimensions {
+    width: number
+    height: number
+}
+
+export interface ClientBrowserInformation {
+    scroll: ClientScroll
+    dimensions: ClientDimensions
+}
+
+export interface ClientRegistrationData {
+    hash: string,
+    sessionId: number|string,
+    socketId:  number|string,
+    browser: ClientBrowserInformation
+}
+
+export interface IncomingClientID {
+    id: string
+}
+export interface IncomingClientRegistration {
+    client: IncomingClientID
+    data: ClientRegistrationData
+}
+
+/**
+ * @param {Socket.io} client socket io client instance
+ * @param {{client: {id: string}, data: object}} incoming
+ * @param {Immutable.Map} clientOptions
+ * @returns {Map<K, V>|Map<string, V>}
+ */
+export interface ClientLocation {
+    referer: string
+    url: NodeURL.Url
+    fullPath: string
+    fullUrl: string
+}
+
+export interface CodeSyncOptions {
+    inject: boolean
+    reload: boolean
+}
+
+export interface GhostModeOptions {
+    clicks: boolean
+    scroll: boolean
+    forms: boolean|any
+}
+
+export interface ClientOptions {
+    events: string[]
+    codeSync: CodeSyncOptions
+    timestamps: boolean
+    scrollProportionally: boolean
+    reloadOnRestart: boolean
+    notify: boolean
+    scrollRestoreTechnique: 'window.name' | 'cookie'
+    /**
+     * Clicks, Scrolls & Form inputs on any device will be mirrored to all others.
+     * @property ghostMode
+     * @param {Boolean} [clicks=true]
+     * @param {Boolean} [scroll=true]
+     * @param {Boolean} [forms=true]
+     * @param {Boolean} [forms.submit=true]
+     * @param {Boolean} [forms.inputs=true]
+     * @param {Boolean} [forms.toggles=true]
+     * @type Object
+     */
+    ghostMode: GhostModeOptions
+    tagNames: any
 }
