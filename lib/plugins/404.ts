@@ -11,6 +11,7 @@ export function initAsync (bs: BrowserSync, opts: any, obs) {
     bs.setOption('middleware', function (mw) {
         return mw.concat({
             route: '',
+            via: 'Browsersync 404 page',
             id: 'Browsersync 404 page',
             handle: function handlePath(req, res) {
                 res.setHeader('Content-Type', 'text/html; charset=UTF-8');

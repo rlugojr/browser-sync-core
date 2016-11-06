@@ -2,29 +2,38 @@ var bs = require('./');
 
 bs.create({
     strict: false,
+    // proxy: 'https://www.selcobw.com',
+    '404': true,
     serveStatic: [
         'test/fixtures'
     ],
     middleware: [
         {
-            route: "/shane",
+            route: "/api",
             handle: function (req, res) {
                 return res.end('<html>shane is cool</html>');
             }
+        },
+        {
+            route: "/api",
+            handle: function (req, res) {
+                return res.end('{"json": true}');
+            },
+            override: true
         }
     ],
     // watchDebounce: 2000,
     //watchDelay: 2000,
-    watch: [
-        //"test/fixtures"
-        {
-            debounce: 2000,
-            match: 'test/fixtures/*.html'
-        },
-        {
-            debounce: 500,
-            match: 'test/fixtures/**/*.css'
-        }
+    // watch: [
+    //     //"test/fixtures"
+    //     {
+    //         debounce: 2000,
+    //         match: 'test/fixtures/*.html'
+    //     },
+    //     {
+    //         debounce: 500,
+    //         match: 'test/fixtures/**/*.css'
+    //     }
         //{
         //{
         //    match: 'test/fixtures/*.html',
@@ -34,7 +43,7 @@ bs.create({
         //    }
         //}
         //}
-    ],
+    // ],
     // proxy: {
     //     target: 'https://www.browsersync.io',
     //     id: 'Shane Proxy'
@@ -43,15 +52,19 @@ bs.create({
     plugins: []
 }).subscribe(bs => {
 
-    console.log(bs.options.get('urls'));
 
     // setInterval(function () {
     //     bs.reload();
     // }, 2000);
 
-    // bs.setOption('proxy', function (proxies) {
-    //     return 'http://wearejh.com';
-    // }).subscribe();
+    // setTimeout(function () {
+    //     bs.setOption('proxy', function (proxies) {
+    //         console.log(proxies);
+    //         return proxies;
+    //     }).subscribe(opts => {
+    //         console.log(opts.getIn(['proxy']));
+    //     });
+    // }, 5000);
     //
     // setTimeout(function () {
     //     bs.setOption('proxy', function (proxies) {

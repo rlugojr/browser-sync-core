@@ -1,5 +1,5 @@
 import Immutable = require('immutable');
-const mw           = exports;
+const mw         = exports;
 import utils from './utils';
 import respMod from './resp-modifier';
 
@@ -14,6 +14,7 @@ export interface MiddlewareItem {
     route: string
     handle: () => void
     via?: string
+    override?: boolean
 }
 
 /**
@@ -23,7 +24,8 @@ const MiddlewareOption = Immutable.Record(<MiddlewareItem>{
     id: '',
     route: '',
     via: '',
-    handle: () => {}
+    handle: () => {},
+    override: false
 });
 
 /**
@@ -83,24 +85,29 @@ mw.getMiddleware = function (options) {
     
     const clientJsHandle = (req, res) => {
         res.setHeader('Content-Type', 'text/javascript');
-        res.end(cli);
+        res.end(cli, 'utf8');
     };
-    
+
+    const baseMiddleware = [
+        {
+            route: options.get('scriptPath'),
+            id: 'bs-client',
+            handle: clientJsHandle,
+            via: 'Browsersync Core'
+        },
+        {
+            route: '',
+            id: 'bs-rewrite-rules',
+            handle: respModMw,
+            via: 'Browsersync Core'
+        }
+    ];
+
+    const userMiddlewares   = options.get("middleware").toJS();
+    const beforeMiddlewares = userMiddlewares.filter((x) => x.override);
+    const afterMiddlewares  = userMiddlewares.filter((x) => !x.override);
+
     return {
-        middleware: [
-            {
-                route: options.get('scriptPath'),
-                id: 'bs-client',
-                handle: clientJsHandle,
-                via: 'Browsersync Core'
-            },
-            {
-                route: '',
-                id: 'bs-rewrite-rules',
-                handle: respModMw,
-                via: 'Browsersync Core'
-            }
-        ]
-        .concat(options.get('middleware').toJS())
+        middleware: [...beforeMiddlewares, ...baseMiddleware, ...afterMiddlewares].filter(Boolean)
     }
 };
