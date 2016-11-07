@@ -14,6 +14,8 @@ interface IReadableStream extends ReadableStream {
     off: any
 }
 
+module.exports["plugin:name"] = "Browsersync STDIN support";
+
 export function init (bs: BrowserSync) {
     /**
      * DEBUG from stdin
@@ -41,3 +43,4 @@ export function init (bs: BrowserSync) {
         stdin$.dispose();
     }
 }
+

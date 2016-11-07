@@ -29,7 +29,7 @@ module.exports = <BrowsersyncOptions>{
     injectChanges: true,
     minify: true,
     host: null,
-    stdin: true,
+    stdin: false,
     socket: {
         socketIoOptions: {
             log: false,

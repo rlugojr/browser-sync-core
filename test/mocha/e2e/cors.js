@@ -2,7 +2,7 @@ const assert  = require("chai").assert;
 const request = require("supertest");
 
 describe("e2e options test (cors)", function () {
-    it.only("Adds cors middleware", function (done) {
+    it("Adds cors middleware", function (done) {
         const browserSync = require('../../../');
         var config = {
             serveStatic: ['test/fixtures'],

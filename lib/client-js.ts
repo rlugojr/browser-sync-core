@@ -13,6 +13,8 @@ const isString = utils.isString;
 
 var count = 0;
 
+// TODO remove AMD from socket.io client manually
+
 export interface ClientJsOption {
     via:     string
     id:      string

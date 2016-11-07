@@ -23,7 +23,15 @@ const debugPlugins = require('debug')('bs:plugins');
 
 const bs = exports;
 
+export interface Cleanup {
+    description: string
+    async: boolean
+    fn: (cb?: Function) => void
+}
+
 export interface BrowserSync {
+
+    cleanups: Cleanup[]
 
     /**
      * Exported streams
@@ -85,8 +93,8 @@ function go(options, observer) {
     const optSub   = new Rx.BehaviorSubject(options);
     const opts$    = optSub.share();
     const bsServer = server.create(options);
-    const cleanups = [];
     const bs       = <BrowserSync>{};
+    bs.cleanups    = [];
     bs.server      = bsServer.server;
     bs.app         = bsServer.app;
 
@@ -94,8 +102,8 @@ function go(options, observer) {
      * Push a cleanup task into the stack
      * @param {function} fn
      */
-    bs.registerCleanupTask = fn => {
-        cleanups.push(fn); // todo: is there another way to model 
+    bs.registerCleanupTask = (fn: Cleanup) => {
+        bs.cleanups.push(fn); // todo: is there another way to model
     };
 
     /** -----------
@@ -111,19 +119,11 @@ function go(options, observer) {
      */
     bsServer.server.listen(options.get('port'));
 
-    cleanups.push({
+    bs.cleanups.push({
         description: 'Closing Browsersync server',
         async: false,
         fn: function () {
             bsServer.server.close();
-        }
-    });
-
-    cleanups.push({
-        description: 'Closing websocket server',
-        async: false,
-        fn: function () {
-            bs.bsSocket.socketServer.close()
         }
     });
 
@@ -144,18 +144,20 @@ function go(options, observer) {
      * Quit servers, remove event listeners, kill timers, stop
      * file-watchers etc... Allows the process to exit
      */
-    bs.cleanup = (cb) => {
+    bs.cleanup = (cb?: Function) => {
 
-        debugCleanup(`-> running ${cleanups.length} cleanup methods`);
+        debugCleanup(`-> running ${bs.cleanups.length} cleanup methods`);
+
         const now = new Date().getTime();
-        const clean = cleanups.map(x => {
+
+        const clean = bs.cleanups.map((cleanup: Cleanup) => {
             return Rx.Observable.create(obs => {
-                if (x.async) {
-                    debugCleanup(`+ (async) ${x.description}`);
-                    x.fn.call(bs, () => obs.onCompleted());
+                if (cleanup.async) {
+                    debugCleanup(`+ (async) ${cleanup.description}`);
+                    cleanup.fn.call(bs, () => obs.onCompleted());
                 } else {
-                    debugCleanup(`+ (sync) ${x.description}`);
-                    x.fn.call(bs);
+                    debugCleanup(`+ (sync) ${cleanup.description}`);
+                    cleanup.fn.call(bs);
                     obs.onCompleted();
                 }
             });
@@ -168,13 +170,14 @@ function go(options, observer) {
                 x => {},
                 e => console.error('error', e.stack),
                 () => {
-                    debugCleanup(`= complete in ${(new Date().getTime() - now)}ms`)
+                    debugCleanup(`= complete in ${(new Date().getTime() - now)}ms`);
                     if (typeof cb === 'function') {
                         cb();
                     }
                 }
             );
     };
+
     /**
      * Expose Browsersync config
      */
@@ -290,7 +293,7 @@ function go(options, observer) {
             return optSub.getValue();
         },
         set: function (val) {
-            throw new TypeError('Cannot re-assign th          bb hbh bh bhbhb                   b cv   bn                      z    is value');
+            throw new TypeError('Cannot re-assign this value');
         }
     });
 
@@ -307,8 +310,8 @@ function go(options, observer) {
      */
     plugins
         .initMethods(options, bs)
-        .subscribe(x => {
-            cleanups.push(x);
+        .subscribe(cleanup => {
+            bs.cleanups.push(cleanup);
         },
         e => {
             console.log('stack', e.stack);

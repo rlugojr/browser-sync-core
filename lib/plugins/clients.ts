@@ -104,7 +104,7 @@ export function init (bs: BrowserSync) {
      * Every second, wipe the current controller by setting
      * it to the blank default
      */
-    Rx.Observable
+    const controllerInt = Rx.Observable
         .interval(1000, scheduler)
         .withLatestFrom(controller, (i, controller: ClientController) => {
             return controller;
@@ -209,7 +209,7 @@ export function init (bs: BrowserSync) {
      */
     const sub2 = registered$
         .withLatestFrom(clients$, bs.options$, (x, clients, options: BrowsersyncOptionsMap) => {
-            const client:     SocketIO.Socket = x.client;
+            const client: SocketIO.Socket = x.client;
             const connection: IncomingClientRegistration = x.connection;
             debugState('REGISTER', connection.client.id);
             return clients.updateIn([connection.client.id], () => {
@@ -282,6 +282,8 @@ export function init (bs: BrowserSync) {
     };
 
     return () => {
+        console.log('tearing down');
+        controllerInt.dispose();
         int.dispose();
         sub2.dispose();
     }

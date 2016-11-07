@@ -1,6 +1,6 @@
 'use strict';
 
-const Rx         = require('rx');
+import Rx        = require('rx');
 const Observable = Rx.Observable;
 const path       = require('path');
 const Imm        = require('immutable');
@@ -19,6 +19,7 @@ const NAME_PATH    = ['module', 'plugin:name'];
 const autoList     = ['watch', '404', 'proxy', 'serveStatic', 'clients', 'stdin'];
 
 import utils from './utils';
+import {Cleanup} from "./browser-sync";
 const isString   = utils.isString;
 const uniqueId   = utils.uniqueId;
 
@@ -96,22 +97,22 @@ module.exports.namePlugins = function (options) {
  * @param {Immutable.Map} options
  * @param {object} bs
  */
-module.exports.initMethods = function (options, bs) {
+module.exports.initMethods = function (options, bs): Rx.Observable<Cleanup> {
 
     /**
      * Iterate through each provided plugin
      * and enqueue any init or initAsync methods
      */
-    const pluginFns = options.get('plugins')
+    const pluginFns: Array<Rx.Observable<Cleanup>> = options.get('plugins')
         .filter(x => x.hasIn(ASYNC_METHOD) || x.hasIn(SYNC_METHOD))
-        .map(x => {
-            if (x.hasIn(ASYNC_METHOD)) {
-                return asyncWrapper(x, bs);
+        .map(plugin => {
+            if (plugin.hasIn(ASYNC_METHOD)) {
+                return asyncWrapper(plugin, bs);
             }
-            return syncWrapper(x, bs);
+            return syncWrapper(plugin, bs);
         });
 
-    return Observable.from(pluginFns).concatAll();
+    return Rx.Observable.from(pluginFns).concatAll();
 };
 
 /**
@@ -167,7 +168,8 @@ module.exports.autoLoad = function (options) {
         .update('plugins', function (plugins) {
 
             return autoList.reduce((a, plugin) => {
-                if (options.get(plugin) !== undefined) {
+                const pluginOpt = options.get(plugin);
+                if (pluginOpt !== undefined && pluginOpt !== false) {
                     debug(`+ autoload (${plugin})`);
                     const requirePath = require('path').resolve(__dirname, 'plugins', plugin);
                     debug(`└─ via (${requirePath})`);
@@ -248,8 +250,8 @@ function resolveOne (item) {
  * @param {object} bs
  * @returns {Observable}
  */
-function asyncWrapper(plugin, bs) {
-    return Observable.create(obs => {
+function asyncWrapper(plugin, bs): Rx.Observable<Cleanup> {
+    return Observable.create<Cleanup>(obs => {
         const output = plugin.getIn(ASYNC_METHOD).call(bs, bs, plugin.get('options').toJS(), asyncCb(obs));
         if (typeof output === 'function') {
             obs.onNext({
@@ -268,8 +270,8 @@ function asyncWrapper(plugin, bs) {
  * @param {Object} bs
  * @returns {Observable}
  */
-function syncWrapper(plugin, bs) {
-    return Observable.create(obs => {
+function syncWrapper(plugin, bs): Rx.Observable<Cleanup> {
+    return Observable.create<Cleanup>(obs => {
         const output = plugin.getIn(SYNC_METHOD).call(bs, bs, plugin.get('options').toJS());
         if (typeof output === 'function') {
             obs.onNext({

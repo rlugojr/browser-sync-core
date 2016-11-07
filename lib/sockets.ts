@@ -29,6 +29,14 @@ module.exports.create = function (bs, server, options) {
     const io           = socket(socketServer, socketConfig);
     const clients      = io.of(options.getIn(['socket', 'namespace']));
 
+    bs.cleanups.push({
+        description: 'Closing websocket server',
+        async: false,
+        fn: function () {
+            socketServer.close();
+        }
+    });
+
     return {
         socketServer,
         io: io,
