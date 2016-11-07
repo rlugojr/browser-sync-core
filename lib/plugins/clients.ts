@@ -282,7 +282,6 @@ export function init (bs: BrowserSync) {
     };
 
     return () => {
-        console.log('tearing down');
         controllerInt.dispose();
         int.dispose();
         sub2.dispose();

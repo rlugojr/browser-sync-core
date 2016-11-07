@@ -21,13 +21,13 @@ export function init (bs: BrowserSync) {
      * DEBUG from stdin
      */
     const stdin$ = fromEvent(<IReadableStream>process.stdin, 'data', (x) => x.toString().replace(/\n$/, ''))
-        .flatMap<StdinEvent>((x: string) => {
+        .map<StdinEvent>((x: string) => {
             const split = x.trim().split(' ').filter(Boolean);
-            return just({
+            return {
                 fnName: split[0],
                 fn: _.get(bs, split[0]),
                 args: split.slice(1)
-            });
+            };
         })
         .subscribe(stdinEvent => {
             if (typeof stdinEvent.fn === 'function') {
