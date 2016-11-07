@@ -1,6 +1,7 @@
 import {BrowserSync} from "../browser-sync";
 import utils from '../utils';
 import {FSWatcher} from "fs";
+import * as path from "path";
 
 import Immutable = require('immutable');
 import Rx        = require('rx');
@@ -29,6 +30,20 @@ const FilesOption = Immutable.Record({
 
 module.exports["plugin:name"] = "Browsersync File Watcher";
 
+function fileIoWatcher (patterns: string[], options): Rx.Observable<WatchEventRaw> {
+    return Rx.Observable.create<WatchEventRaw>(function (observer) {
+        debug(`Setup for ${patterns}`);
+        const watcher = chokidar.watch(patterns, options);
+        watcher.on('all', (event, path) => {
+            observer.onNext({event, path});
+        });
+        return () => {
+            debug(`Tear down for ${patterns}`);
+            watcher.close();
+        }
+    });
+}
+
 /**
  * @param bs
  */
@@ -40,55 +55,62 @@ export function init (bs: BrowserSync) {
         || bs.options.get(OPT_NAME).size === 0
     ) return;
 
+    const scheduler = bs.options.getIn(['debug', 'scheduler']);
+
     bs.watchers = bs.options
         .get(OPT_NAME)
         /**
          * For each file option, create a separate watcher (chokidar) instance
          */
-        .map((item): {watcher: FSWatcher, item: WatchItem} => {
-            const patterns = item.get('match').toJS();
+        .map((item) => {
+            const patterns  = item.get('match').toArray();
+            const options   = item.get('options').toJS();
+            const namespace = item.get('namespace');
+            const obs       = bs.options.getIn(['debug', 'watch', 'fileIoObservables', namespace]) || fileIoWatcher(patterns, options);
 
-            debug(`+ watcherUID:${item.get('watcherUID')} creating for patterns: ${patterns}`);
+            const items = [
+                {
+                    option: 'debounce',
+                    fnName: 'debounce'
+                },
+                {
+                    option: 'throttle',
+                    fnName: 'throttle'
+                },
+                {
+                    option: 'delay',
+                    fnName: 'delay'
+                }
+            ];
 
-            const watch = chokidar.watch(patterns, item.get('options').toJS());
-            /**
-             * Add a flag when ready is called so that cleanups
-             * can do correctly. Note: We do *NOT* wait for this ready
-             * task to fire on every watcher before signalling that this
-             * plugin is complete as the directory scans can take a
-             * long time and should not hinder the startup of servers etc.
-             */
-            watch.on('ready', function () {
-                debug(`✔ watcherUID:${item.get('watcherUID')} now ready`);
-                watch._bsReady = true;
+            const mapped = obs.map(x => {
+                return {
+                    event: x.event,
+                    path: x.path,
+                    parsed: path.parse(x.path),
+                    item,
+                    namespace,
+                    watcherUID: item.get('watcherUID')
+                }
             });
 
-            return {
-                watcher: watch,
-                item: item
-            };
+            return mapped;
         });
 
     /**
      * Now create an Observable from each watcher and merge
      * the values they emit into a single sequence
      */
-    const watchers = Rx.Observable.merge(
-        bs.watchers.map(watcher => {
-            return watcherAsObservable(
-                watcher.watcher,
-                watcher.item
-            )
-        }).toArray()) // Rx.Observable.merge needs a plain array, not a List
-        .withLatestFrom(bs.options$, (event: WatchEvent, options: any) => ({event, options}))
+    console.log(bs.watchers.toArray().length);
+    const watchers : Rx.Observable<WatchEvent> = Rx.Observable.merge(bs.watchers.toArray()) // Rx.Observable.merge needs a plain array, not a List
         /**
          * Add an event id to every file changed
          */
-        .map((watchEventMerged: WatchEventMerged, i) => {
-            watchEventMerged.event.eventUID = i;
-            return watchEventMerged;
+        .map((watchEvent: WatchEvent, i: number) => {
+            watchEvent.eventUID = i;
+            return watchEvent;
         })
-        .do((x: WatchEventMerged) => debug(`WUID:${x.event.watcherUID} EUID:${x.event.eventUID} ${x.event.event}, ${x.event.path}`))
+        .do((x: WatchEvent) => debug(`WUID:${x.watcherUID} EUID:${x.eventUID} ${x.event}, ${x.path}`))
         .share();
 
     /**
@@ -101,122 +123,87 @@ export function init (bs: BrowserSync) {
      * Handle file-watching events where the user provided
      * a custom callback function
      */
-    const watchers$ = bs.watchers$
-        .filter((watchEventMerged: WatchEventMerged) => watchEventMerged.event.item.get('fn') !== undefined)
-        .do((watchEventMerged: WatchEventMerged) => {
-            const event = watchEventMerged.event;
-            // call the function provided in the option
-            // with the same signature as the chokidar cb
-            // fn(eventName, filePath)
-            event.item.get('fn').apply(bs, [event.event, event.path, event]);
-        }).subscribe();
+    // const watchers$ = bs.watchers$
+    //     .filter((watchEventMerged: WatchEventMerged) => watchEventMerged.event.item.get('fn') !== undefined)
+    //     .do((watchEventMerged: WatchEventMerged) => {
+    //         const event = watchEventMerged.event;
+    //         // call the function provided in the option
+    //         // with the same signature as the chokidar cb
+    //         // fn(eventName, filePath)
+    //         event.item.get('fn').apply(bs, [event.event, event.path, event]);
+    //     }).subscribe();
 
     // core watchers that cause either reloads/injections
-    const core = getCoreWatchers(watchers, bs.options);
-
-    // Listen to all changes and perform either a reload/injection
-    // depending on the file type (ext)
-    const core$ = bs.coreWatchers$ = core
+    //
+    // // Listen to all changes and perform either a reload/injection
+    // // depending on the file type (ext)
+    bs.coreWatchers$ = watchers
+        .filter((watchEvent: WatchEvent) => {
+            return watchEvent.namespace  === 'core' &&
+                watchEvent.item.fn       === undefined &&
+                (
+                    watchEvent.event  === 'change' ||
+                    watchEvent.event  === 'add'
+                )
+        })
         /**
          * Check if this watcher is enabled/disabled
          * by looking at the options object with matching id
          */
-        .where((watchEventMerged: WatchEventMerged) => {
-            const event = watchEventMerged.event;
-            const watcherIsActive = watchEventMerged.options
+        .withLatestFrom(bs.options$, (event, options) => ({event, options}))
+        .filter((watchEventMerged: WatchEventMerged) => {
+
+            const {eventUID, watcherUID} = watchEventMerged.event;
+            const {options} = watchEventMerged;
+            const watcherIsActive = options
                 .get(OPT_NAME)
-                .filter(watchOption => watchOption.get('watcherUID') === watchEventMerged.event.watcherUID)
+                .filter(watchOption => watchOption.get('watcherUID') === watcherUID)
                 .getIn([0, 'active']);
 
             if (!watcherIsActive) {
-                debug(`(eventUID:${watchEventMerged.event.eventUID}) ignoring event as this watcher (watcherUID:${watchEventMerged.event.watcherUID}) is disabled`);
+                debug(`(eventUID:${eventUID}) ignoring event as this watcher (watcherUID:${watcherUID}) is disabled`);
             }
+
             return watcherIsActive;
         });
-
-    const coreSubscription$ = core$.subscribe((watchEventMerged: WatchEventMerged) => {
-
+    //
+    const coreSubscription$ = bs.coreWatchers$.subscribe((watchEventMerged: WatchEventMerged) => {
         const event = watchEventMerged.event;
-
         // If the file that changed has a ext matching
         // one in the injectFileTypes array, attempt an injection
 
-        if (watchEventMerged.options.get('injectFileTypes').contains(event.ext)) {
+        if (watchEventMerged.options.get('injectFileTypes').contains(event.parsed.ext.slice(1))) {
             // todo implement client methods like inject
-            return bs.clients.reload();
+            console.log('inject');
+        } else {
+            console.log('reload');
         }
-
-        // Otherwise, simply reload the browser
-        bs.clients.reload();
     });
 
-    const closeWatchers = () => bs.watchers.forEach(w => w.watcher.close());
-    const getReadyCount = () => bs.watchers.reduce((a, w) => w.watcher._bsReady ? a + 1 : a, 0);
+    // const closeWatchers = () => bs.watchers.forEach(w => w.watcher.close());
+    // const getReadyCount = () => bs.watchers.reduce((a, w) => w.watcher._bsReady ? a + 1 : a, 0);
 
     // Return async cleanup function
     return (cb) => {
 
+        cb();
+        // bs.coreWatchers$.dispose();
         coreSubscription$.dispose();
-        watchers$.dispose();
+        // watchers$.dispose();
 
-        if (getReadyCount() === bs.watchers.size) {
-            closeWatchers();
-            cb();
-        } else {
-            const int = setInterval(function () {
-                if (getReadyCount() === bs.watchers.size) {
-                    closeWatchers();
-                    clearInterval(int);
-                    cb();
-                }
-            }, 10);
-        }
+        // if (getReadyCount() === bs.watchers.size) {
+        //     closeWatchers();
+        //     cb();
+        // } else {
+        //     const int = setInterval(function () {
+        //         if (getReadyCount() === bs.watchers.size) {
+        //             closeWatchers();
+        //             clearInterval(int);
+        //             cb();
+        //         }
+        //     }, 10);
+        // }
     }
-}
-
-/**
- * @param watchers
- * @param options
- * @returns {*}
- */
-function getCoreWatchers (watchers, options) {
-
-    const watchers$ = watchers
-        // Filter for core namespace, undefined FN
-        // and event name of 'change'
-        .filter((watchEventMerged: WatchEventMerged) =>
-            watchEventMerged.event.namespace  === 'core' &&
-            watchEventMerged.event.item.fn    === undefined &&
-            (
-                watchEventMerged.event.event  === 'change' ||
-                watchEventMerged.event.event  === 'add'
-            )
-        );
-
-    const debounce = options.get('watchDebounce');
-    const throttle = options.get('watchThrottle');
-    const delay    = options.get('watchDelay');
-
-    debug(`Global Watch Debounce ${debounce}ms`);
-    debug(`Global Watch Throttle ${throttle}ms`);
-    debug(`Global Watch Delay    ${delay}ms`);
-
-    const globalItems = [
-        {
-            option: 'watchDebounce',
-            fnName: 'debounce'
-        },
-        {
-            option: 'watchThrottle',
-            fnName: 'throttle'
-        },
-        {
-            option: 'watchDelay',
-            fnName: 'delay'
-        }
-    ];
-
-    return applyOperators(watchers$, globalItems, options);
 }
 
 /**
@@ -225,52 +212,15 @@ function getCoreWatchers (watchers, options) {
  * @param options
  * @returns {Observable<T>}
  */
-function applyOperators (source, items, options) {
+function applyOperators (source, items, options, scheduler) {
     return items.reduce((stream$, item) => {
         const value = options.get(item.option);
+        // console.log(item.option, value); // todo add global options to item level
         if (value > 0) {
-            return stream$[item.fnName].call(stream$, value);
+            return stream$[item.fnName].apply(stream$, [value, scheduler]);
         }
         return stream$;
     }, source);
-}
-
-/**
- * Create a single Observable sequence from a files option
- */
-function watcherAsObservable (watcher: FSWatcher, item) {
-
-    const watcherObservable$ = Rx.Observable.create(function (obs: Rx.Observer<WatchEvent>) {
-        watcher.on('all', function (event, path) {
-            obs.onNext({
-                event,
-                item,
-                path,
-                namespace  : item.get('namespace'),
-                parsed     : require('path').parse(path),
-                ext        : require('path').extname(path).slice(1),
-                basename   : require('path').basename(path),
-                watcherUID : item.get('watcherUID')
-            });
-        });
-    });
-
-    const individualWatcherItems = [
-        {
-            option: 'debounce',
-            fnName: 'debounce'
-        },
-        {
-            option: 'throttle',
-            fnName: 'throttle'
-        },
-        {
-            option: 'delay',
-            fnName: 'delay'
-        }
-    ];
-
-    return applyOperators(watcherObservable$, individualWatcherItems, item);
 }
 
 /**
@@ -368,15 +318,15 @@ export interface ParsedPath {
     name: string
 }
 
-export interface WatchEvent {
-    event: string
+export interface WatchEventRaw {
+    event: 'add' | 'change'
     path: string
+}
+
+export interface WatchEvent extends WatchEventRaw {
     namespace: string
     parsed: ParsedPath
-    ext: string
-    basename: string
     watcherUID: number
-    options?: any
     eventUID?: number
     item: any
 }
@@ -385,7 +335,6 @@ export interface WatchEventMerged {
     event: WatchEvent
     options: any
 }
-
 
 export interface WatchItem {
     event: string
