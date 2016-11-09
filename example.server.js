@@ -4,10 +4,25 @@ bs.create({
     watch: [
         {
             match: '*.json',
-            debounce: 2000
+        },
+        {
+            match: '*.js'
         }
     ],
-    watchDelay: 1000,
+    watchDebounce: 2000,
+    plugins: [{
+        module: {
+            "plugin:name": "my-plugin",
+            init: function (bs) {
+                // bs.getWatcher('my-plugin').subscribe(x => {
+                //     console.log(x);
+                // });
+            }
+        },
+        options: {
+            watch: "*.js"
+        }
+    }],
     online: false,
 }).subscribe(bs => {
     // console.log(bs.options.get('plugins').toJS());

@@ -6,6 +6,7 @@ import startup from './startup';
 import Rx = require('rx');
 import config from './config';
 import {GlobalClientEvents, GlobalReloadEvent} from "./browser-sync-clients";
+import {WatchEvent} from "./plugins/watch";
 
 const Observable = Rx.Observable;
 const connectUtils = require('./connect-utils');
@@ -42,6 +43,7 @@ export interface BrowserSync {
     watchers$?: any
     coreWatchers$?: any
     clients$: any
+    protocol$: Rx.Observer<any>
 
     /**
      * Exported APIs (by namespace)
@@ -70,6 +72,7 @@ export interface BrowserSync {
     overrideClientOptions: (selector:string, fn) => any
     getSocketIoScript: () => string
     getExternalSocketConnector: (opts: any) => string
+    getWatcher: (namespace: string) => Rx.Observable<WatchEvent>
     reload: () => void
     inject: (any) => void
     applyMw: (options: Immutable.Map<any, any>) => void
@@ -97,6 +100,7 @@ function go(options, observer) {
     bs.cleanups    = [];
     bs.server      = bsServer.server;
     bs.app         = bsServer.app;
+    bs.protocol$   = new Rx.Subject();
 
     /**
      * Push a cleanup task into the stack
@@ -204,11 +208,11 @@ function go(options, observer) {
      * @param {string} namespace
      * @returns {Observable}
      */
-    //bs.getWatcher = function (namespace) {
-    //    return pauser
-    //        .filter(x => x.namespace === namespace)
-    //        .filter(x => x.item.fn === undefined);
-    //};
+    bs.getWatcher = function (namespace) {
+       return bs.watchers$
+           .filter(x => x.namespace === namespace)
+           .filter(x => x.item.fn === undefined);
+    };
 
     /**
      * Interface for setting an option

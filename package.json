@@ -28,6 +28,7 @@
   },
   "author": "Shane Osbourne",
   "license": "Apache 2.0",
+
   "bugs": {
     "url": "https://github.com/BrowserSync/browser-sync-core/issues"
   },
@@ -42,7 +43,6 @@
     "bs-snippet-injector": "^2.0.1",
     "chai": "3.5.0",
     "crossbow": "latest",
-    "eslint": "2.8.0",
     "lodash-cli": "^4.16.6",
     "lodash.get": "4.2.1",
     "lodash.merge": "4.3.5",

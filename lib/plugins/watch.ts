@@ -28,6 +28,27 @@ const FilesOption = Immutable.Record({
     watcherUID: 0
 });
 
+type WatchOptionKeys = "match" | "options" | "fn" | "locator" | "namespace" | "throttle" | "debounce" | "delay" | "active" | "watcherUID";
+type WatchTimeKeys   = "throttle" | "debounce" | "delay";
+
+export interface WatchOption {
+    match: Immutable.List<any>
+    options?: Immutable.Map<string, any>
+    fn?: () => void
+    locator?: () => void, // optional
+    namespace: string,
+    throttle: number,
+    debounce: number,
+    delay: number,
+    active: boolean,
+    watcherUID: number
+    get(path: 'match') : Immutable.List<any>
+    get(path: 'options') : Immutable.Map<string, any>
+    get(path: 'namespace') : string
+    get(path: 'watcherUID') : number
+    get(path: WatchTimeKeys) : number
+}
+
 module.exports["plugin:name"] = "Browsersync File Watcher";
 
 function fileIoWatcher (patterns: string[], options): Rx.Observable<WatchEventRaw> {
@@ -57,52 +78,40 @@ export function init (bs: BrowserSync) {
 
     const scheduler = bs.options.getIn(['debug', 'scheduler']);
 
-    bs.watchers = bs.options
+    const watchersFromOpts : Rx.Observable<WatchEvent>[] = bs.options
         .get(OPT_NAME)
+        .toArray()
         /**
          * For each file option, create a separate watcher (chokidar) instance
          */
-        .map((item) => {
-            const patterns  = item.get('match').toArray();
-            const options   = item.get('options').toJS();
-            const namespace = item.get('namespace');
-            const obs       = bs.options.getIn(['debug', 'watch', 'fileIoObservables', namespace]) || fileIoWatcher(patterns, options);
+        .map((watchOption: WatchOption): Rx.Observable<WatchEvent> => {
+            const patterns        = watchOption.get('match').toArray();
+            const chokidarOptions = watchOption.get('options').toJS();
+            const namespace       = watchOption.get('namespace');
+            const obs             = bs.options.getIn(['debug', 'watch', 'fileIoObservables', namespace]) || fileIoWatcher(patterns, chokidarOptions);
 
-            const items = [
-                {
-                    option: 'debounce',
-                    fnName: 'debounce'
-                },
-                {
-                    option: 'throttle',
-                    fnName: 'throttle'
-                },
-                {
-                    option: 'delay',
-                    fnName: 'delay'
-                }
-            ];
+            const operators: Array<WatchTimeKeys> = ['debounce', 'throttle', 'delay'];
 
             const mapped = obs.map(x => {
                 return {
                     event: x.event,
                     path: x.path,
                     parsed: path.parse(x.path),
-                    item,
+                    item: watchOption,
                     namespace,
-                    watcherUID: item.get('watcherUID')
+                    watcherUID: watchOption.get('watcherUID')
                 }
             });
 
-            return mapped;
+            return applyOperators(mapped, operators, watchOption, scheduler);
         });
 
     /**
      * Now create an Observable from each watcher and merge
      * the values they emit into a single sequence
      */
-    console.log(bs.watchers.toArray().length);
-    const watchers : Rx.Observable<WatchEvent> = Rx.Observable.merge(bs.watchers.toArray()) // Rx.Observable.merge needs a plain array, not a List
+    const watchers = Rx.Observable
+        .from(watchersFromOpts).mergeAll()
         /**
          * Add an event id to every file changed
          */
@@ -137,7 +146,7 @@ export function init (bs: BrowserSync) {
     //
     // // Listen to all changes and perform either a reload/injection
     // // depending on the file type (ext)
-    bs.coreWatchers$ = watchers
+    bs.coreWatchers$ = applyGlobalOperators(watchers, bs.options, scheduler)
         .filter((watchEvent: WatchEvent) => {
             return watchEvent.namespace  === 'core' &&
                 watchEvent.item.fn       === undefined &&
@@ -176,7 +185,8 @@ export function init (bs: BrowserSync) {
             // todo implement client methods like inject
             console.log('inject');
         } else {
-            console.log('reload');
+            // console.log(event.event, event.namespace, event.path);
+            bs.protocol$.onNext('reload');
         }
     });
 
@@ -186,9 +196,9 @@ export function init (bs: BrowserSync) {
     // Return async cleanup function
     return (cb) => {
 
-        cb();
         // bs.coreWatchers$.dispose();
         coreSubscription$.dispose();
+        cb();
         // watchers$.dispose();
 
         // if (getReadyCount() === bs.watchers.size) {
@@ -206,16 +216,37 @@ export function init (bs: BrowserSync) {
     }
 }
 
-/**
- * @param source
- * @param items
- * @param options
- * @returns {Observable<T>}
- */
-function applyOperators (source, items, options, scheduler) {
+function applyOperators (source: Rx.Observable<any>, items: WatchTimeKeys[], watchOption: WatchOption, scheduler: Rx.Observable<any>) {
+    return items.reduce((stream$, item) => {
+        const value = watchOption.get(item);
+        // console.log(options); // todo add global options to item level
+        // console.log(value, item.option);
+        if (value > 0) {
+            return stream$[item].apply(stream$, [value, scheduler]);
+        }
+        return stream$;
+    }, source);
+}
+
+function applyGlobalOperators (source: Rx.Observable<any>, options: Immutable.Map<string, number>, scheduler: Rx.Observable<any>) {
+    const items = [
+        {
+            option: 'watchDebounce',
+            fnName: 'debounce'
+        },
+        {
+            option: 'watchThrottle',
+            fnName: 'throttle'
+        },
+        {
+            option: 'watchDelay',
+            fnName: 'delay'
+        },
+    ];
     return items.reduce((stream$, item) => {
         const value = options.get(item.option);
-        // console.log(item.option, value); // todo add global options to item level
+        // console.log(options); // todo add global options to item level
+        // console.log(value, item.option);
         if (value > 0) {
             return stream$[item.fnName].apply(stream$, [value, scheduler]);
         }
@@ -334,19 +365,5 @@ export interface WatchEvent extends WatchEventRaw {
 export interface WatchEventMerged {
     event: WatchEvent
     options: any
-}
-
-export interface WatchItem {
-    event: string
-    match: any
-    options?: any
-    fn?: () => void
-    locator?: () => void, // optional
-    namespace: string,
-    throttle: number,
-    debounce: number,
-    delay: number,
-    active: boolean,
-    watcherUID: number
 }
 
