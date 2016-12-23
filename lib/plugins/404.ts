@@ -1,6 +1,7 @@
 import {BrowserSync} from "../browser-sync";
 const objPath = require('lodash.get');
 
+module.exports["plugin:name"] = "Browsersync 404";
 export function initAsync (bs: BrowserSync, opts: any, obs) {
     /**
      * Set a middleware, on all routes

@@ -28,7 +28,6 @@
   },
   "author": "Shane Osbourne",
   "license": "Apache 2.0",
-
   "bugs": {
     "url": "https://github.com/BrowserSync/browser-sync-core/issues"
   },
@@ -53,7 +52,8 @@
     "protractor": "3.2.2",
     "sinon": "1.17.3",
     "socket.io-client": "latest",
-    "supertest": "1.2.0",
+    "source-map-support": "^0.4.7",
+    "supertest": "latest",
     "typescript": "latest",
     "typings": "latest",
     "uglifyjs": "2.4.10",
@@ -67,7 +67,7 @@
     "http-proxy": "latest",
     "immutable": "3.8.1",
     "object-assign": "4.1.0",
-    "portscanner": "1.0.0",
+    "portscanner": "latest",
     "rx": "4.1.0",
     "serve-static": "1.10.2",
     "socket.io": "latest",
